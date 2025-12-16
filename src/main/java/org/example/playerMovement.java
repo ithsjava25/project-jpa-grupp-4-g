@@ -51,6 +51,7 @@ public class playerMovement extends player{
            IO.readln(playerName + " your turn!! Roll dice by pressing enter");
            if (playerPos[playerPos.length-1] == null){
                playerPos = playRound(playerPos, board);
+               checkIfPlayerHasPenalties();
            } else {
                endBoard = false;
                System.out.println(playerName + " at end of board");
