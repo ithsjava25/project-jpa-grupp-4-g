@@ -5,10 +5,11 @@ import javafx.fxml.FXML;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
-public class MainController {
+public class TravelGameController {
 
     @FXML
     private ImageView mapView;
+
 
     @FXML
     private void initialize() {
@@ -16,5 +17,6 @@ public class MainController {
     }
 
     public void onRoll(ActionEvent actionEvent) {
+
     }
 }
