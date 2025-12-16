@@ -26,7 +26,7 @@ abstract class player {
     }
 
     void checkIfPlayerHasPenalties(){
-        if (Math.random() < 0.15){
+        if (Math.random() < 0.10){
             System.out.println("You got the penalty!");
            getPenalty();
         }
