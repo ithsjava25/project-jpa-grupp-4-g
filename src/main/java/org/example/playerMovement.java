@@ -2,43 +2,61 @@ package org.example;
 
 //@Todo player movement
 //with continents, countries to cites
-//arrays efter uppdrag
 
-import java.util.Objects;
+public class playerMovement extends player{
 
-public class playerMovement {
-   void main(){
-       String[] countries = {"Start",
-           "Stockholm",
-           "Copenhagen",
-           "Oslo",
-           "Helsinki",
-           "Berlin",
-           "Paris",
-           "Luxembourg",
-           "Lichenstein",
-           "Madrid"};
+    @Override
+    public void setPlayerName(String playerName) {
+        super.setPlayerName(playerName);
+    }
 
-       String[] playerPos = new String[countries.length];
-       playerPos[0] = "Player 1";
+    public String[] continents = {"Europe",
+        "Asia",
+        "North America",
+        "South America",
+        "Africa",
+        "Australia",
+        "Antarctica"};
+
+    public String[] board = {
+        "Start",
+        "Stockholm",
+        "Copenhagen",
+        "Oslo",
+        "Helsinki",
+        "Berlin",
+        "Paris",
+        "Luxembourg",
+        "Lichenstein",
+        "Madrid"};
+
+
+    public String getPlayerName() {
+        return this.playerName;
+    }
+
+   void play(){
+       String[] playerPos = new String[board.length];
+       playerPos[0] = playerName;
        boolean endBoard = true;
        while(endBoard){
            IO.readln("Play by enter");
            if (playerPos[playerPos.length-1] == null){
-               playerPos = playRound(playerPos, countries);
+               playerPos = playRound(playerPos, board);
            } else {
                endBoard = false;
-               System.out.println("Player 1 at end of board");
+               System.out.println(playerName + " at end of board");
+               playerPos = new String[board.length];
            }
        }
    }
 
-    private String[] playRound(String[] playerPos, String[] countries) {
+    private String[] playRound(String[] playerPos, String[] board) {
         playerPos = movePlayer(playerPos);
         for (int i = 1; i < playerPos.length; i++){
             if (playerPos[i] != null){
-                System.out.println("Player 1 on position " + i);
-                System.out.println(countries[i]);
+                System.out.println(playerName + " on position " + i);
+                System.out.println(board[i]);
             }
         }
         return playerPos;
