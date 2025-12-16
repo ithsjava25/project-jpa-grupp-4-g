@@ -30,33 +30,45 @@ public class playerMovement extends player{
         "Lichenstein",
         "Madrid"};
 
+    String[] playerPos = new String[board.length];
+
+    public void setContinents(String[] continents) {
+        this.continents = continents;
+    }
+
+    public void setBoard(String[] board) {
+        this.board = board;
+    }
 
     public String getPlayerName() {
         return this.playerName;
     }
 
    void play(){
-       String[] playerPos = new String[board.length];
-       playerPos[0] = playerName;
        boolean endBoard = true;
-       while(endBoard){
-           IO.readln("Play by enter");
+       System.out.println(" ");
+       System.out.println("________________________________");
+           IO.readln(playerName + " your turn!! Roll dice by pressing enter");
            if (playerPos[playerPos.length-1] == null){
                playerPos = playRound(playerPos, board);
            } else {
                endBoard = false;
                System.out.println(playerName + " at end of board");
+               increaseScore();
                playerPos = new String[board.length];
            }
        }
-   }
+
+
 
     private String[] playRound(String[] playerPos, String[] board) {
         playerPos = movePlayer(playerPos);
         for (int i = 1; i < playerPos.length; i++){
             if (playerPos[i] != null){
+                System.out.println(" ");
                 System.out.println(playerName + " on position " + i);
                 System.out.println(board[i]);
+                System.out.println(" ");
             }
         }
         return playerPos;
@@ -64,24 +76,26 @@ public class playerMovement extends player{
 
     public String[] movePlayer(String[] playerPos){
        String[] temp = new String[playerPos.length];
-       int playerPosition = 0;
+       int newPos = 0;
        for (int i = 0; i < playerPos.length; i++){
            if (playerPos[i] != null){
-               playerPosition = i;
+               newPos = i;
            }
        }
-       int newPosition = playerPosition + rollDice(4);
+       int newPosition = newPos + rollDice(4);
        if (newPosition < 0 || newPosition < playerPos.length){
-           temp[newPosition] = "player 1";
+           temp[newPosition] = playerName;
        } else {
-           temp[playerPos.length - 1] = "player 1";
+           temp[playerPos.length - 1] = playerName;
        }
         return temp;
    }
 
     public int rollDice(int dice) {
         int roll = (int) ((dice * Math.random()+1));
+        System.out.println(" ");
         System.out.println("Rolled " + roll);
+        System.out.println(" ");
         return roll;
     }
 }
