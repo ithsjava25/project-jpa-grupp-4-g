@@ -16,6 +16,7 @@ public class TravelGameController {
     private ListView<String> logList;
     @FXML
     private Button rollButton;
+    private int currentPlayerIndex = 0;
 
 
     @FXML
@@ -25,13 +26,28 @@ public class TravelGameController {
             "🌍 Spelet startade",
             "🗺️ Du står vid startpunkten",
             "🎯 Målet är att nå slutdestinationen"
+
         );
+
+
+        logList.getSelectionModel().select(0);
     }
 
     public void onRoll(ActionEvent actionEvent) {
         logList.getItems().add("🎲 Du slog tärningen...");
         logList.getItems().add("🚶 Du flyttade 3 steg framåt");
         logList.getItems().add("📍 Du anlände till en ny plats");
+        currentPlayerIndex++;
+
+        if (currentPlayerIndex >= 5) {
+            currentPlayerIndex = 1;
+        }
+
+        logList.getSelectionModel().clearSelection();
+        logList.getSelectionModel().select(currentPlayerIndex);
+        logList.scrollTo(currentPlayerIndex);
+        System.out.println(currentPlayerIndex);
+
 
     }
 }

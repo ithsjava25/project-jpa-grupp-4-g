@@ -5,19 +5,19 @@
 <?import javafx.scene.layout.*?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
-            fx:controller="org.example.TravelGameController" stylesheets="@/org/example/style/app.css">
+            fx:controller="org.example.TravelGameController" stylesheets="/org/example/style/app.css">
 
     <center>
-        <StackPane>
+        <StackPane fx:id="mapContainer">
             <ImageView fx:id="mapView"
                        preserveRatio="true"
                        fitWidth="900"
-                       fitHeight="700"/>
+                       fitHeight="700" />
         </StackPane>
     </center>
 
     <right>
-        <VBox spacing="8" prefWidth="300" style="-fx-padding: 50 10 0 0;">
+        <VBox spacing="8" prefWidth="300" style="-fx-padding: 50 20 0 0;">
             <Label text="Log" style="-fx-font-size: 16; -fx-font-weight: bold; -fx-text-fill: white;"/>
             <ListView fx:id="logList"/>
         </VBox>
