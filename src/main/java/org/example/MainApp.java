@@ -16,7 +16,7 @@ public class MainApp extends Application {
 
         Scene scene = new Scene(loader.load(), 1300, 700);
 
-        stage.setTitle("Karta");
+        stage.setTitle("Travel Game");
         stage.setScene(scene);
         stage.show();
     }
