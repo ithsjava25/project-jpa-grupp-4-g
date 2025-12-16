@@ -17,7 +17,7 @@
     </center>
 
     <right>
-        <VBox spacing="8" prefWidth="300" style="-fx-padding: 10;">
+        <VBox spacing="8" prefWidth="300" style="-fx-padding: 50 10 0 0;">
             <Label text="Log" style="-fx-font-size: 16; -fx-font-weight: bold; -fx-text-fill: white;"/>
             <ListView fx:id="logList"/>
         </VBox>
