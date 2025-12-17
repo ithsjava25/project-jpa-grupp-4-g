@@ -5,6 +5,7 @@ abstract class player {
     int playerScore = 0;
     long credits = 1000;
 
+    //set the player name
     public void setPlayerName(String playerName) {
         this.playerName = playerName;
     }
@@ -21,14 +22,17 @@ abstract class player {
         return credits;
     }
 
+    //remove credits from a player bank
     public void removeCredits(long credits) {
         this.credits = this.credits - credits;
     }
 
+    //add credits to player bank
     public void addCredits(long credits) {
         this.credits = this.credits + credits;
     }
 
+    //Make a penalties check for the round. A chance under 10 percent for a player to get a penalty.
     void checkIfPlayerHasPenalties(){
         if (Math.random() < 0.10){
             System.out.println("You got the penalty!");
@@ -36,6 +40,8 @@ abstract class player {
         }
     }
 
+    /* if a player gets a penalty, get a random number between 0 - 5, choose a penlty from the switch.*/
+    //TODO fix credits for correct value
     public void getPenalty() {
         int getPenaltyNumber = (int) Math.random()*5;
         switch (getPenaltyNumber) {
@@ -67,6 +73,8 @@ abstract class player {
 
     }
 
+    /*
+    * Scoring for a player. Players start with zero and has a win state when the score reaches 5. */
     public void increaseScore() {
         playerScore++;
     }

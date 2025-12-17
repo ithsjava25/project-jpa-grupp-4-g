@@ -5,6 +5,7 @@ package org.example;
 
 public class playerMovement extends player{
 
+    //commented out parts are for running tests of the program. Has modes for 2 - 4 players
 //    void main(){
 //
 //        boolean wonGame = false;
@@ -132,7 +133,9 @@ public class playerMovement extends player{
         "Lichenstein",
         "Madrid"};
 
+    //sets the playerPosition that matches a board.
     String[] playerPos = new String[board.length];
+
 
     public void setContinents(String[] continents) {
         this.continents = continents;
@@ -145,9 +148,9 @@ public class playerMovement extends player{
     public String getPlayerName() {
         return this.playerName;
     }
+    //starts the play for a player
 
-   void play(){
-       boolean endBoard = true;
+    void play(){
        System.out.println(" ");
        System.out.println("________________________________");
            IO.readln(playerName + " your turn!! Roll dice by pressing enter");
@@ -155,14 +158,11 @@ public class playerMovement extends player{
                playerPos = playRound(playerPos, board);
                checkIfPlayerHasPenalties();
            } else {
-               endBoard = false;
                System.out.println(playerName + " at end of board");
                increaseScore();
                playerPos = new String[board.length];
            }
        }
-
-
 
     private String[] playRound(String[] playerPos, String[] board) {
         playerPos = movePlayer(playerPos);
@@ -177,23 +177,28 @@ public class playerMovement extends player{
         return playerPos;
     }
 
-    public String[] movePlayer(String[] playerPos){
-       String[] temp = new String[playerPos.length];
-       int newPos = 0;
-       for (int i = 0; i < playerPos.length; i++){
-           if (playerPos[i] != null){
-               newPos = i;
-           }
-       }
-       int newPosition = newPos + rollDice(4);
-       if (newPosition < 0 || newPosition < playerPos.length){
-           temp[newPosition] = playerName;
-       } else {
-           temp[playerPos.length - 1] = playerName;
-       }
-        return temp;
-   }
+    //method for playermovement
+    /*TODO update method to move with kilometers or longitude/latitude positioning
+    *  ADD functionality depending on transportation method and the movement the transport has*/
 
+    public String[] movePlayer(String[] playerPos){
+        String[] temp = new String[playerPos.length];
+        int newPos = 0;
+        for (int i = 0; i < playerPos.length; i++){
+            if (playerPos[i] != null){
+                newPos = i;
+            }
+        }
+        int newPosition = newPos + rollDice(4);
+        if (newPosition < 0 || newPosition < playerPos.length){
+            temp[newPosition] = playerName;
+        } else {
+            temp[playerPos.length - 1] = playerName;
+        }
+        return temp;
+    }
+
+    //Dice roll method
     public int rollDice(int dice) {
         int roll = (int) ((dice * Math.random()+1));
         System.out.println(" ");
