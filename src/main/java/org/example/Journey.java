@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 @Entity
 public class Journey {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -27,14 +28,19 @@ public class Journey {
     @Column(name = "turn_number", nullable = false)
     private int turnNumber;
 
-    public Journey() {}
+    protected Journey() {}
 
-    public Journey(Traveler traveler, Location fromLocation, Location toLocation, Transport transport) {
+    public Journey(
+        Traveler traveler,
+        Location fromLocation,
+        Location toLocation,
+        Transport transport,
+        int turnNumber
+    ) {
         this.traveler = traveler;
         this.fromLocation = fromLocation;
         this.toLocation = toLocation;
         this.transport = transport;
-        this.turnNumber = 0;
+        this.turnNumber = turnNumber;
     }
-
 }

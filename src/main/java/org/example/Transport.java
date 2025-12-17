@@ -1,9 +1,6 @@
 package org.example;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 
@@ -14,15 +11,19 @@ public class Transport {
     private Long id;
 
     private String type;
-    private int distance_per_turn;
-    private BigDecimal cost_per_move;
+
+    @Column(name = "distance_per_turn")
+    private int distancePerTurn;
+
+    @Column(name = "cost_per_move")
+    private BigDecimal costPerMove;
 
     public Transport(){}
 
-    public Transport(String type, int distance_per_turn, BigDecimal cost_per_move) {
+    public Transport(String type, int distancePerTurn, BigDecimal costPerMove) {
         this.type = type;
-        this.distance_per_turn = distance_per_turn;
-        this.cost_per_move = cost_per_move;
+        this.distancePerTurn = distancePerTurn;
+        this.costPerMove = costPerMove;
     }
 
     public String getType(){
