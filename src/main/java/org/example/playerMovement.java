@@ -113,6 +113,12 @@ public class playerMovement extends player{
         super.setPlayerName(playerName);
     }
 
+    public country country;
+
+    public void setCountry(String country, String city, double Lat, double Longitude) {
+        this.country = new country(country, city, Lat, Longitude);
+    }
+
     public String[] continents = {"Europe",
         "Asia",
         "North America",
@@ -208,3 +214,4 @@ public class playerMovement extends player{
     }
 }
 
+record country (String countryName, String City, double latitude, double longitude){}
