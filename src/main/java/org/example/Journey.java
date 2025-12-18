@@ -25,6 +25,12 @@ public class Journey {
     @JoinColumn(name = "transport_id", nullable = false)
     private Transport transport;
 
+    @Column(name = "distance_rolled")
+    private int distanceRolled;
+
+    @Column(name = "remaining_distance")
+    private int remainingDistance;
+
     @Column(name = "turn_number", nullable = false)
     private int turnNumber;
 

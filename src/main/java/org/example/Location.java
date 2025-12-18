@@ -13,6 +13,9 @@ public class Location {
     @Enumerated(EnumType.STRING)
     private LocationType type;
 
+    private int x;
+    private int y;
+
     @ManyToOne
     @JoinColumn(name = "country_id", nullable = false)
     private Country country;
@@ -25,6 +28,18 @@ public class Location {
         this.country = country;
     }
 
+    public int getX() {
+        return x;
+    }
 
+    private int getY() {
+        return y;
+    }
+
+    public int distanceTo(Location other) {
+        int dx = other.getX() - this.getX();
+        int dy = other.getY() - this.getY();
+        return (int) Math.sqrt(dx * dx + dy * dy);
+    }
 
 }

@@ -15,6 +15,12 @@ public class Traveler {
     @JoinColumn(name = "current_location_id")
     private Location currentLocation;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "target_location_id")
+    private Location targetLocation;
+
+    private int remainingDistance;
+
     @Column(name = "turn_count", nullable = false)
     private int turnCount = 0;
 
