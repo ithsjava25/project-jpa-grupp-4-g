@@ -1,18 +1,8 @@
 package org.example;
 
-//@Todo player movement
-//with continents, countries to cites
-
-
-
 import java.io.BufferedReader;
-
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.Reader;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 
 public class playerMovement extends Player{
     //commented out parts are for running tests of the program. Has modes for 2 - 4 players
@@ -53,69 +43,70 @@ public class playerMovement extends Player{
 //            }
 //        }
 //    }
+    //        } else if (playerAmount == 3) {
+//            String P1 = IO.readln("Please enter the first player name: ");
+//            String P2 = IO.readln("Please enter the second player name: ");
+//            String P3 = IO.readln("Please enter the third player name: ");
+//            player1.setPlayerName(P1);
+//            player2.setPlayerName(P2);
+//            player3.setPlayerName(P3);
+//
+//
+//            IO.readln("Press enter to start game");
+//            while (!wonGame) {
+//                player1.play();
+//                player2.play();
+//                player3.play();
+//                if (player1.checkScore()){
+//                    System.out.println(player1.getPlayerName() + " Wins the game");
+//                    wonGame = true;
+//                } else if (player2.checkScore()) {
+//                    System.out.println(player2.getPlayerName() + " Wins the game");
+//                    wonGame = true;
+//                } else if (player3.checkScore()) {
+//                    System.out.println(player3.getPlayerName() + " Wins the game");
+//                    wonGame = true;
+//                } else  {
+//                    wonGame = false;
+//                }
+//            }
+//        }else if (playerAmount == 4) {
+//            String P1 = IO.readln("Please enter the first player name: ");
+//            String P2 = IO.readln("Please enter the second player name: ");
+//            String P3 = IO.readln("Please enter the third player name: ");
+//            String P4 = IO.readln("Please enter the fourth player name: ");
+//            player1.setPlayerName(P1);
+//            player2.setPlayerName(P2);
+//            player3.setPlayerName(P3);
+//            player4.setPlayerName(P4);
+//            IO.readln("Press enter to start game");
+//
+//            while (!wonGame) {
+//                player1.play();
+//                player2.play();
+//                player3.play();
+//                player4.play();
+//                if (player1.checkScore()){
+//                    System.out.println(player1.getPlayerName() + " Wins the game");
+//                    wonGame = true;
+//                }
+//                else if (player2.checkScore()) {
+//                    System.out.println(player2.getPlayerName() + " Wins the game");
+//                    wonGame = true;
+//                } else if (player3.checkScore()) {
+//                    System.out.println(player3.getPlayerName() + " Wins the game");
+//                    wonGame = true;
+//                }else  if (player4.checkScore()) {
+//                    System.out.println(player4.getPlayerName() + " Wins the game");
+//                    wonGame = true;
+//                } else {
+//                    wonGame = false;
+//                }
+//            }
+//        }
+// }
 
-    ////        } else if (playerAmount == 3) {
-////            String P1 = IO.readln("Please enter the first player name: ");
-////            String P2 = IO.readln("Please enter the second player name: ");
-////            String P3 = IO.readln("Please enter the third player name: ");
-////            player1.setPlayerName(P1);
-////            player2.setPlayerName(P2);
-////            player3.setPlayerName(P3);
-////
-////
-////            IO.readln("Press enter to start game");
-////            while (!wonGame) {
-////                player1.play();
-////                player2.play();
-////                player3.play();
-////                if (player1.checkScore()){
-////                    System.out.println(player1.getPlayerName() + " Wins the game");
-////                    wonGame = true;
-////                } else if (player2.checkScore()) {
-////                    System.out.println(player2.getPlayerName() + " Wins the game");
-////                    wonGame = true;
-////                } else if (player3.checkScore()) {
-////                    System.out.println(player3.getPlayerName() + " Wins the game");
-////                    wonGame = true;
-////                } else  {
-////                    wonGame = false;
-////                }
-////            }
-////        }else if (playerAmount == 4) {
-////            String P1 = IO.readln("Please enter the first player name: ");
-////            String P2 = IO.readln("Please enter the second player name: ");
-////            String P3 = IO.readln("Please enter the third player name: ");
-////            String P4 = IO.readln("Please enter the fourth player name: ");
-////            player1.setPlayerName(P1);
-////            player2.setPlayerName(P2);
-////            player3.setPlayerName(P3);
-////            player4.setPlayerName(P4);
-////            IO.readln("Press enter to start game");
-////
-////            while (!wonGame) {
-////                player1.play();
-////                player2.play();
-////                player3.play();
-////                player4.play();
-////                if (player1.checkScore()){
-////                    System.out.println(player1.getPlayerName() + " Wins the game");
-////                    wonGame = true;
-////                }
-////                else if (player2.checkScore()) {
-////                    System.out.println(player2.getPlayerName() + " Wins the game");
-////                    wonGame = true;
-////                } else if (player3.checkScore()) {
-////                    System.out.println(player3.getPlayerName() + " Wins the game");
-////                    wonGame = true;
-////                }else  if (player4.checkScore()) {
-////                    System.out.println(player4.getPlayerName() + " Wins the game");
-////                    wonGame = true;
-////                } else {
-////                    wonGame = false;
-////                }
-////            }
-////        }
-/// }
+
     BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
     private int selectedTransport;
 
