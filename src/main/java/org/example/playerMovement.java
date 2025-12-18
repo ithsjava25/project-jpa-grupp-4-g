@@ -3,6 +3,7 @@ package org.example;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 
 public class playerMovement extends Player{
     //commented out parts are for running tests of the program. Has modes for 2 - 4 players
@@ -105,18 +106,15 @@ public class playerMovement extends Player{
 //            }
 //        }
 // }
-
-
-    BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
     private int selectedTransport;
 
-    private transport bicycle = new transport("bicycle", 2, 5);
+    private Transport bicycle = new Transport("bicycle", 2, 5);
 
-    private transport car = new transport("car", 4, 50);
+    private Transport car = new Transport("car", 4, 50);
 
-    private transport plane = new transport("plane", 6, 500);
+    private Transport plane = new Transport("plane", 6, 500);
 
-    private transport[] transMethods = new transport[]{bicycle, car, plane};
+    private Transport[] transMethods = new Transport[]{bicycle, car, plane};
 
     private String[] continents = {"Europe",
         "Asia",
@@ -151,33 +149,42 @@ public class playerMovement extends Player{
     }
 
     public void chooseTransportation() throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         for (int i = 0; i < transMethods.length; i++) {
             System.out.println("Nr: "+ (i+1) + " - " + transMethods[i].transportationMethod() + "Cost: " +  transMethods[i].cost() + " Dice: " + transMethods[i].dices());
         }
-        System.out.println("Choose transportation: ");
-        String input = br.readLine();
-        if (input.isEmpty()) {
-            System.out.println("Invalid input, needs to be a number");
-            chooseTransportation();
-        }
-        int choice = 0;
-        try{
-            choice = Integer.parseInt(input);
-        } catch (NumberFormatException e) {
-            throw new NumberFormatException("Invalid input, needs to be a number");
-        }
-        switch (choice) {
-            case 1 -> {
-                this.selectedTransport = 0;
-                removeCredits(transMethods[0].cost());
+        while (true){
+            System.out.println("Choose transportation: ");
+            String input = br.readLine();
+            if (input.isEmpty()) {
+                System.out.println("Invalid input, needs to be a number");
+                continue;
             }
-            case 2 -> {
-                this.selectedTransport = 1;
-                removeCredits(transMethods[1].cost());
+            int choice = 0;
+            try{
+                choice = Integer.parseInt(input);
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input, needs to be a number");
+                continue;
             }
-            case 3 -> {
-                this.selectedTransport = 2;
-                removeCredits(transMethods[2].cost());
+            switch (choice) {
+                case 1 -> {
+                    this.selectedTransport = 0;
+                    removeCredits(transMethods[0].cost());
+                    return;
+                }
+                case 2 -> {
+                    this.selectedTransport = 1;
+                    removeCredits(transMethods[1].cost());
+                    return;
+                }
+                case 3 -> {
+                    this.selectedTransport = 2;
+                    removeCredits(transMethods[2].cost());
+                    return;
+                }default -> {
+                    System.out.println("Invalid input, needs to be a number");
+                }
             }
         }
     }
@@ -245,4 +252,4 @@ public class playerMovement extends Player{
     }
 }
 
-record transport(String transportationMethod, int dices, int cost){}
+record Transport(String transportationMethod, int dices, int cost){}
