@@ -1,6 +1,6 @@
 package org.example;
 
-abstract class player {
+abstract class Player {
     String playerName;
     int playerScore = 0;
     long credits = 1000;
@@ -43,7 +43,7 @@ abstract class player {
     /* if a player gets a penalty, get a random number between 0 - 5, choose a penlty from the switch.*/
     //TODO fix credits for correct value
     public void getPenalty() {
-        int getPenaltyNumber = (int) Math.random()*5;
+        int getPenaltyNumber = (int) (5*Math.random()+1);
         switch (getPenaltyNumber) {
             case 1 -> {
                 System.out.println(" ");
