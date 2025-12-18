@@ -230,10 +230,6 @@ public class playerMovement extends Player{
         return playerPos;
     }
 
-    //method for playermovement
-    /*TODO update method to move with kilometers or longitude/latitude positioning
-    *  ADD functionality depending on transportation method and the movement the transport has*/
-
     public String[] movePlayer(String[] playerPos){
         String[] temp = new String[playerPos.length];
         int newPos = 0;
