@@ -116,7 +116,8 @@ public class playerMovement extends Player{
 
     private Transport[] transMethods = new Transport[]{bicycle, car, plane};
 
-    private String[] continents = {"Europe",
+    private String[] continents = {
+        "Europe",
         "Asia",
         "North America",
         "South America",
@@ -170,17 +171,23 @@ public class playerMovement extends Player{
             switch (choice) {
                 case 1 -> {
                     this.selectedTransport = 0;
-                    removeCredits(transMethods[0].cost());
+                    if (checkIfPlayerHasEnoughCredits(transMethods[0].cost())){
+                        removeCredits(transMethods[0].cost());
+                    };
                     return;
                 }
                 case 2 -> {
                     this.selectedTransport = 1;
-                    removeCredits(transMethods[1].cost());
+                    if (checkIfPlayerHasEnoughCredits(transMethods[1].cost())){
+                        removeCredits(transMethods[1].cost());
+                    };
                     return;
                 }
                 case 3 -> {
                     this.selectedTransport = 2;
-                    removeCredits(transMethods[2].cost());
+                    if (checkIfPlayerHasEnoughCredits(transMethods[2].cost())){
+                        removeCredits(transMethods[2].cost());
+                    };
                     return;
                 }default -> {
                     System.out.println("Invalid input, needs to be a number");
