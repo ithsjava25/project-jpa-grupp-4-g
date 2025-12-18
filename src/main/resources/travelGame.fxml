@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
-            fx:controller="org.example.TravelGameController" stylesheets="/org/example/style/app.css">
+            fx:controller="org.example.TravelGameController" stylesheets="/app.css">
 
     <center>
         <StackPane fx:id="mapContainer">
