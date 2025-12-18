@@ -151,7 +151,7 @@ public class playerMovement extends Player{
     public void chooseTransportation() throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         for (int i = 0; i < transMethods.length; i++) {
-            System.out.println("Nr: "+ (i+1) + " - " + transMethods[i].transportationMethod() + "Cost: " +  transMethods[i].cost() + " Dice: " + transMethods[i].dices());
+            System.out.println("Nr: "+ (i+1) + " - " + transMethods[i].transportationMethod() + " Cost: " +  transMethods[i].cost() + " Dice: " + transMethods[i].dices());
         }
         while (true){
             System.out.println("Choose transportation: ");
