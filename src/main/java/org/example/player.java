@@ -2,8 +2,8 @@ package org.example;
 
 abstract class Player {
     String playerName;
-    int playerScore = 0;
-    long credits = 1000;
+    private int playerScore = 0;
+    private int credits = 1000;
 
     //set the player name
     public void setPlayerName(String playerName) {
@@ -14,8 +14,13 @@ abstract class Player {
         return playerName;
     }
 
-    public void setPlayerCredits(long credits) {
-        this.credits = credits;
+    public void setPlayerCredits(int credits) {
+        if (credits < 0){
+            this.credits = credits;
+        } else {
+            this.credits = credits;
+        }
+
     }
 
     public long getCredits() {
@@ -23,12 +28,16 @@ abstract class Player {
     }
 
     //remove credits from a player bank
-    public void removeCredits(long credits) {
-        this.credits = this.credits - credits;
+    public void removeCredits(int credits) {
+        if (this.credits - credits < 0) {
+            this.credits = 0;
+        }else {
+            this.credits = this.credits - credits;
+        }
     }
 
     //add credits to player bank
-    public void addCredits(long credits) {
+    public void addCredits(int credits) {
         this.credits = this.credits + credits;
     }
 

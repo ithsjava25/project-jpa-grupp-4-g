@@ -3,8 +3,18 @@ package org.example;
 //@Todo player movement
 //with continents, countries to cites
 
-public class playerMovement extends Player{
 
+
+import java.io.BufferedReader;
+
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+
+public class playerMovement extends Player{
     //commented out parts are for running tests of the program. Has modes for 2 - 4 players
 //    boolean wonGame = false;
 //    playerMovement player1 = new playerMovement();
@@ -43,7 +53,8 @@ public class playerMovement extends Player{
 //            }
 //        }
 //    }
-////        } else if (playerAmount == 3) {
+
+    ////        } else if (playerAmount == 3) {
 ////            String P1 = IO.readln("Please enter the first player name: ");
 ////            String P2 = IO.readln("Please enter the second player name: ");
 ////            String P3 = IO.readln("Please enter the third player name: ");
@@ -105,13 +116,16 @@ public class playerMovement extends Player{
 ////            }
 ////        }
 /// }
+    BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+    private int selectedTransport;
 
+    private transport bicycle = new transport("bicycle", 2, 5);
 
-    private country country;
+    private transport car = new transport("car", 4, 50);
 
-    public void setCountry(String country, String city, double Lat, double Longitude) {
-        this.country = new country(country, city, Lat, Longitude);
-    }
+    private transport plane = new transport("plane", 6, 500);
+
+    private transport[] transMethods = new transport[]{bicycle, car, plane};
 
     private String[] continents = {"Europe",
         "Asia",
@@ -145,22 +159,57 @@ public class playerMovement extends Player{
         this.board = board;
     }
 
+    public void chooseTransportation() throws IOException {
+        for (int i = 0; i < transMethods.length; i++) {
+            System.out.println("Nr: "+ (i+1) + " - " + transMethods[i].transportationMethod() + "Cost: " +  transMethods[i].cost() + " Dice: " + transMethods[i].dices());
+        }
+        System.out.println("Choose transportation: ");
+        String input = br.readLine();
+        if (input.isEmpty()) {
+            System.out.println("Invalid input, needs to be a number");
+            chooseTransportation();
+        }
+        int choice = 0;
+        try{
+            choice = Integer.parseInt(input);
+        } catch (NumberFormatException e) {
+            throw new NumberFormatException("Invalid input, needs to be a number");
+        }
+        switch (choice) {
+            case 1 -> {
+                this.selectedTransport = 0;
+                removeCredits(transMethods[0].cost());
+            }
+            case 2 -> {
+                this.selectedTransport = 1;
+                removeCredits(transMethods[1].cost());
+            }
+            case 3 -> {
+                this.selectedTransport = 2;
+                removeCredits(transMethods[2].cost());
+            }
+        }
+    }
 
     //starts the play for a player
-
     void play(){
        System.out.println("________________________________");
-           IO.readln(playerName + " your turn!! Roll dice by pressing enter");
-           if (playerPos[playerPos.length-1] == null){
-               playerPos = playRound(playerPos, board);
-               checkIfPlayerHasPenalties();
-           } else {
-               System.out.println(playerName + " at end of board");
-               increaseScore();
-               System.out.println(playerName + " score: " + getPlayerScore());
-               playerPos = new String[board.length];
-           }
+        System.out.println(playerName + " choose a transport method: ");
+        try {
+            chooseTransportation();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        if (playerPos[playerPos.length-1] == null){
+           playerPos = playRound(playerPos, board);
+           checkIfPlayerHasPenalties();
+       } else {
+           System.out.println(playerName + " at end of board");
+           increaseScore();
+           System.out.println(playerName + " score: " + getPlayerScore());
+           playerPos = new String[board.length];
        }
+    }
 
     private String[] playRound(String[] playerPos, String[] board) {
         playerPos = movePlayer(playerPos);
@@ -169,6 +218,7 @@ public class playerMovement extends Player{
                 System.out.println(" ");
                 System.out.println(playerName + " on position " + i);
                 System.out.println(board[i]);
+                System.out.println("credits: " + getCredits());
             }
         }
         return playerPos;
@@ -186,7 +236,7 @@ public class playerMovement extends Player{
                 newPos = i;
             }
         }
-        int newPosition = newPos + rollDice(4);
+        int newPosition = newPos + rollDice(transMethods[selectedTransport].dices());
         if (newPosition < 0 || newPosition < playerPos.length){
             temp[newPosition] = playerName;
         } else {
@@ -204,4 +254,4 @@ public class playerMovement extends Player{
     }
 }
 
-record country (String countryName, String City, double latitude, double longitude){}
+record transport(String transportationMethod, int dices, int cost){}
