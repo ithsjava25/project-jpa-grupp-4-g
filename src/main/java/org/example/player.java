@@ -41,9 +41,17 @@ abstract class Player {
         this.credits = this.credits + credits;
     }
 
+    public boolean checkIfPlayerHasEnoughCredits(int credits) {
+        if(this.credits < credits){
+            System.out.println("Not enough credits for option");
+            return false;
+        }
+        return true;
+    }
+
     //Make a penalties check for the round. A chance under 10 percent for a player to get a penalty.
     void checkIfPlayerHasPenalties(){
-        if (Math.random() < 0.10){
+        if (Math.random() < 0.05){
             System.out.println("You got the penalty!");
            getPenalty();
         }
