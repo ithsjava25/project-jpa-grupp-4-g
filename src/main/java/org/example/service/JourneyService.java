@@ -51,8 +51,8 @@ public class JourneyService {
             journeyRepository.save(journey);
 
             // uppdatera player state
-            managedPlayer.setCurrentLocation(toLocation);
-            managedPlayer.setTurnCount(nextTurn);
+            managedTraveler.setCurrentLocation(toLocation);
+            managedTraveler.setTurnCount(nextTurn);
 
             tx.commit();
             return journey;

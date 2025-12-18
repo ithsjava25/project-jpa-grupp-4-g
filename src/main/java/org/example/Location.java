@@ -9,14 +9,17 @@ public class Location {
     private Long id;
 
     private String name;
-    private String type;
+
+    @Enumerated(EnumType.STRING)
+    private LocationType type;
+
     @ManyToOne
     @JoinColumn(name = "country_id", nullable = false)
     private Country country;
 
     public Location() {}
 
-    public Location(String name, String type, Country country) {
+    public Location(String name, LocationType type, Country country) {
         this.name = name;
         this.type = type;
         this.country = country;

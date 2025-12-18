@@ -28,7 +28,7 @@ public class Journey {
     @Column(name = "turn_number", nullable = false)
     private int turnNumber;
 
-    protected Journey() {}
+    public Journey() {}
 
     public Journey(
         Traveler traveler,
