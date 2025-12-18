@@ -3,7 +3,6 @@ package org.example;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 
 public class playerMovement extends Player{
     //commented out parts are for running tests of the program. Has modes for 2 - 4 players
