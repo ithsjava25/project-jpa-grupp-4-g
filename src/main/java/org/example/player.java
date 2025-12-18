@@ -16,7 +16,8 @@ abstract class Player {
 
     public void setPlayerCredits(int credits) {
         if (credits < 0){
-            this.credits = credits;
+            System.out.println("Invalid, credits cannot be under zero!");
+            this.credits = 0;
         } else {
             this.credits = credits;
         }
