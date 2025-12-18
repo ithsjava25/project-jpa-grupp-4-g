@@ -21,7 +21,7 @@
     -fx-border-radius: 12;
     -fx-padding: 10;
 }
-bottom-bar {
+.bottom-bar {
     -fx-background-color: #2b2b2b;
 }
 
