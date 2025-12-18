@@ -192,7 +192,8 @@ public class playerMovement extends Player{
     //starts the play for a player
     void play(){
        System.out.println("________________________________");
-        System.out.println(playerName + " choose a transport method: ");
+        System.out.println(playerName + ", your turn!");
+        System.out.println("Choose a transport method: ");
         try {
             chooseTransportation();
         } catch (IOException e) {
@@ -247,7 +248,7 @@ public class playerMovement extends Player{
     public int rollDice(int dice) {
         int roll = (int) ((dice * Math.random()+1));
         System.out.println(" ");
-        System.out.println("Rolled " + roll);
+        System.out.println("Rolled a " + roll);
         return roll;
     }
 }
