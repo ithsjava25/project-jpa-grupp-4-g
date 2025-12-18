@@ -19,8 +19,15 @@ public class TravelGame extends Application {
         dialog.setTitle("Starta spelet");
         dialog.setHeaderText("Välkommen till Travel Game!");
         dialog.setContentText("Ange ditt spelarnamn:");
+        dialog.setGraphic(null);
 
         DialogPane dialogPane = dialog.getDialogPane();
+
+        //Styling
+//        dialogPane.getStylesheets().add(
+//            TravelGame.class.getResource("/app.css").toExternalForm()
+//        );
+//        dialogPane.getStyleClass().add("name-dialog");
 
 
 
@@ -36,7 +43,9 @@ public class TravelGame extends Application {
 
             Scene scene = new Scene(loader.load(), 1300, 700);
 
-            Object controller = loader.getController();
+            TravelGameController controller = loader.getController();
+
+            controller.setupGame(playerName);
 
 
             stage.setTitle("Travel Game - Spelare: " + playerName);

@@ -3,6 +3,7 @@ package org.example;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -17,6 +18,8 @@ public class TravelGameController {
     @FXML
     private Button rollButton;
     private int currentPlayerIndex = 0;
+    @FXML
+    private Label playerLabel;
 
 
     @FXML
@@ -31,6 +34,10 @@ public class TravelGameController {
 
 
         logList.getSelectionModel().select(0);
+    }
+
+    public void setupGame(String playerName) {
+        playerLabel.setText(playerName);
     }
 
     public void onRoll(ActionEvent actionEvent) {
