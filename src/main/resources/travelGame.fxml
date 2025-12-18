@@ -30,9 +30,9 @@
 
             <VBox alignment="CENTER_LEFT" spacing="5">
                 <Label text="Player 1"/>
-                <Label text="Points:0"/>
+                <Label text="Credits:0"/>
                 <Label text="Player 2"/>
-                <Label text="Points:0"/>
+                <Label text="Credits:0"/>
             </VBox>
 
             <Region HBox.hgrow="ALWAYS"/>
@@ -49,9 +49,9 @@
 
             <VBox alignment="CENTER_RIGHT" spacing="5">
                 <Label text="Player 3"/>
-                <Label text="Points:0"/>
+                <Label text="Credits:0"/>
                 <Label text="Player 4"/>
-                <Label text="Points:0"/>
+                <Label text="Credits:0"/>
             </VBox>
 
         </HBox>

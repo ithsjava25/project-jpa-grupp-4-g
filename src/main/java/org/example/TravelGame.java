@@ -1,24 +1,52 @@
 package org.example;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.DialogPane;
+import javafx.scene.control.TextInputDialog;
 import javafx.stage.Stage;
+
+import java.util.Optional;
 
 public class TravelGame extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
 
-        FXMLLoader loader = new FXMLLoader(
-            TravelGame.class.getResource("/travelGame.fxml")
-        );
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Starta spelet");
+        dialog.setHeaderText("Välkommen till Travel Game!");
+        dialog.setContentText("Ange ditt spelarnamn:");
 
-        Scene scene = new Scene(loader.load(), 1300, 700);
+        DialogPane dialogPane = dialog.getDialogPane();
 
-        stage.setTitle("Travel Game");
-        stage.setScene(scene);
-        stage.show();
+
+
+
+        Optional<String> result = dialog.showAndWait();
+
+        if (result.isPresent() && !result.get().trim().isEmpty()) {
+            String playerName = result.get();
+
+            FXMLLoader loader = new FXMLLoader(
+                TravelGame.class.getResource("/travelGame.fxml")
+            );
+
+            Scene scene = new Scene(loader.load(), 1300, 700);
+
+            Object controller = loader.getController();
+
+
+            stage.setTitle("Travel Game - Spelare: " + playerName);
+            stage.setScene(scene);
+            stage.show();
+
+        } else {
+            System.out.println("Inget namn angivet. Avslutar.");
+            Platform.exit();
+        }
     }
 
     public static void main(String[] args) {
