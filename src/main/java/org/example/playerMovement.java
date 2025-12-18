@@ -106,7 +106,8 @@ public class playerMovement extends Player{
 ////        }
 /// }
 
-    public country country;
+
+    private country country;
 
     public void setCountry(String country, String city, double Lat, double Longitude) {
         this.country = new country(country, city, Lat, Longitude);
