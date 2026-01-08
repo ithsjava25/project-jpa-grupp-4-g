@@ -13,6 +13,7 @@
                        preserveRatio="true"
                        fitWidth="900"
                        fitHeight="700" />
+            <Pane fx:id="drawingPane" prefWidth="900" prefHeight="700" onMouseClicked="#onMapClicked" />
         </StackPane>
     </center>
 
