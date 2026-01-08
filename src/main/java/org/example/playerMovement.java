@@ -168,14 +168,6 @@ public class playerMovement extends Player{
         return availableMovement;
     }
 
-    public void useMovement(){
-        if (!checkMovementIsZero()) {
-            availableMovement--;
-        } else  {
-            System.out.println("Cant move with less than zero");
-        }
-    }
-
     public boolean checkMovementIsZero(){
         if (this.availableMovement == 0) {
             return true;
@@ -183,6 +175,36 @@ public class playerMovement extends Player{
             System.out.println("Invalid movement cant be less than zero");
         }
         return false;
+    }
+
+    public void playerTurn(){
+        setAvailableMovement(rollDice(6));
+        while (!checkMovementIsZero()){
+            String input = IO.readln("choose movement");
+            switch (input) {
+                case "w" -> {
+                    playerMoveUp();
+                    availableMovement--;
+                }
+                case "s" -> {
+                    playerMoveDown();
+                    availableMovement--;
+                }
+                case "a" -> {
+                    playerMoveLeft();
+                    availableMovement--;
+                }
+                case "d" -> {
+                    playerMoveRight();
+                    availableMovement--;
+                }default ->  {
+                    System.out.println("Invalid input!");
+                }
+            }
+            if (checkIfPlayerIsAtDestination()){
+                increaseScore();
+            }
+        }
     }
 
     private String[] continents = {
