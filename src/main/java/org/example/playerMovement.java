@@ -74,6 +74,9 @@ public class playerMovement extends Player{
 //        }
 // }
     private int selectedTransport;
+    private int availableMovement;
+    record destinationPos(int destinationX, int destinationY) {}
+    private destinationPos destination;
 
     private Transport bicycle = new Transport("bicycle", 2, 5);
 
@@ -83,7 +86,24 @@ public class playerMovement extends Player{
 
     private Transport[] transMethods = new Transport[]{bicycle, car, plane};
 
-    private int availableMovement;
+    public void setDestinationPos(int destinationX, int destinationY) {
+        this.destination = new destinationPos(destinationX, destinationY);
+    }
+
+    public int getDestinationPosX() {
+        return this.destination.destinationX();
+    }
+
+    public int getDestinationPosY() {
+        return this.destination.destinationY();
+    }
+
+    public boolean checkIfPlayerIsAtDestination(){
+        if (getPlayerPosX() == getDestinationPosX() && getPlayerPosY() == getDestinationPosY()) {
+            return true;
+        }
+        return false;
+    }
 
     public void setAvailableMovement(int availableMovement) {
         this.availableMovement = availableMovement;
@@ -198,55 +218,54 @@ public class playerMovement extends Player{
     }
 
     //starts the play for a player
-    void play(){
-       System.out.println("________________________________");
-        System.out.println(playerName + ", your turn!");
-        System.out.println("Choose a transport method: ");
-        try {
-            chooseTransportation();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        if (playerPos[playerPos.length-1] == null){
-           playerPos = playRound(playerPos, board);
-           checkIfPlayerHasPenalties();
-       } else {
-           System.out.println(playerName + " at end of board");
-           increaseScore();
-           System.out.println(playerName + " score: " + getPlayerScore());
-           playerPos = new String[board.length];
-       }
-    }
-
-    private String[] playRound(String[] playerPos, String[] board) {
-        playerPos = movePlayer(playerPos);
-        for (int i = 1; i < playerPos.length; i++){
-            if (playerPos[i] != null){
-                System.out.println(" ");
-                System.out.println(playerName + " on position " + i);
-                System.out.println(board[i]);
-                System.out.println("credits: " + getCredits());
-            }
-        }
-        return playerPos;
-    }
-
-    public String[] movePlayer(String[] playerPos){
-        String[] temp = new String[playerPos.length];
-        int newPos = 0;
-        for (int i = 0; i < playerPos.length; i++){
-            if (playerPos[i] != null){
-                newPos = i;
-            }
-        }
-        int newPosition = newPos + rollDice(transMethods[selectedTransport].dices());
-        if (newPosition < 0 || newPosition < playerPos.length){
-            temp[newPosition] = playerName;
-        } else {
-            temp[playerPos.length - 1] = playerName;
-        }
-        return temp;
-    }
+//    void play(){
+//       System.out.println("________________________________");
+//        System.out.println(playerName + ", your turn!");
+//        System.out.println("Choose a transport method: ");
+//        try {
+//            chooseTransportation();
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//        if (playerPos[playerPos.length-1] == null){
+//           playerPos = playRound(playerPos, board);
+//           checkIfPlayerHasPenalties();
+//       } else {
+//           System.out.println(playerName + " at end of board");
+//           increaseScore();
+//           System.out.println(playerName + " score: " + getPlayerScore());
+//           playerPos = new String[board.length];
+//       }
+//    }
+//
+//    private String[] playRound(String[] playerPos, String[] board) {
+//        playerPos = movePlayer(playerPos);
+//        for (int i = 1; i < playerPos.length; i++){
+//            if (playerPos[i] != null){
+//                System.out.println(" ");
+//                System.out.println(playerName + " on position " + i);
+//                System.out.println(board[i]);
+//                System.out.println("credits: " + getCredits());
+//            }
+//        }
+//        return playerPos;
+//    }
+//
+//    public String[] movePlayer(String[] playerPos){
+//        String[] temp = new String[playerPos.length];
+//        int newPos = 0;
+//        for (int i = 0; i < playerPos.length; i++){
+//            if (playerPos[i] != null){
+//                newPos = i;
+//            }
+//        }
+//        int newPosition = newPos + rollDice(transMethods[selectedTransport].dices());
+//        if (newPosition < 0 || newPosition < playerPos.length){
+//            temp[newPosition] = playerName;
+//        } else {
+//            temp[playerPos.length - 1] = playerName;
+//        }
+//        return temp;}
 
     //Dice roll method
     public int rollDice(int dice) {
