@@ -4,6 +4,8 @@ abstract class Player {
     String playerName;
     private int playerScore = 0;
     private int credits = 1000;
+    private int playerPosX;
+    private int playerPosY;
 
     //set the player name
     public void setPlayerName(String playerName) {
@@ -21,7 +23,59 @@ abstract class Player {
         } else {
             this.credits = credits;
         }
+    }
 
+    public void setPlayerPosX(int playerPosX) {
+        if (playerPosX >= 0) {
+            this.playerPosX = playerPosX;
+        }  else {
+            System.out.println("Invalid, playerPosX must be greater than or equal to zero!");
+        }
+    }
+
+    public int getPlayerPosX() {
+        return playerPosX;
+    }
+
+    public void setPlayerPosY(int playerPosY) {
+        if (playerPosY >= 0){
+            this.playerPosY = playerPosY;
+        } else {
+            System.out.println("Invalid, playerPosY must be greater than or equal to zero!");
+        }
+    }
+
+    public int getPlayerPosY() {
+        return playerPosY;
+    }
+
+    public void playerMoveUp(){
+        this.playerPosY++;
+    }
+
+    public void playerMoveDown(){
+        if (positionNotLessThanZero())
+            this.playerPosY--;
+    }
+
+    public void playerMoveLeft(){
+        if(positionNotLessThanZero())
+            this.playerPosX--;
+    }
+
+    public void playerMoveRight(){
+        this.playerPosX++;
+    }
+
+    public boolean positionNotLessThanZero(){
+        if (this.playerPosX < 0){
+            System.out.println("Invalid position! Cannot be less than zero on x");
+            return false;
+        } else if (this.playerPosY < 0) {
+            System.out.println("Invalid position! Cannot be less than zero on y");
+            return false;
+        }
+        return true;
     }
 
     public long getCredits() {

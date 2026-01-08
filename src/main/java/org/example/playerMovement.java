@@ -70,39 +70,7 @@ public class playerMovement extends Player{
 //                    wonGame = false;
 //                }
 //            }
-//        }else if (playerAmount == 4) {
-//            String P1 = IO.readln("Please enter the first player name: ");
-//            String P2 = IO.readln("Please enter the second player name: ");
-//            String P3 = IO.readln("Please enter the third player name: ");
-//            String P4 = IO.readln("Please enter the fourth player name: ");
-//            player1.setPlayerName(P1);
-//            player2.setPlayerName(P2);
-//            player3.setPlayerName(P3);
-//            player4.setPlayerName(P4);
-//            IO.readln("Press enter to start game");
-//
-//            while (!wonGame) {
-//                player1.play();
-//                player2.play();
-//                player3.play();
-//                player4.play();
-//                if (player1.checkScore()){
-//                    System.out.println(player1.getPlayerName() + " Wins the game");
-//                    wonGame = true;
-//                }
-//                else if (player2.checkScore()) {
-//                    System.out.println(player2.getPlayerName() + " Wins the game");
-//                    wonGame = true;
-//                } else if (player3.checkScore()) {
-//                    System.out.println(player3.getPlayerName() + " Wins the game");
-//                    wonGame = true;
-//                }else  if (player4.checkScore()) {
-//                    System.out.println(player4.getPlayerName() + " Wins the game");
-//                    wonGame = true;
-//                } else {
-//                    wonGame = false;
-//                }
-//            }
+//        }
 //        }
 // }
     private int selectedTransport;
@@ -115,6 +83,33 @@ public class playerMovement extends Player{
 
     private Transport[] transMethods = new Transport[]{bicycle, car, plane};
 
+    private int availableMovement;
+
+    public void setAvailableMovement(int availableMovement) {
+        this.availableMovement = availableMovement;
+    }
+
+    public int getAvailableMovement() {
+        return availableMovement;
+    }
+
+    public void useMovement(){
+        if (!checkMovementIsZero()) {
+            availableMovement--;
+        } else  {
+            System.out.println("Cant move with less than zero");
+        }
+    }
+
+    public boolean checkMovementIsZero(){
+        if (this.availableMovement == 0) {
+            return true;
+        } else if (this.availableMovement < 0) {
+            System.out.println("Invalid movement cant be less than zero");
+        }
+        return false;
+    }
+
     private String[] continents = {
         "Europe",
         "Asia",
@@ -124,6 +119,13 @@ public class playerMovement extends Player{
         "Australia",
         "Antarctica"};
 
+    Location stockholm = new Location("Stockholm", 4, 5);
+    Location Copenhagen =  new Location("Copenhagen", 4, 3);
+    Location Oslo = new Location("Oslo", 1, 0);
+    Location Berlin = new Location("Berlin", 1, 1);
+    Location[] locations = {
+        stockholm, Copenhagen, Oslo, Berlin
+    };
     private String[] board = {
         "Start",
         "Stockholm",
@@ -256,3 +258,7 @@ public class playerMovement extends Player{
 }
 
 record Transport(String transportationMethod, int dices, int cost){}
+
+record Location(String city, int x, int y){}
+
+
