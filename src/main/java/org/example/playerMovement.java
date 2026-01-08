@@ -75,6 +75,8 @@ public class playerMovement extends Player{
 // }
     private int selectedTransport;
     private int availableMovement;
+    private int playerPosX;
+    private int playerPosY;
     record destinationPos(int destinationX, int destinationY) {}
     private destinationPos destination;
 
@@ -85,6 +87,59 @@ public class playerMovement extends Player{
     private Transport plane = new Transport("plane", 6, 500);
 
     private Transport[] transMethods = new Transport[]{bicycle, car, plane};
+
+    public void setPlayerPosX(int playerPosX) {
+        if (playerPosX >= 0) {
+            this.playerPosX = playerPosX;
+        }  else {
+            System.out.println("Invalid, playerPosX must be greater than or equal to zero!");
+        }
+    }
+
+    public int getPlayerPosX() {
+        return playerPosX;
+    }
+
+    public void setPlayerPosY(int playerPosY) {
+        if (playerPosY >= 0){
+            this.playerPosY = playerPosY;
+        } else {
+            System.out.println("Invalid, playerPosY must be greater than or equal to zero!");
+        }
+    }
+
+    public int getPlayerPosY() {
+        return playerPosY;
+    }
+
+    public void playerMoveUp(){
+        this.playerPosY++;
+    }
+
+    public void playerMoveDown(){
+        if (positionNotLessThanZero())
+            this.playerPosY--;
+    }
+
+    public void playerMoveLeft(){
+        if(positionNotLessThanZero())
+            this.playerPosX--;
+    }
+
+    public void playerMoveRight(){
+        this.playerPosX++;
+    }
+
+    public boolean positionNotLessThanZero(){
+        if (this.playerPosX < 0){
+            System.out.println("Invalid position! Cannot be less than zero on x");
+            return false;
+        } else if (this.playerPosY < 0) {
+            System.out.println("Invalid position! Cannot be less than zero on y");
+            return false;
+        }
+        return true;
+    }
 
     public void setDestinationPos(int destinationX, int destinationY) {
         this.destination = new destinationPos(destinationX, destinationY);
@@ -99,7 +154,7 @@ public class playerMovement extends Player{
     }
 
     public boolean checkIfPlayerIsAtDestination(){
-        if (getPlayerPosX() == getDestinationPosX() && getPlayerPosY() == getDestinationPosY()) {
+        if (this.playerPosX == getDestinationPosX() && this.playerPosY == getDestinationPosY()) {
             return true;
         }
         return false;
@@ -158,18 +213,6 @@ public class playerMovement extends Player{
         "Lichenstein",
         "Madrid"};
 
-    //sets the playerPosition that matches a board.
-    private String[] playerPos = new String[board.length];
-
-
-    public void setContinents(String[] continents) {
-        this.continents = continents;
-    }
-
-    public void setBoard(String[] board) {
-        this.board = board;
-    }
-
     public void chooseTransportation() throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         for (int i = 0; i < transMethods.length; i++) {
@@ -216,6 +259,18 @@ public class playerMovement extends Player{
             }
         }
     }
+
+    //sets the playerPosition that matches a board.
+//    private String[] playerPos = new String[board.length];
+//
+//
+//    public void setContinents(String[] continents) {
+//        this.continents = continents;
+//    }
+//
+//    public void setBoard(String[] board) {
+//        this.board = board;
+//    }
 
     //starts the play for a player
 //    void play(){
