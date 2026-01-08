@@ -1,0 +1,50 @@
+.root {
+    -fx-font-family: "Segoe UI";
+    -fx-background-color: #2b2b2b;
+}
+
+.log-panel {
+    -fx-padding: 10;
+    -fx-background-color: #1e1e1e;
+    -fx-border-radius: 12;
+}
+
+.list-view {
+    -fx-padding: 10;
+    -fx-background-color: white;
+    -fx-border-radius: 12;
+}
+
+.list-cell {
+    -fx-text-fill: black;
+    -fx-font-size: 13px;
+    -fx-border-radius: 12;
+    -fx-padding: 10;
+}
+.bottom-bar {
+    -fx-background-color: #2b2b2b;
+}
+
+.bottom-bar .label {
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+
+}
+
+.roll-button {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-padding: 8 22 8 22;
+    -fx-border-radius: 12;
+}
+.mapView {
+    -fx-border-radius: 12;
+}
+.dialog-pane {
+    -fx-background-color: #2b2b2b;
+    -fx-border-radius: 12;
+}
+.dialog-pane.header-panel {
+    -fx-background-color: #2b2b2b;
+
+}

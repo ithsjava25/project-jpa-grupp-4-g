@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.example.TravelGameController" stylesheets="/app.css">
+
+    <center>
+        <StackPane fx:id="mapContainer" alignment="CENTER">
+            <ImageView fx:id="mapView"
+                       preserveRatio="false"
+                       fitWidth="900"
+                       fitHeight="700"
+                       pickOnBounds="true" />
+
+            <Pane fx:id="drawingPane" onMouseClicked="#onMapClicked" />
+        </StackPane>
+    </center>
+
+    <right>
+        <VBox spacing="8" prefWidth="300" style="-fx-padding: 50 20 0 0;">
+            <Label text="Log" style="-fx-font-size: 16; -fx-font-weight: bold; -fx-text-fill: white;"/>
+            <ListView fx:id="logList"/>
+        </VBox>
+    </right>
+    <bottom>
+        <HBox alignment="CENTER"
+              spacing="20"
+              style="-fx-padding: 10;"
+              styleClass="bottom-bar">
+
+            <VBox alignment="CENTER_LEFT" spacing="5">
+                <Label fx:id="playerLabel" text="Player 1"/>
+                <Label text="Credits:0"/>
+                <Label text="Player 2"/>
+                <Label text="Credits:0"/>
+            </VBox>
+
+            <Region HBox.hgrow="ALWAYS"/>
+
+
+            <Button text="ROLL"
+                    fx:id="rollButton"
+                    onAction="#onRoll"
+                    styleClass="roll-button"/>
+            <Label text="You rolled a:"/>
+
+            <Region HBox.hgrow="ALWAYS"/>
+
+
+            <VBox alignment="CENTER_RIGHT" spacing="5">
+                <Label text="Player 3"/>
+                <Label text="Credits:0"/>
+                <Label text="Player 4"/>
+                <Label text="Credits:0"/>
+            </VBox>
+
+        </HBox>
+    </bottom>
+
+
+</BorderPane>
