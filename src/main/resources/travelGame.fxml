@@ -8,12 +8,14 @@
             fx:controller="org.example.TravelGameController" stylesheets="/app.css">
 
     <center>
-        <StackPane fx:id="mapContainer">
+        <StackPane fx:id="mapContainer" alignment="CENTER">
             <ImageView fx:id="mapView"
-                       preserveRatio="true"
+                       preserveRatio="false"
                        fitWidth="900"
-                       fitHeight="700" />
-            <Pane fx:id="drawingPane" prefWidth="900" prefHeight="700" onMouseClicked="#onMapClicked" />
+                       fitHeight="700"
+                       pickOnBounds="true" />
+
+            <Pane fx:id="drawingPane" onMouseClicked="#onMapClicked" />
         </StackPane>
     </center>
 

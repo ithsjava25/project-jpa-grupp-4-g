@@ -24,13 +24,24 @@ public class TravelGameController {
     private int playerY = 0;
     private int currentRoll = 0;
     private boolean waitingForMove = false;
+    private final int GRID_SIZE = 50;
 
     @FXML
     private void initialize() {
-        mapView.setImage(new Image(getClass().getResourceAsStream("/assets/map.png")));
         visualizer = new MapVisualizer(drawingPane);
+        mapView.setImage(new Image(getClass().getResourceAsStream("/assets/map.png")));
+
+        double width = 900;
+        double height = 700;
+
+        mapView.setFitWidth(width);
+        mapView.setFitHeight(height);
+
+        drawingPane.setPrefSize(width, height);
+        drawingPane.setMaxSize(width, height);
 
         logList.getItems().add("🌍 Spelet startade. Slå tärningen!");
+
 
         Platform.runLater(() -> updateGraphics());
     }
@@ -42,13 +53,11 @@ public class TravelGameController {
     public void onRoll(ActionEvent actionEvent) {
         if (waitingForMove) return;
 
-        currentRoll = (int) (Math.random() * 3) + 1;
-        logList.getItems().add("🎲 Du slog " + currentRoll + "! Klicka på en ruta som är " + currentRoll + " steg bort.");
+        currentRoll = (int) (Math.random() * 6) + 1;
+        logList.getItems().add("🎲 Du slog " + currentRoll + "! Välj en ruta.");
 
         waitingForMove = true;
         rollButton.setDisable(true);
-
-        // Visa möjliga drag
         updateGraphics();
     }
 
@@ -56,13 +65,15 @@ public class TravelGameController {
     private void onMapClicked(MouseEvent event) {
         if (!waitingForMove) return;
 
-
-        double cellWidth = mapView.getFitWidth() / 10;
-        double cellHeight = mapView.getFitHeight() / 10;
+        double cellWidth = drawingPane.getWidth() / GRID_SIZE;
+        double cellHeight = drawingPane.getHeight() / GRID_SIZE;
 
         int clickedX = (int) (event.getX() / cellWidth);
-        int clickedY = (int) (event.getY() / cellHeight);
 
+        int clickedY = (int) ((drawingPane.getHeight() - event.getY()) / cellHeight);
+
+        clickedX = Math.max(0, Math.min(GRID_SIZE - 1, clickedX));
+        clickedY = Math.max(0, Math.min(GRID_SIZE - 1, clickedY));
 
         int distance = Math.abs(clickedX - playerX) + Math.abs(clickedY - playerY);
 
@@ -71,23 +82,23 @@ public class TravelGameController {
             playerY = clickedY;
             waitingForMove = false;
             rollButton.setDisable(false);
-
             logList.getItems().add("🚶 Flyttade till [" + playerX + ", " + playerY + "]");
             updateGraphics();
         } else {
-            logList.getItems().add("❌ Felaktigt drag! Du måste flytta exakt " + currentRoll + " steg.");
+            logList.getItems().add("❌ Fel avstånd! (" + distance + "/" + currentRoll + ")");
         }
     }
 
     private void updateGraphics() {
-        double w = mapView.getFitWidth();
-        double h = mapView.getFitHeight();
-        visualizer.drawGrid(w, h);
+        double w = drawingPane.getWidth();
+        double h = drawingPane.getHeight();
 
-        if (waitingForMove) {
-            visualizer.highlightPossibleMoves(playerX, playerY, currentRoll, w, h);
+        if (w > 0 && h > 0) {
+            visualizer.drawGrid(w, h);
+            if (waitingForMove) {
+                visualizer.highlightPossibleMoves(playerX, playerY, currentRoll, w, h);
+            }
+            visualizer.drawPlayer(playerX, playerY, w, h);
         }
-
-        visualizer.drawPlayer(playerX, playerY, w, h);
     }
 }
