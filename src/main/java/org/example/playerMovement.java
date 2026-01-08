@@ -117,28 +117,23 @@ public class playerMovement extends Player{
     }
 
     public void playerMoveDown(){
-        if (positionNotLessThanZero())
+        if (playerPosY > 0){
             this.playerPosY--;
+        } else {
+            System.out.println("Invalid, player cant move less than zero");
+        }
     }
 
     public void playerMoveLeft(){
-        if(positionNotLessThanZero())
+        if(playerPosX > 0 ) {
             this.playerPosX--;
+        } else {
+            System.out.println("Invalid, player cant move less than zero!");
+        }
     }
 
     public void playerMoveRight(){
         this.playerPosX++;
-    }
-
-    public boolean positionNotLessThanZero(){
-        if (this.playerPosX < 0){
-            System.out.println("Invalid position! Cannot be less than zero on x");
-            return false;
-        } else if (this.playerPosY < 0) {
-            System.out.println("Invalid position! Cannot be less than zero on y");
-            return false;
-        }
-        return true;
     }
 
     public void setDestinationPos(int destinationX, int destinationY) {
@@ -182,19 +177,19 @@ public class playerMovement extends Player{
         while (!checkMovementIsZero()){
             String input = IO.readln("choose movement");
             switch (input) {
-                case "w" -> {
+                case "up" -> {
                     playerMoveUp();
                     availableMovement--;
                 }
-                case "s" -> {
+                case "down" -> {
                     playerMoveDown();
                     availableMovement--;
                 }
-                case "a" -> {
+                case "left" -> {
                     playerMoveLeft();
                     availableMovement--;
                 }
-                case "d" -> {
+                case "right" -> {
                     playerMoveRight();
                     availableMovement--;
                 }default ->  {
