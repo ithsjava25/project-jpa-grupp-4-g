@@ -150,6 +150,7 @@ public class playerMovement extends Player{
 
     public boolean checkIfPlayerIsAtDestination(){
         if (this.playerPosX == getDestinationPosX() && this.playerPosY == getDestinationPosY()) {
+            setAvailableMovement(0);
             return true;
         }
         return false;
@@ -176,6 +177,7 @@ public class playerMovement extends Player{
         setAvailableMovement(rollDice(6));
         while (!checkMovementIsZero()){
             String input = IO.readln("choose movement");
+            input = input.toLowerCase();
             switch (input) {
                 case "up" -> {
                     playerMoveUp();
@@ -199,6 +201,8 @@ public class playerMovement extends Player{
             if (checkIfPlayerIsAtDestination()){
                 increaseScore();
             }
+            System.out.println(" ");
+            System.out.println("Player at position X: " + playerPosX + " Y: " + playerPosY );
         }
     }
 
