@@ -13,13 +13,13 @@ public class playerMovement extends Player{
     record destinationPos(int destinationX, int destinationY) {}
     private destinationPos destination;
 
-    private Transport bicycle = new Transport("bicycle", 2, 5);
+    private TransportTest bicycle = new TransportTest("bicycle", 2, 5);
 
-    private Transport car = new Transport("car", 4, 50);
+    private TransportTest car = new TransportTest("car", 4, 50);
 
-    private Transport plane = new Transport("plane", 6, 500);
+    private TransportTest plane = new TransportTest("plane", 6, 500);
 
-    private Transport[] transMethods = new Transport[]{bicycle, car, plane};
+    private TransportTest[] transMethods = new TransportTest[]{bicycle, car, plane};
 
     public void setPlayerPosX(int playerPosX) {
         if (playerPosX >= 0) {
@@ -145,11 +145,11 @@ public class playerMovement extends Player{
         }
     }
 
-    Location stockholm = new Location("Stockholm", 4, 5);
-    Location Copenhagen =  new Location("Copenhagen", 4, 3);
-    Location Oslo = new Location("Oslo", 1, 0);
-    Location Berlin = new Location("Berlin", 1, 1);
-    Location[] locations = {
+    LocationTest stockholm = new LocationTest("Stockholm", 4, 5);
+    LocationTest Copenhagen =  new LocationTest("Copenhagen", 4, 3);
+    LocationTest Oslo = new LocationTest("Oslo", 1, 0);
+    LocationTest Berlin = new LocationTest("Berlin", 1, 1);
+    LocationTest[] locations = {
         stockholm, Copenhagen, Oslo, Berlin
     };
 
@@ -211,8 +211,8 @@ public class playerMovement extends Player{
     }
 }
 
-record Transport(String transportationMethod, int dices, int cost){}
+record TransportTest(String transportationMethod, int dices, int cost){}
 
-record Location(String city, int x, int y){}
+record LocationTest(String city, int x, int y){}
 
 
