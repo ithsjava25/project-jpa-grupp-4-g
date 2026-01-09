@@ -56,4 +56,8 @@ public class Transport {
     public BigDecimal getCostPerMove() {
         return costPerMove;
     }
+
+    public String getType() {
+        return type.toString();
+    }
 }
