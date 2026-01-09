@@ -60,4 +60,8 @@ public class Transport {
     public String getType() {
         return type.toString();
     }
+
+    public Long getID() {
+        return id;
+    }
 }
