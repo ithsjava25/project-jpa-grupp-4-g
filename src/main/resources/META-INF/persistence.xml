@@ -12,6 +12,7 @@
         <class>org.example.Journey</class>
         <class>org.example.LocationLink</class>
         <class>org.example.TransportLink</class>
+        <class>org.example.service.JourneyService</class>
         <properties>
             <!-- Database connection settings -->
             <property name="jakarta.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/travelGame"/>
