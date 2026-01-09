@@ -141,10 +141,16 @@ public class playerMovement extends Player{
     }
 
     public int getDestinationPosX() {
+        if(this.destination == null){
+            throw new NullPointerException("Destination has not been set");
+        }
         return this.destination.destinationX();
     }
 
     public int getDestinationPosY() {
+        if(this.destination == null){
+            throw new NullPointerException("Destination has not been set");
+        }
         return this.destination.destinationY();
     }
 
@@ -255,22 +261,24 @@ public class playerMovement extends Player{
             }
             switch (choice) {
                 case 1 -> {
-                    this.selectedTransport = 0;
                     if (checkIfPlayerHasEnoughCredits(transMethods[0].cost())){
+                        this.selectedTransport = 0;
                         removeCredits(transMethods[0].cost());
                     };
                     return;
                 }
                 case 2 -> {
-                    this.selectedTransport = 1;
+
                     if (checkIfPlayerHasEnoughCredits(transMethods[1].cost())){
+                        this.selectedTransport = 1;
                         removeCredits(transMethods[1].cost());
                     };
                     return;
                 }
                 case 3 -> {
-                    this.selectedTransport = 2;
+
                     if (checkIfPlayerHasEnoughCredits(transMethods[2].cost())){
+                        this.selectedTransport = 2;
                         removeCredits(transMethods[2].cost());
                     };
                     return;

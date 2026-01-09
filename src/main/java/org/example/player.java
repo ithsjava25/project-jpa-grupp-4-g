@@ -23,8 +23,7 @@ abstract class Player {
         }
     }
 
-
-    public long getCredits() {
+    public int getCredits() {
         return credits;
     }
 
@@ -39,6 +38,10 @@ abstract class Player {
 
     //add credits to player bank
     public void addCredits(int credits) {
+        if(credits < 0){
+            System.out.println("Invalid, credits cannot be under zero!");
+            return;
+        }
         this.credits = this.credits + credits;
     }
 
@@ -50,7 +53,7 @@ abstract class Player {
         return true;
     }
 
-    //Make a penalties check for the round. A chance under 10 percent for a player to get a penalty.
+    //Make a penalties check for the round. A chance under 5 percent for a player to get a penalty.
     void checkIfPlayerHasPenalties(){
         if (Math.random() < 0.05){
             System.out.println("You got the penalty!");
@@ -69,7 +72,7 @@ abstract class Player {
                 removeCredits(50);
             } case 2 -> {
                 System.out.println(" ");
-                System.out.println("You partied to hard last night, lost 100 credits");
+                System.out.println("You partied too hard last night, lost 100 credits");
                 removeCredits(100);
             } case 3 -> {
                 System.out.println(" ");
