@@ -14,7 +14,12 @@ public class Continent {
     @OneToMany(mappedBy = "continent")
     private List<Country> countries;
 
+
     public Continent(){}
+
+    public Continent(String name) {
+        this.name = name;
+    }
 
     public Long getId(){
         return id;
@@ -23,12 +28,5 @@ public class Continent {
     public String getName(){
         return name;
     }
-
-    public void setName(String name){
-        this.name = name;
-    }
-
-
-
 
 }

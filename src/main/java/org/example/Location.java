@@ -22,24 +22,34 @@ public class Location {
 
     public Location() {}
 
-    public Location(String name, LocationType type, Country country) {
+    public Location(String name, LocationType type, Country country, int x, int y) {
         this.name = name;
         this.type = type;
         this.country = country;
+        this.x = x;
+        this.y = y;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setType(LocationType type) {
+        this.type = type;
     }
 
     public int getX() {
         return x;
     }
 
-    private int getY() {
+    public int getY() {
         return y;
     }
 
-    public int distanceTo(Location other) {
-        int dx = other.getX() - this.getX();
-        int dy = other.getY() - this.getY();
-        return (int) Math.sqrt(dx * dx + dy * dy);
+    public String getName() {
+        return name;
     }
+
+
 
 }
