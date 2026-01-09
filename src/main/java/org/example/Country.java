@@ -16,11 +16,12 @@ public class Country {
 
     public Country() {}
 
-    public String getName(){
-        return name;
+    public Country(String name, Continent continent) {
+        this.name = name;
+        this.continent = continent;
     }
 
-    public void setName(String name){
-        this.name = name;
+    public String getName(){
+        return name;
     }
 }

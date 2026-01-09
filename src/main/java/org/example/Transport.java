@@ -14,21 +14,34 @@ public class Transport {
     @Enumerated(EnumType.STRING)
     private TransportType type;
 
-    @Column(name = "distance_per_turn")
-    private int distancePerTurn;
-
-    @Column(name = "cost_per_move")
+    @Column(name = "cost_per_move",nullable = false)
     private BigDecimal costPerMove;
 
+    @Column(name = "dice_count",nullable = false)
     private int diceCount;
+
+    @Column(name = "dice_sides",nullable = false)
     private int diceSides;
 
     public Transport(){}
 
-    public Transport(TransportType type, int distancePerTurn, BigDecimal costPerMove) {
+    public Transport(TransportType type, String costPerMove) {
         this.type = type;
-        this.distancePerTurn = distancePerTurn;
-        this.costPerMove = costPerMove;
+        this.costPerMove = new BigDecimal(costPerMove);
+        switch (type){
+            case BUSS ->  {
+                this.diceCount = 1;
+                this.diceSides = 6;
+            }
+            case TRAIN ->   {
+                this.diceCount = 2;
+                this.diceSides = 6;
+            }
+            case AIRPLANE ->   {
+                this.diceCount = 3;
+                this.diceSides = 6;
+            }
+        }
     }
 
     public int rollDistance() {
@@ -40,10 +53,7 @@ public class Transport {
         return total;
     }
 
-    public TransportType getType(){
-        return type;
-    }
-    public void setType(TransportType type){
-        this.type = type;
+    public BigDecimal getCostPerMove() {
+        return costPerMove;
     }
 }

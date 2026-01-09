@@ -17,10 +17,27 @@ public class LocationLink {
     @JoinColumn(name = "to_location_id")
     private Location toLocation;
 
+    @Column(nullable = false)
     private int distance;
-    public LocationLink(Location fromLocation, Location toLocation, int distance) {}
 
+    public LocationLink() {}
 
+    public LocationLink(Location fromLocation, Location toLocation, int distance) {
+        this.fromLocation = fromLocation;
+        this.toLocation = toLocation;
+        this.distance = distance;
+    }
 
-
+    public Long getId() {
+        return id;
+    }
+    public Location getFromLocation() {
+        return fromLocation;
+    }
+    public Location getToLocation() {
+        return toLocation;
+    }
+    public int getDistance() {
+        return distance;
+    }
 }

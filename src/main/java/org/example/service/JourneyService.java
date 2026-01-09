@@ -2,67 +2,79 @@ package org.example.service;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
-import org.example.Journey;
-import org.example.Location;
-import org.example.Repo.JourneyRepository;
-import org.example.Transport;
-import org.example.Traveler;
+import org.example.*;
 
 public class JourneyService {
 
     private final EntityManager em;
-    private final JourneyRepository journeyRepository;
 
     public JourneyService(EntityManager em) {
         this.em = em;
-        this.journeyRepository = new JourneyRepository(em);
     }
-
-    public Journey performTurn(
-        Traveler traveler,
-        Location toLocation,
+    public Journey playTurn(
+        Long travelerId,
+        Location targetLocation,
         Transport transport
     ) {
-
         EntityTransaction tx = em.getTransaction();
 
         try {
             tx.begin();
 
-            // säkerställ att player är managed
-            Traveler managedTraveler = em.find(Traveler.class, traveler.getId());
-
-            Location fromLocation = managedTraveler.getCurrentLocation();
-            int nextTurn = managedTraveler.getTurnCount() + 1;
-
-            // validering
-            if (fromLocation.equals(toLocation)) {
-                throw new IllegalArgumentException("cannot travel to same location");
+            Traveler traveler = em.find(Traveler.class, travelerId);
+            if (traveler == null) {
+                throw new IllegalArgumentException("traveler not found");
             }
 
+            Location from = traveler.getCurrentLocation();
+
+            // hämta rutt
+            LocationLink locationLink = em.createQuery("""
+            select ll
+            from LocationLink ll
+            where ll.fromLocation = :from
+              and ll.toLocation = :to
+        """, LocationLink.class)
+                .setParameter("from", from)
+                .setParameter("to", targetLocation)
+                .getResultStream()
+                .findFirst()
+                .orElseThrow(() ->
+                    new IllegalArgumentException("no valid route between locations")
+                );
+
+            // slå tärningar
+            int rolled = transport.rollDistance();
+
+            int before = traveler.getRemainingDistance();
+            traveler.advance(rolled);
+            int after = traveler.getRemainingDistance();
+
+            int moved = before - after;
+
+            int turnNumber = traveler.getTurnCount() + 1;
+            traveler.setTurnCount(turnNumber);
+
             Journey journey = new Journey(
-                managedTraveler,
-                fromLocation,
-                toLocation,
+                traveler,
+                locationLink,
                 transport,
-                nextTurn
+                moved,
+                after,
+                turnNumber
             );
 
-            journeyRepository.save(journey);
-
-            // uppdatera player state
-            managedTraveler.setCurrentLocation(toLocation);
-            managedTraveler.setTurnCount(nextTurn);
+            em.persist(journey);
 
             tx.commit();
             return journey;
 
         } catch (RuntimeException e) {
-            if (tx.isActive()) {
-                tx.rollback();
-            }
+            if (tx.isActive()) tx.rollback();
             throw e;
         }
     }
+
 }
+
 
