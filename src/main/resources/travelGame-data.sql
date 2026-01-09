@@ -1,3 +1,4 @@
+use travelGame;
 INSERT INTO Continent (name)
 VALUES ('Africa'),
        ('Antarctica'),
