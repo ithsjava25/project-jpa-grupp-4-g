@@ -5,74 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class playerMovement extends Player{
-    //commented out parts are for running tests of the program. Has modes for 2 - 4 players
-//    boolean wonGame = false;
-//    playerMovement player1 = new playerMovement();
-//    playerMovement player2 = new playerMovement();
-//    playerMovement player3 = new playerMovement();
-//    playerMovement player4 = new playerMovement();
-//
-//        System.out.println("How many players?? 2 - 4 players:");
-//    String amountIn = IO.readln("Input amount: ");
-//    int playerAmount = 0;
-//        try {
-//        playerAmount = Integer.parseInt(amountIn);
-//    } catch (NumberFormatException e) {
-//        System.out.println("Not a number");
-//    }
-//
-//        if(playerAmount < 2){
-//        System.out.println("Less than 2");
-//    } else if(playerAmount == 2) {
-//        String P1 = IO.readln("Please enter the first player name: ");
-//        String P2 = IO.readln("Please enter the second player name: ");
-//        player1.setPlayerName(P1);
-//        player2.setPlayerName(P2);
-//        IO.readln("Press enter to start game");
-//        while (!wonGame) {
-//            player1.play();
-//            player2.play();
-//            if (player1.checkScore()){
-//                System.out.println(player1.getPlayerName() + " Wins the game");
-//                wonGame = true;
-//            } else if (player2.checkScore()) {
-//                System.out.println(player2.getPlayerName() + " Wins the game");
-//                wonGame = true;
-//            }else  {
-//                wonGame = false;
-//            }
-//        }
-//    }
-    //        } else if (playerAmount == 3) {
-//            String P1 = IO.readln("Please enter the first player name: ");
-//            String P2 = IO.readln("Please enter the second player name: ");
-//            String P3 = IO.readln("Please enter the third player name: ");
-//            player1.setPlayerName(P1);
-//            player2.setPlayerName(P2);
-//            player3.setPlayerName(P3);
-//
-//
-//            IO.readln("Press enter to start game");
-//            while (!wonGame) {
-//                player1.play();
-//                player2.play();
-//                player3.play();
-//                if (player1.checkScore()){
-//                    System.out.println(player1.getPlayerName() + " Wins the game");
-//                    wonGame = true;
-//                } else if (player2.checkScore()) {
-//                    System.out.println(player2.getPlayerName() + " Wins the game");
-//                    wonGame = true;
-//                } else if (player3.checkScore()) {
-//                    System.out.println(player3.getPlayerName() + " Wins the game");
-//                    wonGame = true;
-//                } else  {
-//                    wonGame = false;
-//                }
-//            }
-//        }
-//        }
-// }
+    private int dice = 6;
     private int selectedTransport;
     private int availableMovement;
     private int playerPosX;
@@ -180,7 +113,7 @@ public class playerMovement extends Player{
     }
 
     public void playerTurn(){
-        setAvailableMovement(rollDice(6));
+        setAvailableMovement(rollDice());
         while (!checkMovementIsZero()){
             String input = IO.readln("choose movement");
             input = input.toLowerCase();
@@ -212,15 +145,6 @@ public class playerMovement extends Player{
         }
     }
 
-    private String[] continents = {
-        "Europe",
-        "Asia",
-        "North America",
-        "South America",
-        "Africa",
-        "Australia",
-        "Antarctica"};
-
     Location stockholm = new Location("Stockholm", 4, 5);
     Location Copenhagen =  new Location("Copenhagen", 4, 3);
     Location Oslo = new Location("Oslo", 1, 0);
@@ -228,17 +152,6 @@ public class playerMovement extends Player{
     Location[] locations = {
         stockholm, Copenhagen, Oslo, Berlin
     };
-    private String[] board = {
-        "Start",
-        "Stockholm",
-        "Copenhagen",
-        "Oslo",
-        "Helsinki",
-        "Berlin",
-        "Paris",
-        "Luxembourg",
-        "Lichenstein",
-        "Madrid"};
 
     public void chooseTransportation() throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -289,70 +202,8 @@ public class playerMovement extends Player{
         }
     }
 
-    //sets the playerPosition that matches a board.
-//    private String[] playerPos = new String[board.length];
-//
-//
-//    public void setContinents(String[] continents) {
-//        this.continents = continents;
-//    }
-//
-//    public void setBoard(String[] board) {
-//        this.board = board;
-//    }
-
-    //starts the play for a player
-//    void play(){
-//       System.out.println("________________________________");
-//        System.out.println(playerName + ", your turn!");
-//        System.out.println("Choose a transport method: ");
-//        try {
-//            chooseTransportation();
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-//        if (playerPos[playerPos.length-1] == null){
-//           playerPos = playRound(playerPos, board);
-//           checkIfPlayerHasPenalties();
-//       } else {
-//           System.out.println(playerName + " at end of board");
-//           increaseScore();
-//           System.out.println(playerName + " score: " + getPlayerScore());
-//           playerPos = new String[board.length];
-//       }
-//    }
-//
-//    private String[] playRound(String[] playerPos, String[] board) {
-//        playerPos = movePlayer(playerPos);
-//        for (int i = 1; i < playerPos.length; i++){
-//            if (playerPos[i] != null){
-//                System.out.println(" ");
-//                System.out.println(playerName + " on position " + i);
-//                System.out.println(board[i]);
-//                System.out.println("credits: " + getCredits());
-//            }
-//        }
-//        return playerPos;
-//    }
-//
-//    public String[] movePlayer(String[] playerPos){
-//        String[] temp = new String[playerPos.length];
-//        int newPos = 0;
-//        for (int i = 0; i < playerPos.length; i++){
-//            if (playerPos[i] != null){
-//                newPos = i;
-//            }
-//        }
-//        int newPosition = newPos + rollDice(transMethods[selectedTransport].dices());
-//        if (newPosition < 0 || newPosition < playerPos.length){
-//            temp[newPosition] = playerName;
-//        } else {
-//            temp[playerPos.length - 1] = playerName;
-//        }
-//        return temp;}
-
     //Dice roll method
-    public int rollDice(int dice) {
+    public int rollDice() {
         int roll = (int) ((dice * Math.random()+1));
         System.out.println(" ");
         System.out.println("Rolled a " + roll);
