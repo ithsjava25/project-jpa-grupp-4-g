@@ -64,7 +64,7 @@ abstract class Player {
     /* if a player gets a penalty, get a random number between 0 - 5, choose a penlty from the switch.*/
     //TODO fix credits for correct value
     public void getPenalty() {
-        int getPenaltyNumber = (int) (5*Math.random()+1);
+        int getPenaltyNumber = (int) (6*Math.random()+1);
         switch (getPenaltyNumber) {
             case 1 -> {
                 System.out.println(" ");
@@ -86,12 +86,15 @@ abstract class Player {
                 System.out.println(" ");
                 System.out.println("You have a big phone bill, dont call that much");
                 removeCredits(250);
-            } default -> {
+            } case 6 -> {
+                System.out.println(" ");
+                System.out.println("Really.. the Ritz hotel");
+                removeCredits(500);
+            }default -> {
                 System.out.println(" ");
                 System.out.println("no penalties");
             }
         }
-
     }
 
     /*
