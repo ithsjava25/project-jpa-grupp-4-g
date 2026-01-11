@@ -112,8 +112,8 @@ public class playerMovement extends Player{
         return false;
     }
 
-    public void playerTurn(){
-        setAvailableMovement(rollDice());
+    public void playerTurn(int diceAmount){
+        setAvailableMovement(rollDice(diceAmount));
         while (!checkMovementIsZero()){
             String input = IO.readln("choose movement");
             input = input.toLowerCase();
@@ -144,14 +144,6 @@ public class playerMovement extends Player{
             System.out.println("Player at position X: " + playerPosX + " Y: " + playerPosY );
         }
     }
-
-    LocationTest stockholm = new LocationTest("Stockholm", 4, 5);
-    LocationTest Copenhagen =  new LocationTest("Copenhagen", 4, 3);
-    LocationTest Oslo = new LocationTest("Oslo", 1, 0);
-    LocationTest Berlin = new LocationTest("Berlin", 1, 1);
-    LocationTest[] locations = {
-        stockholm, Copenhagen, Oslo, Berlin
-    };
 
     public void chooseTransportation() throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -203,8 +195,8 @@ public class playerMovement extends Player{
     }
 
     //Dice roll method
-    public int rollDice() {
-        int roll = (int) ((dice * Math.random()+1));
+    public int rollDice(int amount) {
+        int roll = (int) (((dice*amount) * Math.random()+1));
         System.out.println(" ");
         System.out.println("Rolled a " + roll);
         return roll;
@@ -213,6 +205,5 @@ public class playerMovement extends Player{
 
 record TransportTest(String transportationMethod, int dices, int cost){}
 
-record LocationTest(String city, int x, int y){}
 
 

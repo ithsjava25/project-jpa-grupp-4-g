@@ -53,6 +53,8 @@ public class App {
             Traveler bob = new Traveler("Bob", stockholm,"10000");
             em.persist(bob);
 
+
+
             /**
              * testtur
              */
@@ -72,10 +74,10 @@ public class App {
                     " for AIRPLANE. Money left: " + bob.getMoney()
             );
 
-
+            bob.rollDice(airplane.getDiceCount());
             // slå tärningar
             int rolled = plane.rollDistance();
-            System.out.println("Bob rolls " + rolled + " using AIRPLANE (3d6)");
+            System.out.println("Bob rolls " + bob.getAvailableMovement() + " using AIRPLANE (3d6)");
 
             // flytta
             bob.advance(rolled);

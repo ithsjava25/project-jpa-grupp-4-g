@@ -5,13 +5,11 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 
 @Entity
-public class Traveler {
+public class Traveler extends playerMovement{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private String name;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "current_location_id")
@@ -32,7 +30,7 @@ public class Traveler {
     protected Traveler() {}
 
     public Traveler(String name, Location startLocation, String money) {
-        this.name = name;
+        playerName = name;
         this.currentLocation = startLocation;
         this.money = new BigDecimal(money);
     }
