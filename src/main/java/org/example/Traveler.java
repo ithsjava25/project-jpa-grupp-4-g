@@ -33,6 +33,12 @@ public class Traveler extends playerMovement{
         playerName = name;
         this.currentLocation = startLocation;
         this.money = new BigDecimal(money);
+        setPosition();
+    }
+
+    public void setPosition(){
+        setPlayerPosX(currentLocation.getX());
+        setPlayerPosY(currentLocation.getY());
     }
 
     public Long getId() {
