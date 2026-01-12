@@ -133,6 +133,7 @@ public class playerMovement extends Player{
     public void playerTurn(int diceAmount){
         setAvailableMovement(rollDice(diceAmount));
         System.out.println(playerName + " turn");
+        System.out.println("Score: " + getPlayerScore());
         while (!checkMovementIsZero()){
             String input = IO.readln("choose movement");
             input = input.toLowerCase();
