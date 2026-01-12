@@ -1,6 +1,7 @@
 package org.example;
 
 import jakarta.persistence.*;
+import org.example.service.BootstrapService;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -8,9 +9,9 @@ import java.util.List;
 
 public class App {
     public static void main(String[] args) throws IOException {
-        System.out.println("===TEST===");
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("jpa-hibernate-mysql");
         EntityManager em = emf.createEntityManager();
+        new BootstrapService(em).initialize();
         EntityTransaction tx = em.getTransaction();
         boolean wonGame = false;
         Traveler p1;

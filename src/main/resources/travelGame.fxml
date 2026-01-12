@@ -57,6 +57,8 @@
                 <Label text="Credits:0"/>
             </VBox>
 
+            <Button text="START JOURNEY" onAction="#startMockJourney" styleClass="journey-button"/>
+
         </HBox>
     </bottom>
 
