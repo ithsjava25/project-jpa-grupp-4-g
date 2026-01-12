@@ -1,107 +1,192 @@
 package org.example;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.EntityTransaction;
-import jakarta.persistence.Persistence;
+import jakarta.persistence.*;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class App {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         System.out.println("===TEST===");
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("jpa-hibernate-mysql");
         EntityManager em = emf.createEntityManager();
         EntityTransaction tx = em.getTransaction();
-
+        boolean wonGame = false;
+        Traveler p1;
+        Traveler p2;
+        Traveler p3;
+        Traveler p4;
         try {
             tx.begin();
-            Continent europe = new Continent("Europe");
-            em.persist(europe);
 
-            Country sweden = new Country("Sweden", europe);
-            em.persist(sweden);
-
-            Country germany = new Country("Germany", europe);
-            em.persist(germany);
-
-            Country france = new Country("France", europe);
-            em.persist(france);
-
-            Location stockholm = new Location("Stockholm", LocationType.CAPITAL, sweden, 1, 1);
-            em.persist(stockholm);
-
-            Location berlin = new Location("Berlin", LocationType.CAPITAL, germany, 1, 2);
-            em.persist(berlin);
-
-            Location paris = new Location("Paris", LocationType.CAPITAL, france, 2, 3);
-            em.persist(paris);
-
-            LocationLink locationLink = new LocationLink(stockholm,berlin,10);
-            em.persist(locationLink);
-
-            Transport airplane = new Transport(TransportType.AIRPLANE,"1000");
-            em.persist(airplane);
-
-            Transport train = new Transport(TransportType.TRAIN,"500");
-            em.persist(train);
-
-            Transport bus = new Transport(TransportType.BUSS,"250");
-            em.persist(bus);
-
-            TransportLink transportLink = new TransportLink(locationLink,airplane);
-            em.persist(transportLink);
-
-            Traveler bob = new Traveler("Bob", stockholm,"10000");
-            em.persist(bob);
-
-
-
-            /**
-             * testtur
-             */
-            LocationLink route = locationLink;
-            Transport plane = airplane;
-            System.out.println("Bob starts in " + bob.getCurrentLocation().getName());
-
-            //startar resan
-            bob.startJourney(berlin, route.getDistance());
-
-            System.out.println("Bob has money before move: " + bob.getMoney());
-
-            bob.pay(plane.getCostPerMove());
-
-            System.out.println(
-                "Bob pays " + plane.getCostPerMove() +
-                    " for AIRPLANE. Money left: " + bob.getMoney()
-            );
-
-            bob.rollDice(airplane.getDiceCount());
-            // slå tärningar
-            int rolled = plane.rollDistance();
-            System.out.println("Bob rolls " + bob.getAvailableMovement() + " using AIRPLANE (3d6)");
-
-            // flytta
-            bob.advance(rolled);
-
-            Journey journey = new Journey(
-                bob,
-                route,
-                plane,
-                rolled,
-                bob.getRemainingDistance(),
-                bob.getTurnCount()
-            );
-
-            em.persist(journey);
-
-            // resultat
-            if (!bob.isTravelling()) {
-                System.out.println("Bob arrived in Berlin in ONE turn!");
-            } else {
-                System.out.println(
-                    "Bob did NOT arrive. Remaining distance: "
-                        + bob.getRemainingDistance()
-                );
+            int pAmount = 0;
+            String input = IO.readln("Welcome, how many players??? 2 - 4  ");
+            try {
+                pAmount = Integer.parseInt(input);
+            } catch (NumberFormatException e){
+                System.out.println("Not a number");
             }
+
+            Transport plane = em.createQuery("select t from Transport t", Transport.class).setMaxResults(1).getSingleResult();
+
+            switch (pAmount){
+                case 2 ->{
+                    String p1Name = IO.readln("Input name for player 1: ");
+                    p1 = new Traveler(p1Name, randLoc(em));
+                    Location newDestP1 = randLoc(em);
+                    p1.setDestinationPos(newDestP1.getX(), newDestP1.getY());
+                    String p2Name = IO.readln("Input name for player 2: ");
+                    p2 = new Traveler(p2Name, randLoc(em));
+                    Location newDestP2 = randLoc(em);
+                    p2.setDestinationPos(newDestP2.getX(), newDestP2.getY());
+                    while(!wonGame){
+                        p1.playerTurn(plane.getDiceCount());
+                        p2.playerTurn(plane.getDiceCount());
+
+                        if (p1.checkIfPlayerIsAtDestination()){
+                            Location newDest = randLoc(em);
+                            p1.setDestinationPos(newDest.getX(), newDest.getY());
+                        }else if(p2.checkIfPlayerIsAtDestination()){
+                            Location newDest = randLoc(em);
+                            p2.setDestinationPos(newDest.getX(), newDest.getY());
+                        }
+                        if(p1.checkScore()){
+                            System.out.println(p1.playerName + " wins");
+                            wonGame = true;
+                        } else if(p2.checkScore()){
+                            System.out.println(p2.playerName + " wins");
+                            wonGame = true;
+                        }
+                    }
+
+                }case 3 ->{
+                    String p1Name = IO.readln("Input name for player 1: ");
+                    p1 = new Traveler(p1Name, randLoc(em));
+                    Location newDestP1 = randLoc(em);
+                    p1.setDestinationPos(newDestP1.getX(), newDestP1.getY());
+                    String p2Name = IO.readln("Input name for player 2: ");
+                    p2 = new Traveler(p2Name, randLoc(em));
+                    Location newDestP2 = randLoc(em);
+                    p2.setDestinationPos(newDestP2.getX(), newDestP2.getY());
+                    String p3Name = IO.readln("Input name for player 2: ");
+                    p3 = new Traveler(p3Name, randLoc(em));
+                    Location newDestP3 = randLoc(em);
+                    p3.setDestinationPos(newDestP3.getX(), newDestP3.getY());
+                    while(!wonGame){
+                        p1.playerTurn(plane.getDiceCount());
+                        p2.playerTurn(plane.getDiceCount());
+                        p3.playerTurn(plane.getDiceCount());
+                        if (p1.checkIfPlayerIsAtDestination()){
+                            Location newDest = randLoc(em);
+                            p1.setDestinationPos(newDest.getX(), newDest.getY());
+                        }else if(p2.checkIfPlayerIsAtDestination()){
+                            Location newDest = randLoc(em);
+                            p2.setDestinationPos(newDest.getX(), newDest.getY());
+                        }else if(p3.checkIfPlayerIsAtDestination()){
+                            Location newDest = randLoc(em);
+                            p3.setDestinationPos(newDest.getX(), newDest.getY());
+                        }
+                        if(p1.checkScore()){
+                            System.out.println(p1.playerName + " wins");
+                            wonGame = true;
+                        } else if(p2.checkScore()){
+                            System.out.println(p2.playerName + " wins");
+                            wonGame = true;
+                        } else if(p3.checkScore()){
+                            System.out.println(p3.playerName + " wins");
+                            wonGame = true;
+                        }
+                    }
+
+                }case 4 ->{
+                    String p1Name = IO.readln("Input name for player 1: ");
+                    p1 = new Traveler(p1Name, randLoc(em));
+                    Location newDestP1 = randLoc(em);
+                    p1.setDestinationPos(newDestP1.getX(), newDestP1.getY());
+                    String p2Name = IO.readln("Input name for player 2: ");
+                    p2 = new Traveler(p2Name, randLoc(em));
+                    Location newDestP2 = randLoc(em);
+                    p2.setDestinationPos(newDestP2.getX(), newDestP2.getY());
+                    String p3Name = IO.readln("Input name for player 2: ");
+                    p3 = new Traveler(p3Name, randLoc(em));
+                    Location newDestP3 = randLoc(em);
+                    p3.setDestinationPos(newDestP3.getX(), newDestP3.getY());
+                    String p4Name = IO.readln("Input name for player 2: ");
+                    p4 = new Traveler(p3Name, randLoc(em));
+                    Location newDestP4 = randLoc(em);
+                    p4.setDestinationPos(newDestP4.getX(), newDestP4.getY());
+                    while(!wonGame){
+                        p1.playerTurn(plane.getDiceCount());
+                        p2.playerTurn(plane.getDiceCount());
+                        p3.playerTurn(plane.getDiceCount());
+                        p4.playerTurn(plane.getDiceCount());
+                        if (p1.checkIfPlayerIsAtDestination()){
+                            Location newDest = randLoc(em);
+                            p1.setDestinationPos(newDest.getX(), newDest.getY());
+                        }else if(p2.checkIfPlayerIsAtDestination()){
+                            Location newDest = randLoc(em);
+                            p2.setDestinationPos(newDest.getX(), newDest.getY());
+                        }else if(p3.checkIfPlayerIsAtDestination()){
+                            Location newDest = randLoc(em);
+                            p3.setDestinationPos(newDest.getX(), newDest.getY());
+                        }else if(p4.checkIfPlayerIsAtDestination()){
+                            Location newDest = randLoc(em);
+                            p4.setDestinationPos(newDest.getX(), newDest.getY());
+                        }
+                        if(p1.checkScore()){
+                            System.out.println(p1.playerName + " wins");
+                            wonGame = true;
+                        } else if(p2.checkScore()){
+                            System.out.println(p2.playerName + " wins");
+                            wonGame = true;
+                        } else if(p3.checkScore()){
+                            System.out.println(p3.playerName + " wins");
+                            wonGame = true;
+                        }else if(p4.checkScore()){
+                            System.out.println(p3.playerName + " wins");
+                            wonGame = true;
+                        }
+                    }
+
+                }
+            }
+
+//            /**
+//             * testtur
+//             */
+//            LocationLink route = locationLink;
+//            Transport plane = airplane;
+//            System.out.println("Bob starts in " + bob.getCurrentLocation().getName());
+//
+//            //startar resan
+//            bob.startJourney(berlin, route.getDistance());
+//
+//
+//
+//            bob.playerTurn(airplane.getDiceCount());
+//            int rolled = bob.getAvailableMovement();
+//
+//            Journey journey = new Journey(
+//                bob,
+//                route,
+//                plane,
+//                rolled,
+//                bob.getRemainingDistance(),
+//                bob.getTurnCount()
+//            );
+//
+//            em.persist(journey);
+//
+//            // resultat
+//            if (!bob.isTravelling()) {
+//                System.out.println("Bob arrived in Berlin in ONE turn!");
+//            } else {
+//                System.out.println(
+//                    "Bob did NOT arrive. Remaining distance: "
+//                        + bob.getRemainingDistance()
+//                );
+//            }
 
             tx.commit();
 
@@ -111,6 +196,42 @@ public class App {
         } finally {
             em.close();
         }
+    }
+    public static Location randLoc(EntityManager em){
+        Long locSize = em.createQuery("select count(l) from Location l", Long.class).getSingleResult();
+        Location randLoc = em.createQuery("select l from Location l", Location.class).setFirstResult(randomIndex(locSize)).setMaxResults(1).getSingleResult();
+        return randLoc;
+    }
+
+    //method works, missing locations
+    static public Location randomLocation(EntityManager em){
+
+        Long contCount = em.createQuery("Select count(c) from Continent c", Long.class).getSingleResult();
+
+        Continent randCont = em.createQuery("select c from Continent c", Continent.class).setFirstResult(randomIndex(contCount)).setMaxResults(1).getSingleResult();
+
+        Long countryCount = em.createQuery("Select count(c) from Country c where c.continent = :continent", Long.class)
+            .setParameter("continent", randCont)
+            .getSingleResult();
+
+        Country randCountry = em.createQuery("select c from Country c where continent = :continent", Country.class)
+            .setParameter("continent", randCont)
+            .setFirstResult(randomIndex(countryCount))
+            .setMaxResults(1).getSingleResult();
+
+        Long locCount = em.createQuery("select count(o) from Location o where o.country = :country", Long.class)
+            .setParameter("country", randCountry)
+            .getSingleResult();
+
+        Location randLocation = em.createQuery("select l from Location l where l.country = :country", Location.class)
+            .setParameter("country", randCountry).setFirstResult(randomIndex(locCount)).getSingleResult();
+
+        System.out.println(randLocation.getName() + " " + randLocation.getX() + " " + randLocation.getY());
+
+        return randLocation;
+    }
+    static public int randomIndex(long indexes){
+        return (int) (Math.random()*indexes);
     }
 }
 

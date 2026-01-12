@@ -3,7 +3,7 @@ package org.example;
 abstract class Player {
     String playerName;
     private int playerScore = 0;
-    private int credits = 10000;
+    int credits = 10000;
 
     //set the player name
     public void setPlayerName(String playerName) {

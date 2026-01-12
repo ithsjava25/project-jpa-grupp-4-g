@@ -25,14 +25,13 @@ public class Traveler extends playerMovement{
     private int turnCount = 0;
 
     @Column(nullable = false)
-    private BigDecimal money;
+    private BigDecimal money = BigDecimal.valueOf(credits);
 
     protected Traveler() {}
 
-    public Traveler(String name, Location startLocation, String money) {
+    public Traveler(String name, Location startLocation) {
         playerName = name;
         this.currentLocation = startLocation;
-        this.money = new BigDecimal(money);
         setPosition();
     }
 
