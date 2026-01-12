@@ -106,7 +106,7 @@ public class playerMovement extends Player{
     public boolean checkIfPlayerIsAtDestination(){
         if (this.playerPosX == getDestinationPosX() && this.playerPosY == getDestinationPosY()) {
             setAvailableMovement(0);
-            System.out.println(playerName + "Has arrived at destination. +1 score and 500 credits");
+            System.out.println(playerName + " has arrived at destination. +1 score and 500 credits");
             addCredits(500);
             return true;
         }
