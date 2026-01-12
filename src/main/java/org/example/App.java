@@ -11,7 +11,7 @@ public class App {
     public static void main(String[] args) throws IOException {
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("jpa-hibernate-mysql");
         EntityManager em = emf.createEntityManager();
-        //new BootstrapService(em).initialize();
+        new BootstrapService(em).initialize();
         EntityTransaction tx = em.getTransaction();
         boolean wonGame = false;
         Traveler p1;
