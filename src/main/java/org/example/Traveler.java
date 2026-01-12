@@ -5,13 +5,11 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 
 @Entity
-public class Traveler {
+public class Traveler extends playerMovement{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private String name;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "current_location_id")
@@ -27,14 +25,19 @@ public class Traveler {
     private int turnCount = 0;
 
     @Column(nullable = false)
-    private BigDecimal money;
+    private BigDecimal money = BigDecimal.valueOf(credits);
 
     protected Traveler() {}
 
-    public Traveler(String name, Location startLocation, String money) {
-        this.name = name;
+    public Traveler(String name, Location startLocation) {
+        playerName = name;
         this.currentLocation = startLocation;
-        this.money = new BigDecimal(money);
+        setPosition();
+    }
+
+    public void setPosition(){
+        setPlayerPosX(currentLocation.getX());
+        setPlayerPosY(currentLocation.getY());
     }
 
     public Long getId() {
