@@ -11,39 +11,49 @@ public class JourneyService {
     public JourneyService(EntityManager em) {
         this.em = em;
     }
+
+    /**
+     * Spelar en hel tur:
+     * - validerar transport
+     * - drar pengar
+     * - slår tärningar
+     * - flyttar traveler
+     * - sparar Journey
+     */
     public Journey playTurn(
         Long travelerId,
-        Location targetLocation,
-        Transport transport
+        Long locationLinkId,
+        Long transportId
     ) {
+
         EntityTransaction tx = em.getTransaction();
 
         try {
             tx.begin();
 
             Traveler traveler = em.find(Traveler.class, travelerId);
-            if (traveler == null) {
-                throw new IllegalArgumentException("traveler not found");
+            LocationLink route = em.find(LocationLink.class, locationLinkId);
+            Transport transport = em.find(Transport.class, transportId);
+
+            if (traveler == null || route == null || transport == null) {
+                throw new IllegalArgumentException("entity not found");
             }
 
-            Location from = traveler.getCurrentLocation();
+            // 1. validera att transport är tillåten
+            validateTransportAllowed(route, transport);
 
-            // hämta rutt
-            LocationLink locationLink = em.createQuery("""
-            select ll
-            from LocationLink ll
-            where ll.fromLocation = :from
-              and ll.toLocation = :to
-        """, LocationLink.class)
-                .setParameter("from", from)
-                .setParameter("to", targetLocation)
-                .getResultStream()
-                .findFirst()
-                .orElseThrow(() ->
-                    new IllegalArgumentException("no valid route between locations")
+            // 2. starta resa om behövs
+            if (!traveler.isTravelling()) {
+                traveler.startJourney(
+                    route.getToLocation(),
+                    route.getDistance()
                 );
+            }
 
-            // slå tärningar
+            // 3. betala
+            traveler.pay(transport.getCostPerMove());
+
+            // 4. slå tärningar
             int rolled = transport.rollDistance();
 
             int before = traveler.getRemainingDistance();
@@ -51,13 +61,12 @@ public class JourneyService {
             int after = traveler.getRemainingDistance();
 
             int moved = before - after;
+            int turnNumber = traveler.getTurnCount();
 
-            int turnNumber = traveler.getTurnCount() + 1;
-            traveler.setTurnCount(turnNumber);
-
+            // 5. spara journey (ALLTID, även om ej framme)
             Journey journey = new Journey(
                 traveler,
-                locationLink,
+                route,
                 transport,
                 moved,
                 after,
@@ -74,7 +83,29 @@ public class JourneyService {
             throw e;
         }
     }
+    private void validateTransportAllowed(
+        LocationLink route,
+        Transport transport
+    ) {
+        boolean allowed = em.createQuery(
+                """
+                select count(tl)
+                from TransportLink tl
+                where tl.locationLink = :route
+                  and tl.transport = :transport
+                """,
+                Long.class
+            )
+            .setParameter("route", route)
+            .setParameter("transport", transport)
+            .getSingleResult() > 0;
 
+        if (!allowed) {
+            throw new IllegalStateException(
+                transport.getType()
+                    + " not allowed on this route"
+            );
+        }
+    }
 }
-
 
