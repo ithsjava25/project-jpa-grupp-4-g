@@ -18,6 +18,14 @@ public class App {
         Traveler p2;
         Traveler p3;
         Traveler p4;
+
+//        Transport plane = em.createQuery("select t from Transport t where t.id = 1", Transport.class).getSingleResult();
+//        Transport train = em.createQuery("select t from Transport t where t.id = 2", Transport.class).getSingleResult();
+//        Transport buss = em.createQuery("select t from Transport t where t.id = 3", Transport.class).getSingleResult();
+
+        List<Transport> transportMethods = em.createQuery("select t from Transport t", Transport.class).getResultList();
+
+
         try {
             tx.begin();
             int pAmount = 0;
@@ -27,8 +35,6 @@ public class App {
             } catch (NumberFormatException e){
                 System.out.println("Not a number");
             }
-
-            Transport plane = em.createQuery("select t from Transport t", Transport.class).setMaxResults(1).getSingleResult();
 
             switch (pAmount){
                 case 2 ->{
@@ -43,9 +49,8 @@ public class App {
                     em.persist(p1);
                     em.persist(p2);
                     while(!wonGame){
-                        p1.playerTurn(plane.getDiceCount());
-                        p2.playerTurn(plane.getDiceCount());
-
+                        p1.playerTurn(transportMethods);
+                        p2.playerTurn(transportMethods);
                         if (p1.checkIfPlayerIsAtDestination()){
                             Location newDest = randLoc(em);
                             p1.setDestinationPos(newDest.getX(), newDest.getY());
@@ -80,9 +85,9 @@ public class App {
                     em.persist(p3);
 
                     while(!wonGame){
-                        p1.playerTurn(plane.getDiceCount());
-                        p2.playerTurn(plane.getDiceCount());
-                        p3.playerTurn(plane.getDiceCount());
+                        p1.playerTurn(transportMethods);
+                        p2.playerTurn(transportMethods);
+                        p3.playerTurn(transportMethods);
                         if (p1.checkIfPlayerIsAtDestination()){
                             Location newDest = randLoc(em);
                             p1.setDestinationPos(newDest.getX(), newDest.getY());
@@ -127,10 +132,10 @@ public class App {
                     em.persist(p3);
                     em.persist(p4);
                     while(!wonGame){
-                        p1.playerTurn(plane.getDiceCount());
-                        p2.playerTurn(plane.getDiceCount());
-                        p3.playerTurn(plane.getDiceCount());
-                        p4.playerTurn(plane.getDiceCount());
+                        p1.playerTurn(transportMethods);
+                        p2.playerTurn(transportMethods);
+                        p3.playerTurn(transportMethods);
+                        p4.playerTurn(transportMethods);
                         if (p1.checkIfPlayerIsAtDestination()){
                             Location newDest = randLoc(em);
                             p1.setDestinationPos(newDest.getX(), newDest.getY());
