@@ -19,7 +19,6 @@ public class App {
         Traveler p4;
         try {
             tx.begin();
-
             int pAmount = 0;
             String input = IO.readln("Welcome, how many players??? 2 - 4  ");
             try {
@@ -240,6 +239,7 @@ public class App {
 
         return randLocation;
     }
+
     static public int randomIndex(long indexes){
         return (int) (Math.random()*indexes);
     }
