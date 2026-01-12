@@ -66,6 +66,24 @@ public class playerMovement extends Player{
     public void playerMoveRight(){
         this.playerPosX++;
     }
+    public void autoMove(){
+        for(int i = 0; i < availableMovement; i++){
+            if (playerPosX != getDestinationPosX()){
+                if(playerPosX > getDestinationPosX()){
+                    playerMoveLeft();
+                } else {
+                    playerMoveRight();
+                }
+            } else if (playerPosY != getDestinationPosY()) {
+                if (playerPosY > getDestinationPosY()){
+                    playerMoveDown();
+                } else{
+                    playerMoveUp();
+                }
+            }
+            availableMovement--;
+        }
+    }
 
     public void setDestinationPos(int destinationX, int destinationY) {
         this.destination = new destinationPos(destinationX, destinationY);
@@ -134,7 +152,9 @@ public class playerMovement extends Player{
                 case "right" -> {
                     playerMoveRight();
                     availableMovement--;
-                }default ->  {
+                }case "auto" -> {
+                    autoMove();
+                } default ->  {
                     System.out.println("Invalid input!");
                 }
             }
