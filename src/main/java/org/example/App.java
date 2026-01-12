@@ -40,6 +40,8 @@ public class App {
                     p2 = new Traveler(p2Name, randLoc(em));
                     Location newDestP2 = randLoc(em);
                     p2.setDestinationPos(newDestP2.getX(), newDestP2.getY());
+                    em.persist(p1);
+                    em.persist(p2);
                     while(!wonGame){
                         p1.playerTurn(plane.getDiceCount());
                         p2.playerTurn(plane.getDiceCount());
@@ -73,6 +75,10 @@ public class App {
                     p3 = new Traveler(p3Name, randLoc(em));
                     Location newDestP3 = randLoc(em);
                     p3.setDestinationPos(newDestP3.getX(), newDestP3.getY());
+                    em.persist(p1);
+                    em.persist(p2);
+                    em.persist(p3);
+
                     while(!wonGame){
                         p1.playerTurn(plane.getDiceCount());
                         p2.playerTurn(plane.getDiceCount());
@@ -116,6 +122,10 @@ public class App {
                     p4 = new Traveler(p3Name, randLoc(em));
                     Location newDestP4 = randLoc(em);
                     p4.setDestinationPos(newDestP4.getX(), newDestP4.getY());
+                    em.persist(p1);
+                    em.persist(p2);
+                    em.persist(p3);
+                    em.persist(p4);
                     while(!wonGame){
                         p1.playerTurn(plane.getDiceCount());
                         p2.playerTurn(plane.getDiceCount());
