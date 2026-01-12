@@ -11,6 +11,9 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class TravelGameController {
 
     @FXML private ImageView mapView;
@@ -100,5 +103,17 @@ public class TravelGameController {
             }
             visualizer.drawPlayer(playerX, playerY, w, h);
         }
+    }
+    public void startMockJourney() {
+        logList.getItems().add("📜 Nytt uppdrag: Resan till den glömda staden!");
+
+        List<int[]> journeyPath = new ArrayList<>();
+        journeyPath.add(new int[]{playerX, playerY});
+        journeyPath.add(new int[]{10, 15});
+        journeyPath.add(new int[]{25, 20});
+        journeyPath.add(new int[]{40, 45});
+        visualizer.animateJourney(journeyPath, drawingPane.getWidth(), drawingPane.getHeight());
+        playerX = 40;
+        playerY = 45;
     }
 }

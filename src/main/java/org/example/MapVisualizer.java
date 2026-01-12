@@ -1,10 +1,15 @@
 package org.example;
 
+import javafx.animation.Transition;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
+import javafx.scene.shape.Polyline;
 import javafx.scene.shape.Rectangle;
+import javafx.util.Duration;
+
+import java.util.List;
 
 public class MapVisualizer {
     private final Pane mapPane;
@@ -62,5 +67,28 @@ public class MapVisualizer {
         playerToken.setStroke(Color.BLACK);
         playerToken.setMouseTransparent(true);
         mapPane.getChildren().add(playerToken);
+    }
+    public void animateJourney(List<int[]> coordinates, double totalWidth, double totalHeight) {
+        Polyline line = new Polyline();
+        line.setStroke(Color.RED);
+        line.setStrokeWidth(3);
+        double cellWidth = totalWidth / gridSize;
+        double cellHeight = totalHeight / gridSize;
+
+        for (int[] coord : coordinates) {
+            double x = (coord[0] * cellWidth) + (cellWidth / 2);
+            double y = totalHeight - (coord[1] * cellHeight) - (cellHeight / 2);
+            line.getPoints().addAll(x, y);
+        }
+        mapPane.getChildren().add(line);
+
+        line.setStrokeDashOffset(500);
+        Transition anim = new Transition() {
+            { setCycleDuration(Duration.seconds(3)); }
+            protected void interpolate(double frac) {
+                line.setStrokeDashOffset(500 * (1 - frac));
+            }
+        };
+        anim.play();
     }
 }
