@@ -46,7 +46,7 @@ public class BootstrapService {
             while ((line = reader.readLine()) != null) {
                line = line.trim();
                if (line.isEmpty() || line.startsWith("--")) {continue;}
-               stringBuilder.append(line);
+               stringBuilder.append(line).append(" ");
 
                if (line.endsWith(";")) {
                    em.createNativeQuery(stringBuilder.toString()).executeUpdate();
