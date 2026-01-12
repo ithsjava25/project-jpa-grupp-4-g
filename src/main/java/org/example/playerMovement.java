@@ -224,7 +224,7 @@ public class playerMovement extends Player{
         int tempRoll;
         int roll = 0;
         for (int i = 0; i < amount; i++){
-            tempRoll = (int) (((dice*amount) * Math.random()+1));
+            tempRoll = (int) ((dice * Math.random()+1));
             System.out.println("Rolled a " + tempRoll);
             roll += tempRoll;
         }
