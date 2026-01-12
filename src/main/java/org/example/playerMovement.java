@@ -228,7 +228,7 @@ public class playerMovement extends Player{
             System.out.println("Rolled a " + tempRoll);
             roll += tempRoll;
         }
-        System.out.println("Total amount is " + availableMovement);
+        System.out.println("Total amount is " + roll);
         return roll;
     }
 }
