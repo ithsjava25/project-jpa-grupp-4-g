@@ -215,9 +215,20 @@ public class TravelGameController {
 
         if (w > 0 && h > 0) {
             visualizer.drawGrid(w, h);
-            visualizer.drawPlayer(playerX, playerY, w, h);
+
+            // samla positionsdata från alla spelare
+            List<int[]> positions = new ArrayList<>();
+            for (Traveler t : players) {
+                positions.add(new int[] {
+                    clampToGrid(t.getPlayerPosX()),
+                    clampToGrid(t.getPlayerPosY())
+                });
+            }
+
+            visualizer.drawPlayers(positions, currentPlayerIndex, w, h);
         }
     }
+
 
     private void updateHud() {
         if (players.isEmpty()) return;

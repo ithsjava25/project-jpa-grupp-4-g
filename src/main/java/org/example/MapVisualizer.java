@@ -55,19 +55,42 @@ public class MapVisualizer {
         }
     }
 
-    public void drawPlayer(int gridX, int gridY, double totalWidth, double totalHeight) {
+    public void drawPlayers(List<int[]> players, int currentIndex, double totalWidth, double totalHeight) {
         double cellWidth = totalWidth / gridSize;
         double cellHeight = totalHeight / gridSize;
 
-        double centerX = (gridX * cellWidth) + (cellWidth / 2);
+        for (int i = 0; i < players.size(); i++) {
+            int[] p = players.get(i);
+            int gridX = p[0];
+            int gridY = p[1];
 
-        double centerY = totalHeight - (gridY * cellHeight) - (cellHeight / 2);
+            double centerX = (gridX * cellWidth) + (cellWidth / 2);
+            double centerY = totalHeight - (gridY * cellHeight) - (cellHeight / 2);
 
-        Circle playerToken = new Circle(centerX, centerY, (cellWidth / 2) * 0.8, Color.GOLD);
-        playerToken.setStroke(Color.BLACK);
-        playerToken.setMouseTransparent(true);
-        mapPane.getChildren().add(playerToken);
+            Circle token = new Circle(centerX, centerY, (cellWidth / 2) * 0.8);
+
+            // olika färg per spelare (enkelt)
+            token.setFill(switch (i % 4) {
+                case 0 -> Color.GOLD;
+                case 1 -> Color.DEEPSKYBLUE;
+                case 2 -> Color.LIMEGREEN;
+                default -> Color.ORANGERED;
+            });
+
+            // markera current player
+            if (i == currentIndex) {
+                token.setStroke(Color.WHITE);
+                token.setStrokeWidth(3);
+            } else {
+                token.setStroke(Color.BLACK);
+                token.setStrokeWidth(1.5);
+            }
+
+            token.setMouseTransparent(true);
+            mapPane.getChildren().add(token);
+        }
     }
+
     public void animateJourney(List<int[]> coordinates, double totalWidth, double totalHeight) {
         Polyline line = new Polyline();
         line.setStroke(Color.RED);
