@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 
 @Entity
-public class Traveler extends playerMovement{
+public class Traveler extends playerMovement {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,6 +19,7 @@ public class Traveler extends playerMovement{
     @JoinColumn(name = "target_location_id")
     private Location targetLocation;
 
+    @Column(name = "remainingDistance", nullable = false)
     private int remainingDistance;
 
     @Column(name = "turn_count", nullable = false)
@@ -35,18 +36,10 @@ public class Traveler extends playerMovement{
     public Traveler(String name, Location startLocation) {
         playerName = name;
         this.currentLocation = startLocation;
-        setPosition();
-    }
 
-    public void setPosition(){
-        setPlayerPosX(currentLocation.getX());
-        setPlayerPosY(currentLocation.getY());
-    }
-
-    public void updateJourney(){
-        turnCount = getTurns();
+        // håller gui-position i sync med location
         setPosition();
-        calculateDistance();
+        // destinationPos kan vara null tills spelaren väljer, så vi sätter ingen destination här
     }
 
     public Long getId() {
@@ -57,6 +50,10 @@ public class Traveler extends playerMovement{
         return currentLocation;
     }
 
+    public Location getTargetLocation() {
+        return targetLocation;
+    }
+
     public int getTurnCount() {
         return turnCount;
     }
@@ -65,36 +62,64 @@ public class Traveler extends playerMovement{
         return money;
     }
 
-    public void setTurnCount(int turnCount) {
-        this.turnCount = turnCount;
+    public int getRemainingDistance() {
+        return remainingDistance;
     }
 
     public boolean isTravelling() {
         return targetLocation != null;
     }
 
-
-    public void startJourney(Location target) {
-        this.targetLocation = target;
-        calculateDistance();
+    /**
+     * håller playerPosX/Y i sync med currentLocation (för gui)
+     */
+    public void setPosition() {
+        if (currentLocation != null) {
+            setPlayerPosX(currentLocation.getX());
+            setPlayerPosY(currentLocation.getY());
+        }
     }
 
-    private void calculateDistance() {
-        int xPos = 0;
-        int yPos = 0;
-        if (currentLocation.getX() > getDestinationPosX()){
-            xPos = currentLocation.getX() - getDestinationPosX();
-        } else {
-            xPos = getDestinationPosX() - currentLocation.getX();
-        }
-        if (currentLocation.getY() > getDestinationPosY()){
-            yPos = currentLocation.getY() - getDestinationPosY();
-        } else {
-            yPos = getDestinationPosY() - currentLocation.getY();
-        }
+    /**
+     * (behåll) används för "fri" gui-rörelse när destination kommer från klick på karta
+     * OBS: den här räknar manhattan via destinationPosX/Y
+     */
+    public void startJourney(Location target) {
+        this.targetLocation = target;
+
+        // ✅ viktigt: synca destinationPos så att calculateDistance funkar
+        setDestinationPos(target.getX(), target.getY());
+
+        calculateDistanceFromDestinationPos();
+    }
+
+    /**
+     * ✅ NY: används av JourneyService när du reser via LocationLink.distance
+     * då ska remainingDistance baseras på routeDistance (inte koordinater)
+     */
+    public void startJourney(Location target, int routeDistance) {
+        if (routeDistance < 0) throw new IllegalArgumentException("routeDistance must be >= 0");
+
+        this.targetLocation = target;
+        this.remainingDistance = routeDistance;
+
+        // ändå bra för gui att visa destination
+        setDestinationPos(target.getX(), target.getY());
+    }
+
+    /**
+     * gamla logiken, men tydligare namn
+     */
+    private void calculateDistanceFromDestinationPos() {
+        // använder destinationPos som sätts via setDestinationPos(...)
+        int xPos = Math.abs(currentLocation.getX() - getDestinationPosX());
+        int yPos = Math.abs(currentLocation.getY() - getDestinationPosY());
         this.remainingDistance = xPos + yPos;
     }
 
+    /**
+     * när vi avancerar på en länk-baserad resa använder vi remainingDistance direkt
+     */
     public void advance(int distanceThisTurn) {
         remainingDistance -= distanceThisTurn;
         turnCount++;
@@ -103,25 +128,50 @@ public class Traveler extends playerMovement{
             currentLocation = targetLocation;
             targetLocation = null;
             remainingDistance = 0;
+
+            // ✅ synca gui-position när du "kommer fram"
+            setPosition();
         }
     }
 
     public void pay(BigDecimal amount) {
+        if (amount == null) throw new IllegalArgumentException("amount cannot be null");
+        if (amount.signum() < 0) throw new IllegalArgumentException("amount must be >= 0");
+
         if (money.compareTo(amount) < 0) {
             throw new IllegalStateException("not enough money");
         }
+
         money = money.subtract(amount);
-    }
 
-    public int getRemainingDistance() {
-        return remainingDistance;
+        // ✅ håll gamla credits i sync så gui/cli fortfarande visar rätt
+        this.credits = money.intValue();
     }
-
 
     public void addMoney(BigDecimal amount) {
+        if (amount == null) throw new IllegalArgumentException("amount cannot be null");
         if (amount.signum() < 0) {
             throw new IllegalArgumentException("amount must be positive");
         }
-        this.money = this.money.add(amount);
+
+        money = money.add(amount);
+
+        // ✅ sync credits
+        this.credits = money.intValue();
+    }
+
+    /**
+     * om du fortfarande använder gamla "updateJourney()" i någon kod:
+     * den bör i princip inte användas i nya link-baserade flödet.
+     * men om du vill behålla den utan att den sabbar:
+     */
+    public void updateJourney() {
+        turnCount = getTurns();
+        setPosition();
+
+        // ⚠️ bara meningsfullt om destinationPos är satt (fri gui-rörelse)
+        if (isTravelling()) {
+            calculateDistanceFromDestinationPos();
+        }
     }
 }

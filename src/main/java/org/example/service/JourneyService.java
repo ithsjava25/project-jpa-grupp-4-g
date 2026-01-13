@@ -10,9 +10,11 @@ import java.util.List;
 public class JourneyService {
 
     private final EntityManager em;
+    private final PlayerEventService eventService;
 
-    public JourneyService(EntityManager em) {
+    public JourneyService(EntityManager em, PlayerEventService eventService) {
         this.em = em;
+        this.eventService = eventService;
     }
 
     /**
@@ -35,12 +37,7 @@ public class JourneyService {
 
         for (LocationLink route : routes) {
             for (TransportLink tl : route.getTransportLinks()) {
-                result.add(
-                    new PossibleMoves(
-                        route,
-                        tl.getTransport()
-                    )
-                );
+                result.add(new PossibleMoves(route, tl.getTransport()));
             }
         }
 
@@ -50,14 +47,12 @@ public class JourneyService {
     /**
      * utför ett drag (en tur)
      */
-    public Journey performTurn(
-        Traveler traveler,
-        PossibleMoves move
-    ) {
+    public Journey performTurn(Traveler traveler, PossibleMoves move) {
+
         LocationLink route = move.getRoute();
         Transport transport = move.getTransport();
 
-        // 1️⃣ kontroll: är transport tillåten på rutten?
+        // 1) kontroll: är transport tillåten på rutten?
         boolean allowed = route.getTransportLinks()
             .stream()
             .anyMatch(tl -> tl.getTransport().equals(transport));
@@ -68,29 +63,27 @@ public class JourneyService {
             );
         }
 
-        // 2️⃣ kontroll: har resenären råd?
+        // 2) kontroll: har resenären råd?
         BigDecimal cost = transport.getCostPerMove();
         if (traveler.getMoney().compareTo(cost) < 0) {
             throw new IllegalStateException("traveler cannot afford this move");
         }
 
-        // 3️⃣ starta resa om det är en ny resa
+        // 3) starta resa om det är en ny resa
         if (!traveler.isTravelling()) {
-            traveler.startJourney(
-                route.getToLocation()
-            );
+            traveler.startJourney(route.getToLocation(), route.getDistance());
         }
 
-        // 4️⃣ slå tärning
+        // 4) slå tärning
         int rolledDistance = transport.rollDistance();
 
-        // 5️⃣ betala
+        // 5) betala
         traveler.pay(cost);
 
-        // 6️⃣ flytta
+        // 6) flytta
         traveler.advance(rolledDistance);
 
-        // 7️⃣ logga draget
+        // 7) logga draget
         Journey journey = new Journey(
             traveler,
             route,
@@ -101,7 +94,11 @@ public class JourneyService {
         );
 
         em.persist(journey);
+        // traveler är oftast managed här, men merge är ok om du ibland skickar in detached
         em.merge(traveler);
+
+        // 8) event (EN gång, här)
+        eventService.applyEndOfTurnEvents(traveler);
 
         return journey;
     }

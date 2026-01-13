@@ -38,6 +38,7 @@ public class TravelGameController {
 
     private MapVisualizer visualizer;
     private JourneyService journeyService;
+    private PlayerEventService eventService;
 
     private static final int GRID_SIZE = 50;
 
@@ -78,8 +79,10 @@ public class TravelGameController {
 
         emf = Persistence.createEntityManagerFactory("jpa-hibernate-mysql");
         em = emf.createEntityManager();
-        JourneyService journeyService = new JourneyService(em);
-        PlayerEventService eventService = new PlayerEventService(em);
+        eventService = new PlayerEventService(em);
+        eventService.setGuiLog(logList);
+        journeyService = new JourneyService(em,eventService);
+
 
 
 
@@ -156,18 +159,15 @@ public class TravelGameController {
             Location to   = chosen.getTo();
             Transport transport = chosen.getTransport();
 
-            // 4️⃣ utför draget (all logik i service)
-            journeyService.performTurn(
-                managed,
-                chosen
-            );
+            // 4️⃣ utför draget
+            Journey journey = journeyService.performTurn(managed,chosen);
 
             // 5️⃣ logg
             logList.getItems().add(
                 "🚀 " + managed.getPlayerName() +
-                    " reste från " + from.getName() +
-                    " till " + to.getName() +
-                    " med " + transport.getType()
+                    " reste " + from.getName() + " -> " + to.getName() +
+                    " med " + transport.getType() +
+                    " (rolled=" + journey.getDistanceMoved() + ", remaining=" + journey.getRemainingDistance() + ")"
             );
 
             if (managed.checkScore()) {

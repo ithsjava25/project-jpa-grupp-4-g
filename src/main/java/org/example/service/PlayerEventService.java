@@ -2,124 +2,77 @@ package org.example.service;
 
 import jakarta.persistence.EntityManager;
 import org.example.Traveler;
+import javafx.application.Platform;
+import javafx.scene.control.ListView;
 
 import java.math.BigDecimal;
-import java.util.Optional;
-import java.util.Random;
 
 public class PlayerEventService {
 
-    private final Random random = new Random();
+    private final EntityManager em;
+    private ListView<String> guiLog;
 
     public PlayerEventService(EntityManager em) {
+        this.em = em;
     }
 
     /**
-     * Körs efter ett avslutat drag (Journey)
-     * Returnerar ett EventResult som GUI / CLI kan visa
+     * Optional: attach a GUI log to display events
      */
-    public Optional<EventResult> applyEndOfTurnEvents(Traveler traveler) {
-
-        // penalty har högre prio än bonus
-        if (random.nextDouble() < 0.05) {
-            return Optional.of(applyPenalty(traveler));
-        }
-
-        if (random.nextDouble() < 0.10) {
-            return Optional.of(applyBonus(traveler));
-        }
-
-        return Optional.empty();
+    public void setGuiLog(ListView<String> guiLog) {
+        this.guiLog = guiLog;
     }
 
-    /* ======================
-       PENALTY
-       ====================== */
-
-    private EventResult applyPenalty(Traveler traveler) {
-
-        int roll = random.nextInt(6) + 1;
-        BigDecimal amount;
-
-        String description = switch (roll) {
-            case 1 -> {
-                amount = new BigDecimal("50");
-                yield "you fell and hurt yourself (-50 credits)";
-            }
-            case 2 -> {
-                amount = new BigDecimal("100");
-                yield "partied too hard last night (-100 credits)";
-            }
-            case 3 -> {
-                amount = new BigDecimal("150");
-                yield "scammed by a local (-150 credits)";
-            }
-            case 4 -> {
-                amount = new BigDecimal("200");
-                yield "transport broke down (-200 credits)";
-            }
-            case 5 -> {
-                amount = new BigDecimal("250");
-                yield "huge phone bill (-250 credits)";
-            }
-            case 6 -> {
-                amount = new BigDecimal("500");
-                yield "luxury hotel disaster (-500 credits)";
-            }
-            default -> {
-                amount = BigDecimal.ZERO;
-                yield "no penalty";
-            }
-        };
-
-        traveler.pay(amount);
-
-        return EventResult.penalty(description, amount);
+    private void log(String msg) {
+        System.out.println(msg);
+        if (guiLog != null) {
+            Platform.runLater(() -> guiLog.getItems().add(msg));
+        }
     }
 
-    /* ======================
-       BONUS
-       ====================== */
+    /**
+     * Används efter varje turn
+     */
+    public void applyEndOfTurnEvents(Traveler traveler) {
 
-    private EventResult applyBonus(Traveler traveler) {
+        // 1️⃣ slumpmässig penalty
+        if (Math.random() < 0.05) {
+            int amount = randomPenalty(traveler);
+            traveler.addCredits(-amount);
+            log(traveler.getPlayerName() + " fick en penalty: -" + amount + " credits");
+        }
 
-        int roll = random.nextInt(6) + 1;
-        BigDecimal amount;
+        // 2️⃣ slumpmässig bonus
+        if (Math.random() < 0.10) {
+            int amount = randomBonus(traveler);
+            traveler.addCredits(amount);
+            log(traveler.getPlayerName() + " fick en bonus: +" + amount + " credits");
+        }
+    }
 
-        String description = switch (roll) {
-            case 1 -> {
-                amount = new BigDecimal("50");
-                yield "found some spare change (+50 credits)";
-            }
-            case 2 -> {
-                amount = new BigDecimal("100");
-                yield "helped someone and got rewarded (+100 credits)";
-            }
-            case 3 -> {
-                amount = new BigDecimal("250");
-                yield "temporary job success (+250 credits)";
-            }
-            case 4 -> {
-                amount = new BigDecimal("400");
-                yield "parents sent you money (+400 credits)";
-            }
-            case 5 -> {
-                amount = new BigDecimal("500");
-                yield "birthday gifts (+500 credits)";
-            }
-            case 6 -> {
-                amount = new BigDecimal("1000");
-                yield "won the lottery (+1000 credits)";
-            }
-            default -> {
-                amount = BigDecimal.ZERO;
-                yield "no bonus";
-            }
+    private int randomPenalty(Traveler traveler) {
+        int n = (int) (6 * Math.random()) + 1;
+        return switch (n) {
+            case 1 -> 50;
+            case 2 -> 100;
+            case 3 -> 150;
+            case 4 -> 200;
+            case 5 -> 250;
+            case 6 -> 500;
+            default -> 0;
         };
+    }
 
-        traveler.addMoney(amount);
-
-        return EventResult.bonus(description, amount);
+    private int randomBonus(Traveler traveler) {
+        int n = (int) (6 * Math.random()) + 1;
+        return switch (n) {
+            case 1 -> 50;
+            case 2 -> 100;
+            case 3 -> 250;
+            case 4 -> 400;
+            case 5 -> 500;
+            case 6 -> 1000;
+            default -> 0;
+        };
     }
 }
-
