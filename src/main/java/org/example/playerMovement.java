@@ -9,16 +9,23 @@ import java.util.List;
 
 public class playerMovement extends Player{
     private int dice = 6;
-    private int selectedTransport;
+    private int selectedTransportDice;
     private int availableMovement;
     private int playerPosX;
     private int playerPosY;
     record destinationPos(int destinationX, int destinationY) {}
     private destinationPos destination;
+    private int playerTurnCount = 0;
 
     private List<TransportTest> transMethods = new ArrayList<>();
 
+    public int getTransDiceCount(){
+        return selectedTransportDice;
+    }
 
+    public int getTurns(){
+        return playerTurnCount;
+    }
     public void setPlayerPosX(int playerPosX) {
         if (playerPosX >= 0) {
             this.playerPosX = playerPosX;
@@ -107,7 +114,7 @@ public class playerMovement extends Player{
         if (this.playerPosX == getDestinationPosX() && this.playerPosY == getDestinationPosY()) {
             setAvailableMovement(0);
             System.out.println(playerName + " has arrived at destination. +1 score and 500 credits");
-            addCredits(500);
+            addCredits(1000);
             return true;
         }
         return false;
@@ -130,11 +137,17 @@ public class playerMovement extends Player{
         return false;
     }
 
-    public void playerTurn(int diceAmount){
-        setAvailableMovement(rollDice(diceAmount));
+    public void playerTurn(List<Transport> transports) throws IOException {
+        chooseTransportation(transports);
+        setAvailableMovement(rollDice(selectedTransportDice));
         System.out.println(playerName + " turn");
+        System.out.println("Score: " + getPlayerScore());
         while (!checkMovementIsZero()){
-            String input = IO.readln("choose movement");
+            System.out.println(" ");
+            System.out.println(playerName + " at position X: " + playerPosX + " Y: " + playerPosY );
+            System.out.println("dest x: " + destination.destinationX + " dest y: " + destination.destinationY);
+            System.out.println("available movement left: " + availableMovement);
+            String input = IO.readln("choose movement! Available is up, down, left, right, auto");
             input = input.toLowerCase();
             switch (input) {
                 case "up" -> {
@@ -161,21 +174,21 @@ public class playerMovement extends Player{
             if (checkIfPlayerIsAtDestination()){
                 increaseScore();
             }
-            System.out.println(" ");
-            System.out.println(playerName + " at position X: " + playerPosX + " Y: " + playerPosY );
-            System.out.println("dest x: " + destination.destinationX + " dest y: " + destination.destinationY);
-            System.out.println("available movement left: " + availableMovement);
+
         }
         System.out.println("End of "+ playerName + " turn");
+        System.out.println("- - - - - - - - - -");
         checkIfPlayerHasPenalties();
+        playerTurnCount++;
     }
 
-    public void chooseTransportation(List transport) throws IOException {
+    public void chooseTransportation(List<Transport> transport) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        for (int i = 0; i < transport.size(); i++) {
-            System.out.println("Nr: "+ (i+1) + " - " + transport.get(i));
+        for (int i = 0; i < transport.size(); i++){
+            System.out.println("Nr " + (i+1) + ": " + transport.get(i).getType() + ". Costs: " + transport.get(i).getCostPerMove());
         }
         while (true){
+            System.out.println("Player has " + getCredits() + " credits");
             System.out.println("Choose transportation: ");
             String input = br.readLine();
             if (input.isEmpty()) {
@@ -191,25 +204,24 @@ public class playerMovement extends Player{
             }
             switch (choice) {
                 case 1 -> {
-                    if (checkIfPlayerHasEnoughCredits(transMethods.get(0).cost())){
-                        this.selectedTransport = 0;
-                        removeCredits(transMethods.get(0).cost());
+                    if (checkIfPlayerHasEnoughCredits(transport.get(0).getCostPerMove().intValue())){
+                        this.selectedTransportDice = transport.get(0).getDiceCount();
+                        removeCredits(transport.get(0).getCostPerMove().intValue());
                     };
                     return;
                 }
                 case 2 -> {
 
-                    if (checkIfPlayerHasEnoughCredits(transMethods.get(0).cost())){
-                        this.selectedTransport = 1;
-                        removeCredits(transMethods.get(0).cost());
+                    if (checkIfPlayerHasEnoughCredits(transport.get(1).getCostPerMove().intValue())){
+                        this.selectedTransportDice = transport.get(1).getDiceCount();
+                        removeCredits(transport.get(1).getCostPerMove().intValue());
                     };
                     return;
                 }
                 case 3 -> {
-
-                    if (checkIfPlayerHasEnoughCredits(transMethods.get(0).cost())){
-                        this.selectedTransport = 2;
-                        removeCredits(transMethods.get(0).cost());
+                    if (checkIfPlayerHasEnoughCredits(transport.get(2).getCostPerMove().intValue())){
+                        this.selectedTransportDice = transport.get(2).getDiceCount();
+                        removeCredits(transport.get(2).getCostPerMove().intValue());
                     };
                     return;
                 }default -> {
