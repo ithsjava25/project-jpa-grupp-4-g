@@ -194,11 +194,11 @@ public class playerMovement extends Player{
         System.out.println("End of " + playerName + " GUI turn");
         checkIfPlayerHasPenalties();
     }
-    public void playerTurnByMode(int diceAmount) {
+    public void playerTurnByMode(List<Transport> transports, int guiDiceAmount) throws IOException {
         if (GameConfig.MODE == GameMode.CLI) {
-            playerTurn(diceAmount);
+            playerTurn(transports);
         } else {
-            playerTurnGui(diceAmount);
+            playerTurnGui(guiDiceAmount);
         }
     }
 

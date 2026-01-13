@@ -15,7 +15,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,6 +24,7 @@ public class TravelGameController {
     @FXML private Pane drawingPane;
     @FXML private ListView<String> logList;
     @FXML private Button rollButton;
+
 
     @FXML private Label currentPlayerLabel;
     @FXML private Label nextPlayerLabel;
@@ -36,24 +36,24 @@ public class TravelGameController {
 
     private MapVisualizer visualizer;
 
-    private int playerX = 0;
-    private int playerY = 0;
-
     private static final int GRID_SIZE = 50;
 
     // JPA
     private EntityManagerFactory emf;
     private EntityManager em;
 
+    // Game state
     private final List<Traveler> players = new ArrayList<>();
     private int currentPlayerIndex = 0;
     private boolean wonGame = false;
 
-    private Transport plane;
+
+    private List<Transport> transports = new ArrayList<>();
 
     @FXML
     private void initialize() {
         visualizer = new MapVisualizer(drawingPane);
+
         mapView.setImage(new Image(getClass().getResourceAsStream("/assets/map.png")));
 
         double width = 900;
@@ -65,29 +65,28 @@ public class TravelGameController {
         drawingPane.setPrefSize(width, height);
         drawingPane.setMaxSize(width, height);
 
-        logList.getItems().add("🌍 GUI redo. Ange namn för att starta.");
+        logList.getItems().add("🌍 Spelet startade. Klicka på kartan för att sätta destination. Tryck ROLL.");
 
         Platform.runLater(this::updateGraphics);
     }
 
     public void setupGame(String playerName) {
-        // Starta JPA
+        GameConfig.MODE = GameMode.GUI;
+
         emf = Persistence.createEntityManagerFactory("jpa-hibernate-mysql");
         em = emf.createEntityManager();
 
-        plane = em.createQuery("select t from Transport t", Transport.class)
-            .setMaxResults(1)
-            .getSingleResult();
+        transports = em.createQuery("select t from Transport t", Transport.class).getResultList();
 
         EntityTransaction tx = em.getTransaction();
         tx.begin();
         try {
-            Traveler p1 = new Traveler(playerName, App.randLoc(em));
-            Location dest1 = App.randLoc(em);
+            Traveler p1 = new Traveler(playerName, App.randomLocation(em));
+            Location dest1 = App.randomLocation(em);
             p1.setDestinationPos(dest1.getX(), dest1.getY());
 
-            Traveler p2 = new Traveler("Player 2", App.randLoc(em));
-            Location dest2 = App.randLoc(em);
+            Traveler p2 = new Traveler("Player 2", App.randomLocation(em));
+            Location dest2 = App.randomLocation(em);
             p2.setDestinationPos(dest2.getX(), dest2.getY());
 
             em.persist(p1);
@@ -103,59 +102,89 @@ public class TravelGameController {
             throw e;
         }
 
-        logList.getItems().add("✅ Spelare skapade. Klicka på kartan för att sätta destination. Tryck ROLL för tur.");
-
-        syncUiPositionFromCurrentPlayer();
-        updateHud();
+        logList.getItems().add("✅ " + players.size() + " spelare skapade.");
+        syncHudAndMap();
     }
 
+    @FXML
     public void onRoll(ActionEvent actionEvent) {
         if (wonGame || players.isEmpty()) return;
 
+        rollButton.setDisable(true);
+
         Traveler current = players.get(currentPlayerIndex);
+
+        // Välj rimlig diceCount för GUI:
+        // tar första transportens diceCount om den finns annars 1.
+        int guiDice = 1;
+        if (transports != null && !transports.isEmpty()) {
+            guiDice = transports.getFirst().getDiceCount();
+        }
 
         EntityTransaction tx = em.getTransaction();
         tx.begin();
         try {
             Traveler managed = em.find(Traveler.class, current.getId());
 
-            managed.playerTurnByMode(plane.getDiceCount());
 
 
-            Integer rolled = tryGetInt(managed, "getAvailableMovement");
-            if (rolled != null) lastRollLabel.setText(String.valueOf(rolled));
-            else lastRollLabel.setText("-");
+            int rolled = managed.rollDice(guiDice);
+            managed.setAvailableMovement(rolled);
 
-            logList.getItems().add("🎲 " + managed.playerName + " tog en tur!");
+            lastRollLabel.setText(String.valueOf(rolled));
+            logList.getItems().add("🎲 " + managed.playerName + " slog " + rolled);
+
+
+            try {
+                managed.getDestinationPosX();
+            } catch (NullPointerException npe) {
+                logList.getItems().add("📍 Välj destination genom att klicka på kartan!");
+                managed.setAvailableMovement(0);
+                tx.commit();
+                players.set(currentPlayerIndex, managed);
+                rollButton.setDisable(false);
+                syncHudAndMap();
+                return;
+            }
+
+
+            managed.autoMove();
 
             if (managed.checkIfPlayerIsAtDestination()) {
-                Location newDest = App.randLoc(em);
+                managed.increaseScore();
+
+                Location newDest = App.randomLocation(em);
                 managed.setDestinationPos(newDest.getX(), newDest.getY());
                 logList.getItems().add("🎯 Ny destination: " + newDest.getName() + " [" + newDest.getX() + "," + newDest.getY() + "]");
             }
 
+            managed.checkIfPlayerHasPenalties();
+            managed.checkIfPlayerHasBonus();
+
+
+
             if (managed.checkScore()) {
                 logList.getItems().add("🏆 " + managed.playerName + " vinner!");
                 wonGame = true;
-                rollButton.setDisable(true);
             }
 
             tx.commit();
 
-            // uppdatera referens
             players.set(currentPlayerIndex, managed);
 
         } catch (RuntimeException e) {
             if (tx.isActive()) tx.rollback();
             throw e;
+        } finally {
+            if (!wonGame) rollButton.setDisable(false);
+            else rollButton.setDisable(true);
         }
 
         if (!wonGame) {
             currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
         }
 
-        syncUiPositionFromCurrentPlayer();
-        updateHud();
+        syncHudAndMap();
     }
 
     @FXML
@@ -177,58 +206,22 @@ public class TravelGameController {
         tx.begin();
         try {
             Traveler managed = em.find(Traveler.class, current.getId());
-            managed.setDestinationPos(clickedX, clickedY); // klasskompisens logik-stöd
+            managed.setDestinationPos(clickedX, clickedY);
             tx.commit();
-
             players.set(currentPlayerIndex, managed);
         } catch (RuntimeException e) {
             if (tx.isActive()) tx.rollback();
             throw e;
         }
 
-        logList.getItems().add("📍 Destination satt till [" + clickedX + "," + clickedY + "] för " + current.playerName);
+        logList.getItems().add("📍 " + current.playerName + " destination = [" + clickedX + "," + clickedY + "]");
+        syncHudAndMap();
+    }
+
+    private void syncHudAndMap() {
         updateHud();
         updateGraphics();
     }
-
-    private void syncUiPositionFromCurrentPlayer() {
-        if (players.isEmpty()) return;
-
-        Traveler t = players.get(currentPlayerIndex);
-        Location loc = t.getCurrentLocation();
-
-        if (loc != null) {
-            playerX = clampToGrid(loc.getX());
-            playerY = clampToGrid(loc.getY());
-        }
-
-        updateGraphics();
-    }
-
-    private int clampToGrid(int v) {
-        return Math.max(0, Math.min(GRID_SIZE - 1, v));
-    }
-
-    private void updateGraphics() {
-        double w = drawingPane.getWidth();
-        double h = drawingPane.getHeight();
-
-        if (w > 0 && h > 0) {
-            visualizer.drawGrid(w, h);
-
-            // samla positionsdata från alla spelare
-            List<int[]> positions = new ArrayList<>();
-            for (Traveler t : players) {
-                positions.add(new int[] {
-                    clampToGrid(t.getPlayerPosX()),
-                    clampToGrid(t.getPlayerPosY())
-                });
-            }
-
-            visualizer.drawPlayers(positions, currentPlayerIndex, w, h);
-        }
-    }
-
 
     private void updateHud() {
         if (players.isEmpty()) return;
@@ -236,49 +229,73 @@ public class TravelGameController {
         Traveler current = players.get(currentPlayerIndex);
 
         currentPlayerLabel.setText(current.playerName);
-        currentCreditsLabel.setText(current.getMoney() != null ? current.getMoney().toString() : "0");
-        currentTurnLabel.setText(String.valueOf(current.getTurnCount()));
-
-        if (current.getCurrentLocation() != null) {
-            currentLocationLabel.setText(current.getCurrentLocation().getName()
-                + " [" + current.getCurrentLocation().getX() + "," + current.getCurrentLocation().getY() + "]");
-        } else {
-            currentLocationLabel.setText("-");
-        }
-
-        Integer dx = tryGetInt(current, "getDestinationPosX");
-        if (dx == null) dx = tryGetInt(current, "getDestinationX");
-        Integer dy = tryGetInt(current, "getDestinationPosY");
-        if (dy == null) dy = tryGetInt(current, "getDestinationY");
-
-        if (dx != null && dy != null) destinationLabel.setText("[" + dx + "," + dy + "]");
-        else destinationLabel.setText("-");
 
         int next = (currentPlayerIndex + 1) % players.size();
         nextPlayerLabel.setText(players.get(next).playerName);
+
+        // credits/turns
+        try {
+            currentCreditsLabel.setText(String.valueOf(current.getCredits()));
+        } catch (Exception e) {
+            currentCreditsLabel.setText("-");
+        }
+
+        // Om ni vill använda playerMovement.getTurns():
+        try {
+            currentTurnLabel.setText(String.valueOf(current.getTurns()));
+        } catch (Exception e) {
+            // fallback: om Traveler har getTurnCount()
+            try {
+                currentTurnLabel.setText(String.valueOf(current.getTurnCount()));
+            } catch (Exception ignored) {
+                currentTurnLabel.setText("-");
+            }
+        }
+
+        currentLocationLabel.setText("[" + clampToGrid(current.getPlayerPosX()) + "," + clampToGrid(current.getPlayerPosY()) + "]");
+
+        // Destination
+        try {
+            destinationLabel.setText("[" + current.getDestinationPosX() + "," + current.getDestinationPosY() + "]");
+        } catch (Exception e) {
+            destinationLabel.setText("-");
+        }
     }
 
+    private void updateGraphics() {
+        double w = drawingPane.getWidth();
+        double h = drawingPane.getHeight();
+        if (w <= 0 || h <= 0) return;
 
-    private Integer tryGetInt(Object obj, String methodName) {
-        try {
-            Method m = obj.getClass().getMethod(methodName);
-            Object val = m.invoke(obj);
-            if (val instanceof Integer i) return i;
-        } catch (Exception ignored) {}
-        return null;
+        visualizer.drawGrid(w, h);
+
+        List<int[]> positions = new ArrayList<>();
+        for (Traveler t : players) {
+            positions.add(new int[]{ clampToGrid(t.getPlayerPosX()), clampToGrid(t.getPlayerPosY()) });
+        }
+
+
+        visualizer.drawPlayers(positions, currentPlayerIndex, w, h);
+    }
+
+    private int clampToGrid(int v) {
+        return Math.max(0, Math.min(GRID_SIZE - 1, v));
     }
 
     public void startMockJourney() {
         logList.getItems().add("📜 Demo path!");
+        if (players.isEmpty()) return;
+
+        Traveler current = players.get(currentPlayerIndex);
+        int px = clampToGrid(current.getPlayerPosX());
+        int py = clampToGrid(current.getPlayerPosY());
+
         List<int[]> journeyPath = new ArrayList<>();
-        journeyPath.add(new int[]{playerX, playerY});
+        journeyPath.add(new int[]{px, py});
         journeyPath.add(new int[]{10, 15});
         journeyPath.add(new int[]{25, 20});
         journeyPath.add(new int[]{40, 45});
         visualizer.animateJourney(journeyPath, drawingPane.getWidth(), drawingPane.getHeight());
-        playerX = 40;
-        playerY = 45;
-        updateGraphics();
     }
 
     public void shutdown() {
