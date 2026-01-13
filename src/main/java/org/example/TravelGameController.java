@@ -14,6 +14,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import org.example.service.JourneyService;
 import org.example.service.PlayerEventService;
 
@@ -26,6 +27,8 @@ public class TravelGameController {
     @FXML private Pane drawingPane;
     @FXML private ListView<String> logList;
     @FXML private Button rollButton;
+    @FXML private VBox movesBox;
+
 
 
     @FXML private Label currentPlayerLabel;
@@ -121,16 +124,15 @@ public class TravelGameController {
         if (wonGame || players.isEmpty()) return;
 
         rollButton.setDisable(true);
+        movesBox.getChildren().clear();
 
         Traveler current = players.get(currentPlayerIndex);
 
         EntityTransaction tx = em.getTransaction();
         tx.begin();
-
         try {
             Traveler managed = em.find(Traveler.class, current.getId());
 
-            // 1️⃣ aktuell plats (Location)
             Location currentLocation = managed.getCurrentLocation();
             if (currentLocation == null) {
                 logList.getItems().add("❌ ingen aktuell plats");
@@ -139,58 +141,42 @@ public class TravelGameController {
                 return;
             }
 
-            // 2️⃣ hämta alla möjliga drag från databasen
-            List<PossibleMoves> possibleMoves =
-                journeyService.findPossibleMoves(currentLocation);
+            List<PossibleMoves> moves = journeyService.findPossibleMoves(currentLocation);
 
-            if (possibleMoves.isEmpty()) {
-                logList.getItems().add(
-                    "⛔ inga möjliga resor från " + currentLocation.getName()
-                );
+            if (moves.isEmpty()) {
+                logList.getItems().add("⛔ inga möjliga resor från " + currentLocation.getName());
                 tx.commit();
                 rollButton.setDisable(false);
                 return;
             }
 
-            // 3️⃣ välj ett drag (tillfälligt: första)
-            PossibleMoves chosen = possibleMoves.get(0);
+            // visa som knappar
+            for (PossibleMoves m : moves) {
+                String text =
+                    m.getFrom().getName() + " -> " + m.getTo().getName()
+                        + " | " + m.getTransport().getType()
+                        + " | dist=" + m.getDistance()
+                        + " | cost=" + m.getTransport().getCostPerMove();
 
-            Location from = chosen.getFrom();
-            Location to   = chosen.getTo();
-            Transport transport = chosen.getTransport();
+                Button b = new Button(text);
+                b.setMaxWidth(Double.MAX_VALUE);
 
-            // 4️⃣ utför draget
-            Journey journey = journeyService.performTurn(managed,chosen);
-
-            // 5️⃣ logg
-            logList.getItems().add(
-                "🚀 " + managed.getPlayerName() +
-                    " reste " + from.getName() + " -> " + to.getName() +
-                    " med " + transport.getType() +
-                    " (rolled=" + journey.getDistanceMoved() + ", remaining=" + journey.getRemainingDistance() + ")"
-            );
-
-            if (managed.checkScore()) {
-                logList.getItems().add("🏆 " + managed.getPlayerName() + " vinner!");
-                wonGame = true;
+                b.setOnAction(e -> doMove(managed.getId(), m)); // separat metod
+                movesBox.getChildren().add(b);
             }
 
-            tx.commit();
-            players.set(currentPlayerIndex, managed);
+            // uppdatera karta: highlighta destinations
+            updateGraphicsWithMoves(managed, moves);
 
+            tx.commit(); // inga ändringar här, bara visning
         } catch (RuntimeException e) {
             if (tx.isActive()) tx.rollback();
             throw e;
         } finally {
-            if (!wonGame) rollButton.setDisable(false);
+            rollButton.setDisable(false);
         }
-
-        if (!wonGame) {
-            currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
-        }
-
-        syncHudAndMap();
     }
+
 
 
 
@@ -304,6 +290,64 @@ public class TravelGameController {
         journeyPath.add(new int[]{40, 45});
         visualizer.animateJourney(journeyPath, drawingPane.getWidth(), drawingPane.getHeight());
     }
+
+    private void updateGraphicsWithMoves(Traveler managed, List<PossibleMoves> moves) {
+        updateGraphics(); // ritar grid + players
+
+        double w = drawingPane.getWidth();
+        double h = drawingPane.getHeight();
+
+        List<Location> destinations = moves.stream()
+            .map(PossibleMoves::getTo)
+            .distinct()
+            .toList();
+
+        visualizer.highlightPossibleDestinations(destinations, w, h);
+    }
+
+    private void doMove(Long travelerId, PossibleMoves chosen) {
+        if (wonGame) return;
+
+        EntityTransaction tx = em.getTransaction();
+        tx.begin();
+        try {
+            Traveler managed = em.find(Traveler.class, travelerId);
+
+            Journey journey = journeyService.performTurn(managed, chosen);
+
+            logList.getItems().add(
+                "🚀 " + managed.getPlayerName()
+                    + " reste " + chosen.getFrom().getName()
+                    + " -> " + chosen.getTo().getName()
+                    + " med " + chosen.getTransport().getType()
+                    + " (rolled=" + journey.getDistanceMoved()
+                    + ", remaining=" + journey.getRemainingDistance()
+                    + ")"
+            );
+
+            if (managed.checkScore()) {
+                logList.getItems().add("🏆 " + managed.getPlayerName() + " vinner!");
+                wonGame = true;
+            }
+
+            tx.commit();
+
+            players.set(currentPlayerIndex, managed);
+            movesBox.getChildren().clear(); // töm val efter move
+
+            if (!wonGame) {
+                currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
+            }
+
+            syncHudAndMap();
+
+        } catch (RuntimeException e) {
+            if (tx.isActive()) tx.rollback();
+            throw e;
+        }
+    }
+
+
 
     public void shutdown() {
         try {

@@ -113,5 +113,22 @@ public class MapVisualizer {
             }
         };
         anim.play();
+
     }
+    public void highlightPossibleDestinations(List<Location> destinations, double w, double h) {
+        double cW = w / gridSize;
+        double cH = h / gridSize;
+
+        for (Location loc : destinations) {
+            int x = loc.getX();
+            int y = loc.getY();
+
+            double posY = h - (y * cH) - cH;
+            Rectangle rect = new Rectangle(x * cW, posY, cW, cH);
+            rect.setFill(Color.web("#00FF00", 0.35));
+            rect.setMouseTransparent(true);
+            mapPane.getChildren().add(rect);
+        }
+    }
+
 }
