@@ -4,6 +4,8 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
 import org.example.*;
 
+import java.util.List;
+
 public class JourneyService {
 
     private final EntityManager em;
@@ -11,6 +13,28 @@ public class JourneyService {
     public JourneyService(EntityManager em) {
         this.em = em;
     }
+
+    public List<PossibleMoves> findPossibleMoves(Location currentLocation) {
+
+        List<Object[]> rows = em.createQuery("""
+        select ll, t
+        from LocationLink ll
+        join ll.transportLinks tl
+        join tl.transport t
+        where ll.fromLocation = :location
+    """, Object[].class)
+            .setParameter("location", currentLocation)
+            .getResultList();
+
+        return rows.stream()
+            .map(row -> new PossibleMoves(
+                (LocationLink) row[0],
+                (Transport) row[1]
+            ))
+            .toList();
+    }
+
+
     public Journey playTurn(
         Long travelerId,
         Location targetLocation,
@@ -27,6 +51,8 @@ public class JourneyService {
             }
 
             Location from = traveler.getCurrentLocation();
+
+
 
             // hämta rutt
             LocationLink locationLink = em.createQuery("""
