@@ -238,13 +238,14 @@ public class App {
             em.close();
         }
     }
-    public static Location randLoc(EntityManager em){
-        Long locSize = em.createQuery("select count(l) from Location l", Long.class).getSingleResult();
-        Location randLoc = em.createQuery("select l from Location l", Location.class).setFirstResult(randomIndex(locSize)).setMaxResults(1).getSingleResult();
-        return randLoc;
-    }
+//    random locations
+//    public static Location randLoc(EntityManager em){
+//        Long locSize = em.createQuery("select count(l) from Location l", Long.class).getSingleResult();
+//        Location randLoc = em.createQuery("select l from Location l", Location.class).setFirstResult(randomIndex(locSize)).setMaxResults(1).getSingleResult();
+//        return randLoc;
+//    }
 
-    //method works, missing locations
+    //Randomise through all points for continent, country and locations. 
     static public Location randomLocation(EntityManager em){
 
         Long contCount = em.createQuery("Select count(c) from Continent c", Long.class).getSingleResult();
