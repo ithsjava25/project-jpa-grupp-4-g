@@ -12,47 +12,15 @@ public class App {
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("jpa-hibernate-mysql");
         EntityManager em = emf.createEntityManager();
         new BootstrapService(em).initialize();
-
-        Location stockholm = em.createQuery(
-                "select l from Location l where l.name = :name",
-                Location.class
-            )
-            .setParameter("name", "Stockholm")
-            .getSingleResult();
-
-        var results = em.createQuery("""
-            select ll
-            from LocationLink ll
-            join fetch ll.transportLinks tl
-            join fetch tl.transport
-            where ll.fromLocation = :location
-        """, LocationLink.class)
-            .setParameter("location", stockholm)
-            .getResultList();
-
-        System.out.println("möjliga resor från " + stockholm.getName());
-
-        for (LocationLink ll : results) {
-            System.out.println(
-                "→ till " + ll.getToLocation().getName() +
-                    " (" + ll.getDistance() + " km)"
-            );
-
-            for (TransportLink tl : ll.getTransportLinks()) {
-                System.out.println(
-                    "   - transport: " + tl.getTransport().getType()
-                );
-            }
-        }
-
-
+    }
+}
+        //new BootstrapService(em).initialize();
 //        EntityTransaction tx = em.getTransaction();
 //        boolean wonGame = false;
 //        Traveler p1;
 //        Traveler p2;
 //        Traveler p3;
 //        Traveler p4;
-//
 //        try {
 //            tx.begin();
 //
@@ -278,6 +246,6 @@ public class App {
 //    }
 //    static public int randomIndex(long indexes){
 //        return (int) (Math.random()*indexes);
-    }
-}
+//    }
+//}
 
