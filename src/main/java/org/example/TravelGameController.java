@@ -43,6 +43,9 @@ public class TravelGameController {
     private JourneyService journeyService;
     private PlayerEventService eventService;
 
+    private PossibleMoves selectedMove = null;   // <-- spelarens val
+    private boolean awaitingMoveChoice = false;  // <-- om vi väntar på att spelaren väljer
+
     private static final int GRID_SIZE = 50;
 
     // JPA
@@ -82,6 +85,7 @@ public class TravelGameController {
 
         emf = Persistence.createEntityManagerFactory("jpa-hibernate-mysql");
         em = emf.createEntityManager();
+        new org.example.service.BootstrapService(em).initialize();
         eventService = new PlayerEventService();
         eventService.setGuiLog(logList);
         journeyService = new JourneyService(em,eventService);
@@ -123,34 +127,28 @@ public class TravelGameController {
     public void onRoll(ActionEvent actionEvent) {
         if (wonGame || players.isEmpty()) return;
 
-        rollButton.setDisable(true);
-        movesBox.getChildren().clear();
-
         Traveler current = players.get(currentPlayerIndex);
 
-        EntityTransaction tx = em.getTransaction();
-        tx.begin();
-        try {
-            Traveler managed = em.find(Traveler.class, current.getId());
+        // steg 1: vi väntar på att spelaren ska välja en move -> bara lista knappar
+        if (!awaitingMoveChoice) {
+            selectedMove = null;
+            movesBox.getChildren().clear();
 
+            Traveler managed = em.find(Traveler.class, current.getId());
             Location currentLocation = managed.getCurrentLocation();
+
             if (currentLocation == null) {
                 logList.getItems().add("❌ ingen aktuell plats");
-                tx.rollback();
-                rollButton.setDisable(false);
                 return;
             }
 
             List<PossibleMoves> moves = journeyService.findPossibleMoves(currentLocation);
-
             if (moves.isEmpty()) {
                 logList.getItems().add("⛔ inga möjliga resor från " + currentLocation.getName());
-                tx.commit();
-                rollButton.setDisable(false);
                 return;
             }
 
-            // visa som knappar
+            // skapa knappar för alla moves
             for (PossibleMoves m : moves) {
                 String text =
                     m.getFrom().getName() + " -> " + m.getTo().getName()
@@ -161,21 +159,39 @@ public class TravelGameController {
                 Button b = new Button(text);
                 b.setMaxWidth(Double.MAX_VALUE);
 
-                b.setOnAction(e -> doMove(managed.getId(), m)); // separat metod
+                b.setOnAction(e -> {
+                    selectedMove = m;
+                    highlightSelectedMoveButton(b);
+                    logList.getItems().add("✅ valt: " + m.getFrom().getName() + " -> " + m.getTo().getName()
+                        + " (" + m.getTransport().getType() + ")");
+                });
+
                 movesBox.getChildren().add(b);
             }
 
-            // uppdatera karta: highlighta destinations
             updateGraphicsWithMoves(managed, moves);
 
-            tx.commit(); // inga ändringar här, bara visning
-        } catch (RuntimeException e) {
-            if (tx.isActive()) tx.rollback();
-            throw e;
-        } finally {
-            rollButton.setDisable(false);
+            awaitingMoveChoice = true;
+            rollButton.setText("CONFIRM MOVE"); // återanvänd samma knapp
+            logList.getItems().add("👉 välj en resa till höger och tryck confirm move");
+            return;
         }
+
+        // steg 2: kör valt move
+        if (selectedMove == null) {
+            logList.getItems().add("⚠️ välj en resa först");
+            return;
+        }
+
+        doMove(current.getId(), selectedMove);
+
+        // reset UI state för nästa spelare
+        awaitingMoveChoice = false;
+        selectedMove = null;
+        rollButton.setText("ROLL");
+        movesBox.getChildren().clear();
     }
+
 
 
 
@@ -308,6 +324,8 @@ public class TravelGameController {
     private void doMove(Long travelerId, PossibleMoves chosen) {
         if (wonGame) return;
 
+        rollButton.setDisable(true);
+
         EntityTransaction tx = em.getTransaction();
         tx.begin();
         try {
@@ -333,7 +351,6 @@ public class TravelGameController {
             tx.commit();
 
             players.set(currentPlayerIndex, managed);
-            movesBox.getChildren().clear(); // töm val efter move
 
             if (!wonGame) {
                 currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
@@ -344,8 +361,21 @@ public class TravelGameController {
         } catch (RuntimeException e) {
             if (tx.isActive()) tx.rollback();
             throw e;
+        } finally {
+            rollButton.setDisable(false);
         }
     }
+
+
+    private void highlightSelectedMoveButton(Button selected) {
+        for (var node : movesBox.getChildren()) {
+            if (node instanceof Button b) {
+                b.setStyle(""); // reset
+            }
+        }
+        selected.setStyle("-fx-border-color: white; -fx-border-width: 2; -fx-font-weight: bold;");
+    }
+
 
 
 

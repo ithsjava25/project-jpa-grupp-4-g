@@ -174,4 +174,15 @@ public class Traveler extends playerMovement {
             calculateDistanceFromDestinationPos();
         }
     }
+    public void subtractMoneyClamped(BigDecimal amount) {
+        if (amount.signum() < 0) {
+            throw new IllegalArgumentException("amount must be positive");
+        }
+        BigDecimal newValue = this.money.subtract(amount);
+        if (newValue.signum() < 0) {
+            this.money = BigDecimal.ZERO;
+        } else {
+            this.money = newValue;
+        }
+    }
 }

@@ -15,6 +15,7 @@ public class TravelGame extends Application {
     @Override
     public void start(Stage stage) throws Exception {
 
+
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("Starta spelet");
         dialog.setHeaderText("Välkommen till Travel Game!");
