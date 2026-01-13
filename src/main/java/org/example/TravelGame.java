@@ -23,15 +23,6 @@ public class TravelGame extends Application {
 
         DialogPane dialogPane = dialog.getDialogPane();
 
-        //Styling
-//        dialogPane.getStylesheets().add(
-//            TravelGame.class.getResource("/app.css").toExternalForm()
-//        );
-//        dialogPane.getStyleClass().add("name-dialog");
-
-
-
-
         Optional<String> result = dialog.showAndWait();
 
         if (result.isPresent() && !result.get().trim().isEmpty()) {
@@ -44,9 +35,10 @@ public class TravelGame extends Application {
             Scene scene = new Scene(loader.load(), 1300, 700);
 
             TravelGameController controller = loader.getController();
-
             controller.setupGame(playerName);
 
+
+            stage.setOnCloseRequest(e -> controller.shutdown());
 
             stage.setTitle("Travel Game - Spelare: " + playerName);
             stage.setScene(scene);

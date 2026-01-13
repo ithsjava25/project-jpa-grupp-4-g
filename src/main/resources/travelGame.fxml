@@ -5,7 +5,8 @@
 <?import javafx.scene.layout.*?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
-            fx:controller="org.example.TravelGameController" stylesheets="/app.css">
+            fx:controller="org.example.TravelGameController"
+            stylesheets="/app.css">
 
     <center>
         <StackPane fx:id="mapContainer" alignment="CENTER">
@@ -20,47 +21,70 @@
     </center>
 
     <right>
-        <VBox spacing="8" prefWidth="300" style="-fx-padding: 50 20 0 0;">
-            <Label text="Log" style="-fx-font-size: 16; -fx-font-weight: bold; -fx-text-fill: white;"/>
-            <ListView fx:id="logList"/>
+        <VBox spacing="10" prefWidth="320" style="-fx-padding: 30 20 20 20;">
+            <Label text="Log"
+                   style="-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: white;"/>
+            <ListView fx:id="logList" VBox.vgrow="ALWAYS"/>
         </VBox>
     </right>
+
     <bottom>
-        <HBox alignment="CENTER"
-              spacing="20"
-              style="-fx-padding: 10;"
-              styleClass="bottom-bar">
-
-            <VBox alignment="CENTER_LEFT" spacing="5">
-                <Label fx:id="playerLabel" text="Player 1"/>
-                <Label text="Credits:0"/>
-                <Label text="Player 2"/>
-                <Label text="Credits:0"/>
-            </VBox>
-
-            <Region HBox.hgrow="ALWAYS"/>
+        <VBox spacing="10" style="-fx-padding: 12;" styleClass="bottom-bar">
 
 
-            <Button text="ROLL"
-                    fx:id="rollButton"
-                    onAction="#onRoll"
-                    styleClass="roll-button"/>
-            <Label text="You rolled a:"/>
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <Label text="Current:" style="-fx-text-fill: white; -fx-font-weight: bold;"/>
+                <Label fx:id="currentPlayerLabel" text="-" style="-fx-text-fill: white;"/>
 
-            <Region HBox.hgrow="ALWAYS"/>
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <Label text="Last roll:" style="-fx-text-fill: white; -fx-font-weight: bold;"/>
+                <Label fx:id="lastRollLabel" text="-" style="-fx-text-fill: white;"/>
+
+                <Region HBox.hgrow="ALWAYS"/>
+
+                <Label text="Next:" style="-fx-text-fill: white; -fx-font-weight: bold;"/>
+                <Label fx:id="nextPlayerLabel" text="-" style="-fx-text-fill: white;"/>
+            </HBox>
 
 
-            <VBox alignment="CENTER_RIGHT" spacing="5">
-                <Label text="Player 3"/>
-                <Label text="Credits:0"/>
-                <Label text="Player 4"/>
-                <Label text="Credits:0"/>
-            </VBox>
+            <HBox alignment="CENTER" spacing="20">
 
-            <Button text="START JOURNEY" onAction="#startMockJourney" styleClass="journey-button"/>
 
-        </HBox>
+                <VBox spacing="4" prefWidth="520" alignment="CENTER_LEFT">
+                    <HBox spacing="10">
+                        <Label text="Credits:" style="-fx-text-fill: white; -fx-font-weight: bold;"/>
+                        <Label fx:id="currentCreditsLabel" text="0" style="-fx-text-fill: white;"/>
+                        <Label text="Turn:" style="-fx-text-fill: white; -fx-font-weight: bold;"/>
+                        <Label fx:id="currentTurnLabel" text="0" style="-fx-text-fill: white;"/>
+                    </HBox>
+
+                    <HBox spacing="10">
+                        <Label text="Location:" style="-fx-text-fill: white; -fx-font-weight: bold;"/>
+                        <Label fx:id="currentLocationLabel" text="-" style="-fx-text-fill: white;"/>
+                    </HBox>
+
+                    <HBox spacing="10">
+                        <Label text="Destination:" style="-fx-text-fill: white; -fx-font-weight: bold;"/>
+                        <Label fx:id="destinationLabel" text="-" style="-fx-text-fill: white;"/>
+                    </HBox>
+                </VBox>
+
+                <Region HBox.hgrow="ALWAYS"/>
+
+
+                <Button text="ROLL"
+                        fx:id="rollButton"
+                        onAction="#onRoll"
+                        styleClass="roll-button"/>
+
+
+                <Button text="DEMO PATH"
+                        onAction="#startMockJourney"
+                        styleClass="journey-button"/>
+
+            </HBox>
+        </VBox>
     </bottom>
-
 
 </BorderPane>

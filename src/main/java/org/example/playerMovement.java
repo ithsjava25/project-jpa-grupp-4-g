@@ -6,6 +6,9 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import org.example.GameConfig;
+import org.example.GameMode;
+
 
 public class playerMovement extends Player{
     private int dice = 6;
@@ -169,6 +172,29 @@ public class playerMovement extends Player{
         System.out.println("End of "+ playerName + " turn");
         checkIfPlayerHasPenalties();
     }
+    public void playerTurnGui(int diceAmount) {
+        setAvailableMovement(rollDice(diceAmount));
+        System.out.println(playerName + " GUI turn");
+
+
+        autoMove();
+
+
+        if (checkIfPlayerIsAtDestination()) {
+            increaseScore();
+        }
+
+        System.out.println("End of " + playerName + " GUI turn");
+        checkIfPlayerHasPenalties();
+    }
+    public void playerTurnByMode(int diceAmount) {
+        if (GameConfig.MODE == GameMode.CLI) {
+            playerTurn(diceAmount);
+        } else {
+            playerTurnGui(diceAmount);
+        }
+    }
+
 
     public void chooseTransportation(List transport) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
