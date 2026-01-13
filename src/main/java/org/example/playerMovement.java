@@ -3,8 +3,6 @@ package org.example;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class playerMovement extends Player{
@@ -16,8 +14,6 @@ public class playerMovement extends Player{
     record destinationPos(int destinationX, int destinationY) {}
     private destinationPos destination;
     private int playerTurnCount = 0;
-
-    private List<TransportTest> transMethods = new ArrayList<>();
 
     public int getTransDiceCount(){
         return selectedTransportDice;
@@ -165,11 +161,8 @@ public class playerMovement extends Player{
                 case "right" -> {
                     playerMoveRight();
                     availableMovement--;
-                }case "auto" -> {
-                    autoMove();
-                } default ->  {
-                    System.out.println("Invalid input!");
-                }
+                }case "auto" -> autoMove();
+                 default -> System.out.println("Invalid input!");
             }
             if (checkIfPlayerIsAtDestination()){
                 increaseScore();
@@ -205,10 +198,10 @@ public class playerMovement extends Player{
             }
             switch (choice) {
                 case 1 -> {
-                    if (checkIfPlayerHasEnoughCredits(transport.get(0).getCostPerMove().intValue())){
-                        this.selectedTransportDice = transport.get(0).getDiceCount();
-                        removeCredits(transport.get(0).getCostPerMove().intValue());
-                    };
+                    if (checkIfPlayerHasEnoughCredits(transport.getFirst().getCostPerMove().intValue())){
+                        this.selectedTransportDice = transport.getFirst().getDiceCount();
+                        removeCredits(transport.getFirst().getCostPerMove().intValue());
+                    }
                     return;
                 }
                 case 2 -> {
@@ -216,18 +209,16 @@ public class playerMovement extends Player{
                     if (checkIfPlayerHasEnoughCredits(transport.get(1).getCostPerMove().intValue())){
                         this.selectedTransportDice = transport.get(1).getDiceCount();
                         removeCredits(transport.get(1).getCostPerMove().intValue());
-                    };
+                    }
                     return;
                 }
                 case 3 -> {
                     if (checkIfPlayerHasEnoughCredits(transport.get(2).getCostPerMove().intValue())){
                         this.selectedTransportDice = transport.get(2).getDiceCount();
                         removeCredits(transport.get(2).getCostPerMove().intValue());
-                    };
+                    }
                     return;
-                }default -> {
-                    System.out.println("Invalid input, needs to be a number");
-                }
+                }default -> System.out.println("Invalid input, needs to be a number");
             }
         }
     }
@@ -246,7 +237,6 @@ public class playerMovement extends Player{
     }
 }
 
-record TransportTest(String transportationMethod, int dices, int cost){}
 
 
 
