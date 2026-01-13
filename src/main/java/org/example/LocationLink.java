@@ -2,6 +2,9 @@ package org.example;
 
 import jakarta.persistence.*;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Entity
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = {"from_location_id", "to_location_id"}))
 public class LocationLink {
@@ -19,6 +22,10 @@ public class LocationLink {
 
     @Column(nullable = false)
     private int distance;
+
+    @OneToMany(mappedBy = "locationLink")
+    private Set<TransportLink> transportLinks = new HashSet<>();
+
 
     public LocationLink() {}
 
@@ -40,4 +47,9 @@ public class LocationLink {
     public int getDistance() {
         return distance;
     }
+
+    public Set<TransportLink> getTransportLinks() {
+        return transportLinks;
+    }
+
 }

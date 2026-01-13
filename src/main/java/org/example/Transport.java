@@ -60,4 +60,8 @@ public class Transport {
     public int getDiceCount(){
         return diceCount;
     }
+
+    public String getType() {
+        return type.toString();
+    }
 }
