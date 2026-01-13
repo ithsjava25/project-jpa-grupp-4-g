@@ -59,8 +59,7 @@ public class JourneyService {
         // 3. starta resa om det är en ny resa
         if (!traveler.isTravelling()) {
             traveler.startJourney(
-                route.getToLocation(),
-                route.getDistance()
+                route.getToLocation()
             );
         }
 

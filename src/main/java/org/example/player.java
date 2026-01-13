@@ -61,8 +61,7 @@ abstract class Player {
         }
     }
 
-    /* if a player gets a penalty, get a random number between 0 - 5, choose a penlty from the switch.*/
-    //TODO fix credits for correct value
+    /* if a player gets a penalty, get a random number between 0 - 5, choose a penalty from the switch.*/
     public void getPenalty() {
         int getPenaltyNumber = (int) (6*Math.random()+1);
         switch (getPenaltyNumber) {
@@ -93,6 +92,47 @@ abstract class Player {
             }default -> {
                 System.out.println(" ");
                 System.out.println("no penalties");
+            }
+        }
+    }
+
+    void checkIfPlayerHasBonus(){
+        if (Math.random() < 0.10){
+            System.out.println("You got the penalty!");
+            getBonus();
+        }
+    }
+
+    public void getBonus() {
+        int getPenaltyNumber = (int) (6*Math.random()+1);
+        switch (getPenaltyNumber) {
+            case 1 -> {
+                System.out.println(" ");
+                System.out.println("found some spare change");
+                addCredits(50);
+            } case 2 -> {
+                System.out.println(" ");
+                System.out.println("helped an old woman across the street");
+                addCredits(100);
+            } case 3 -> {
+                System.out.println(" ");
+                System.out.println("got a day job");
+                addCredits(250);
+            } case 4 -> {
+                System.out.println(" ");
+                System.out.println("you're parents sent you some money");
+                addCredits(400);
+            } case 5 -> {
+                System.out.println(" ");
+                System.out.println("Happy birthday");
+                addCredits(500);
+            } case 6 -> {
+                System.out.println(" ");
+                System.out.println("won the lottery");
+                addCredits(1000);
+            }default -> {
+                System.out.println(" ");
+                System.out.println("no bonus");
             }
         }
     }
