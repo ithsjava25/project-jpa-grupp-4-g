@@ -181,6 +181,7 @@ public class playerMovement extends Player{
         for (int i = 0; i < transport.size(); i++){
             System.out.println("Nr " + (i+1) + ": " + transport.get(i).getType() + ". Costs: " + transport.get(i).getCostPerMove());
         }
+        System.out.println("Nr 4: Player walks");
         while (true){
             System.out.println("Player has " + getCredits() + " credits");
             System.out.println("Choose transportation: ");
@@ -201,24 +202,35 @@ public class playerMovement extends Player{
                     if (checkIfPlayerHasEnoughCredits(transport.getFirst().getCostPerMove().intValue())){
                         this.selectedTransportDice = transport.getFirst().getDiceCount();
                         removeCredits(transport.getFirst().getCostPerMove().intValue());
+                        return;
+                    } else {
+                        System.out.println("Not enough credits");
                     }
-                    return;
                 }
                 case 2 -> {
 
                     if (checkIfPlayerHasEnoughCredits(transport.get(1).getCostPerMove().intValue())){
                         this.selectedTransportDice = transport.get(1).getDiceCount();
                         removeCredits(transport.get(1).getCostPerMove().intValue());
+                        return;
+                    } else {
+                        System.out.println("Not enough credits");
                     }
-                    return;
                 }
                 case 3 -> {
                     if (checkIfPlayerHasEnoughCredits(transport.get(2).getCostPerMove().intValue())){
                         this.selectedTransportDice = transport.get(2).getDiceCount();
                         removeCredits(transport.get(2).getCostPerMove().intValue());
+                        return;
+                    } else {
+                        System.out.println("Not enough credits");
                     }
+                } case 4 -> {
+                    System.out.println("Player walks");
+                    this.selectedTransportDice = (int) ((4 * Math.random()+1));
                     return;
-                }default -> System.out.println("Invalid input, needs to be a number");
+                }
+                default -> System.out.println("Invalid input, needs to be a number");
             }
         }
     }
