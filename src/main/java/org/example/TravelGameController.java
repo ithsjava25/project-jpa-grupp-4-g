@@ -26,7 +26,6 @@ public class TravelGameController {
     @FXML private ListView<String> logList;
     @FXML private Button rollButton;
 
-    // HUD labels (från nya FXML)
     @FXML private Label currentPlayerLabel;
     @FXML private Label nextPlayerLabel;
     @FXML private Label lastRollLabel;
