@@ -61,7 +61,7 @@ abstract class Player {
         }
     }
 
-    /* if a player gets a penalty, get a random number between 0 - 5, choose a penlty from the switch.*/
+    /* if a player gets a penalty, get a random number between 0 - 5, choose a penalty from the switch.*/
     public void getPenalty() {
         int getPenaltyNumber = (int) (6*Math.random()+1);
         switch (getPenaltyNumber) {
@@ -120,7 +120,7 @@ abstract class Player {
                 addCredits(250);
             } case 4 -> {
                 System.out.println(" ");
-                System.out.println("youre parents sent you some money");
+                System.out.println("you're parents sent you some money");
                 addCredits(400);
             } case 5 -> {
                 System.out.println(" ");
