@@ -19,10 +19,6 @@ public class App {
         Traveler p3;
         Traveler p4;
 
-//        Transport plane = em.createQuery("select t from Transport t where t.id = 1", Transport.class).getSingleResult();
-//        Transport train = em.createQuery("select t from Transport t where t.id = 2", Transport.class).getSingleResult();
-//        Transport buss = em.createQuery("select t from Transport t where t.id = 3", Transport.class).getSingleResult();
-
         List<Transport> transportMethods = em.createQuery("select t from Transport t", Transport.class).getResultList();
 
 
@@ -245,7 +241,7 @@ public class App {
 //        return randLoc;
 //    }
 
-    //Randomise through all points for continent, country and locations. 
+    //Randomise through all points for continent, country and locations.
     static public Location randomLocation(EntityManager em){
 
         Long contCount = em.createQuery("Select count(c) from Continent c", Long.class).getSingleResult();
