@@ -7,6 +7,7 @@ import java.util.List;
 
 public class playerMovement extends Player{
     private int dice = 6;
+    private int walkingDice = 4;
     private int selectedTransportDice;
     private int availableMovement;
     private int playerPosX;
@@ -227,7 +228,7 @@ public class playerMovement extends Player{
                     }
                 } case 4 -> {
                     System.out.println("Player walks");
-                    this.selectedTransportDice = (int) ((4 * Math.random()+1));
+                    this.selectedTransportDice = (int) ((walkingDice * Math.random()+1));
                     return;
                 }
                 default -> System.out.println("Invalid input, needs to be a number");
