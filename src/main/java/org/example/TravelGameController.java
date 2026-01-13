@@ -14,6 +14,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import org.example.service.JourneyService;
 import org.example.service.PlayerEventService;
@@ -28,6 +29,7 @@ public class TravelGameController {
     @FXML private ListView<String> logList;
     @FXML private Button rollButton;
     @FXML private VBox movesBox;
+    @FXML private StackPane mapContainer;
 
 
 
@@ -66,45 +68,55 @@ public class TravelGameController {
 
         mapView.setImage(new Image(getClass().getResourceAsStream("/assets/map.png")));
 
-        double width = 900;
-        double height = 700;
+        // viktiga små grejer för layout
+        mapContainer.setMinSize(0, 0);
+        mapContainer.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        drawingPane.setMouseTransparent(false);
 
-        mapView.setFitWidth(width);
-        mapView.setFitHeight(height);
+        // bind EFTER att scenen/layouten är klar → undviker pref-size loop
+        Platform.runLater(() -> {
+            mapView.fitWidthProperty().bind(mapContainer.widthProperty());
+            mapView.fitHeightProperty().bind(mapContainer.heightProperty());
 
-        drawingPane.setPrefSize(width, height);
-        drawingPane.setMaxSize(width, height);
+            drawingPane.prefWidthProperty().bind(mapContainer.widthProperty());
+            drawingPane.prefHeightProperty().bind(mapContainer.heightProperty());
 
-        logList.getItems().add("🌍 Spelet startade. Klicka på kartan för att sätta destination. Tryck ROLL.");
+            updateGraphics();
+        });
 
-        Platform.runLater(this::updateGraphics);
+        logList.getItems().add("🌍 spelet startade. tryck roll.");
     }
+
 
     public void setupGame(String playerName) {
         GameConfig.MODE = GameMode.GUI;
 
         emf = Persistence.createEntityManagerFactory("jpa-hibernate-mysql");
         em = emf.createEntityManager();
+
+        // ✅ bootstrap här (gui-entré) så du slipper App.main
         new org.example.service.BootstrapService(em).initialize();
+
         eventService = new PlayerEventService();
         eventService.setGuiLog(logList);
-        journeyService = new JourneyService(em,eventService);
 
-
-
-
-        transports = em.createQuery("select t from Transport t", Transport.class).getResultList();
+        journeyService = new JourneyService(em, eventService);
 
         EntityTransaction tx = em.getTransaction();
         tx.begin();
         try {
-            Traveler p1 = new Traveler(playerName, App.randomLocation(em));
-            Location dest1 = App.randomLocation(em);
-            p1.setDestinationPos(dest1.getX(), dest1.getY());
+            // ✅ välj startplatser som du vet har länkar i seed
+            Location stockholm = getLocationByName("Stockholm");
+            Location berlin = getLocationByName("Berlin");
+            Location paris = getLocationByName("Paris");
 
-            Traveler p2 = new Traveler("Player 2", App.randomLocation(em));
-            Location dest2 = App.randomLocation(em);
-            p2.setDestinationPos(dest2.getX(), dest2.getY());
+            Traveler p1 = new Traveler(playerName, stockholm);
+            Traveler p2 = new Traveler("Player 2", berlin);
+
+            // (valfritt) om du fortfarande visar destinationLabel i hud:
+            // sätt en "visuell destination" som är en riktig location, inte fri klick
+            p1.setDestinationPos(paris.getX(), paris.getY());
+            p2.setDestinationPos(stockholm.getX(), stockholm.getY());
 
             em.persist(p1);
             em.persist(p2);
@@ -119,7 +131,10 @@ public class TravelGameController {
             throw e;
         }
 
-        logList.getItems().add("✅ " + players.size() + " spelare skapade.");
+        logList.getItems().add("✅ " + players.size() + " spelare skapade (start = stockholm/berlin).");
+
+        // rensa eventuella gamla val
+        movesBox.getChildren().clear();
         syncHudAndMap();
     }
 
@@ -191,10 +206,6 @@ public class TravelGameController {
         rollButton.setText("ROLL");
         movesBox.getChildren().clear();
     }
-
-
-
-
 
     @FXML
     private void onMapClicked(MouseEvent event) {
@@ -376,8 +387,11 @@ public class TravelGameController {
         selected.setStyle("-fx-border-color: white; -fx-border-width: 2; -fx-font-weight: bold;");
     }
 
-
-
+    private Location getLocationByName(String name) {
+        return em.createQuery("select l from Location l where l.name = :n", Location.class)
+            .setParameter("n", name)
+            .getSingleResult();
+    }
 
     public void shutdown() {
         try {

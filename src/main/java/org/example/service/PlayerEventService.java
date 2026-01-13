@@ -35,24 +35,24 @@ public class PlayerEventService {
         if (Math.random() < 0.05) {
             EventOutcome o = randomPenalty();
             BigDecimal amount = BigDecimal.valueOf(o.amount());
-
-            // viktig skillnad: penalty ska INTE kasta exception om spelaren inte har råd
-            // clamp: money kan aldrig gå under 0
-            traveler.subtractMoneyClamped(amount);
+            traveler.deductMoney(amount);
 
             events.add(new EventResult(EventType.PENALTY, amount, o.message()));
-            log("⚠ " + traveler.getPlayerName() + ": " + o.message() + " (-" + o.amount() + " credits)");
+
+            log("⚠ " + traveler.getPlayerName() + ": " + o.message()
+                + " (-" + o.amount() + " credits)");
         }
 
         // bonus 10%
         if (Math.random() < 0.10) {
             EventOutcome o = randomBonus();
             BigDecimal amount = BigDecimal.valueOf(o.amount());
-
             traveler.addMoney(amount);
 
             events.add(new EventResult(EventType.BONUS, amount, o.message()));
-            log("🎁 " + traveler.getPlayerName() + ": " + o.message() + " (+" + o.amount() + " credits)");
+
+            log("🎁 " + traveler.getPlayerName() + ": " + o.message()
+                + " (+" + o.amount() + " credits)");
         }
 
         return events;

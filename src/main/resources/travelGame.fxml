@@ -9,14 +9,13 @@
             stylesheets="/app.css">
 
     <center>
-        <StackPane fx:id="mapContainer" alignment="CENTER">
+        <StackPane fx:id="mapContainer" alignment="CENTER" prefWidth="900" prefHeight="700">
             <ImageView fx:id="mapView"
                        preserveRatio="false"
                        fitWidth="900"
                        fitHeight="700"
                        pickOnBounds="true" />
-
-            <Pane fx:id="drawingPane" onMouseClicked="#onMapClicked" />
+            <Pane fx:id="drawingPane"/>
         </StackPane>
     </center>
 

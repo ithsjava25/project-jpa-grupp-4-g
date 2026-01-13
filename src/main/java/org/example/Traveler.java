@@ -185,4 +185,13 @@ public class Traveler extends playerMovement {
             this.money = newValue;
         }
     }
+
+    public void deductMoney(BigDecimal amount) {
+        if (amount.signum() < 0) {
+            throw new IllegalArgumentException("amount must be positive");
+        }
+        BigDecimal next = this.money.subtract(amount);
+        this.money = next.signum() < 0 ? BigDecimal.ZERO : next;
+    }
+
 }

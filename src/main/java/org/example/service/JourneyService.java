@@ -43,38 +43,28 @@ public class JourneyService {
         LocationLink route = move.getRoute();
         Transport transport = move.getTransport();
 
-        // 1) kontroll: transport tillåten?
         boolean allowed = route.getTransportLinks()
             .stream()
             .anyMatch(tl -> tl.getTransport().equals(transport));
 
         if (!allowed) {
-            throw new IllegalStateException(
-                transport.getType() + " is not allowed on this route"
-            );
+            throw new IllegalStateException(transport.getType() + " is not allowed on this route");
         }
 
-        // 2) råd?
         BigDecimal cost = transport.getCostPerMove();
         if (traveler.getMoney().compareTo(cost) < 0) {
             throw new IllegalStateException("traveler cannot afford this move");
         }
 
-        // 3) starta resa
         if (!traveler.isTravelling()) {
             traveler.startJourney(route.getToLocation(), route.getDistance());
         }
 
-        // 4) roll
         int rolledDistance = transport.rollDistance();
 
-        // 5) betala transport
         traveler.pay(cost);
-
-        // 6) flytta
         traveler.advance(rolledDistance);
 
-        // 7) logga journey
         Journey journey = new Journey(
             traveler,
             route,
@@ -86,11 +76,9 @@ public class JourneyService {
 
         em.persist(journey);
 
-        // 8) events (0–2 st), loggas i gui av eventservice + persisteras här
-        List<PlayerEventService.EventResult> events =
-            eventService.applyEndOfTurnEvents(traveler);
-
-        for (PlayerEventService.EventResult e : events) {
+        // ✅ events: skapa + persistera kopplat till journey
+        var events = eventService.applyEndOfTurnEvents(traveler);
+        for (var e : events) {
             em.persist(new TurnEvent(
                 traveler,
                 journey,
@@ -104,4 +92,5 @@ public class JourneyService {
 
         return journey;
     }
+
 }

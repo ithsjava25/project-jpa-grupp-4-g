@@ -55,6 +55,13 @@ public class Journey {
     @Column(name = "turn_number", nullable = false)
     private int turnNumber;
 
+    @OneToMany(mappedBy = "journey", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<TurnEvent> events = new java.util.ArrayList<>();
+
+    public java.util.List<TurnEvent> getEvents() {
+        return events;
+    }
+
     /* -------- constructors -------- */
 
     protected Journey() {
