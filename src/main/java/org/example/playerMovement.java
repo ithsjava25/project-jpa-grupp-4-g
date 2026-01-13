@@ -179,6 +179,7 @@ public class playerMovement extends Player{
         System.out.println("End of "+ playerName + " turn");
         System.out.println("- - - - - - - - - -");
         checkIfPlayerHasPenalties();
+        checkIfPlayerHasBonus();
         playerTurnCount++;
     }
 
