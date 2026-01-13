@@ -79,7 +79,7 @@ public class TravelGameController {
 
         emf = Persistence.createEntityManagerFactory("jpa-hibernate-mysql");
         em = emf.createEntityManager();
-        eventService = new PlayerEventService(em);
+        eventService = new PlayerEventService();
         eventService.setGuiLog(logList);
         journeyService = new JourneyService(em,eventService);
 

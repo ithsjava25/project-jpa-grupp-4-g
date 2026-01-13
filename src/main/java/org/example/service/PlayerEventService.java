@@ -1,24 +1,18 @@
 package org.example.service;
 
-import jakarta.persistence.EntityManager;
-import org.example.Traveler;
 import javafx.application.Platform;
 import javafx.scene.control.ListView;
+import org.example.EventType;
+import org.example.Traveler;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PlayerEventService {
 
-    private final EntityManager em;
     private ListView<String> guiLog;
 
-    public PlayerEventService(EntityManager em) {
-        this.em = em;
-    }
-
-    /**
-     * Optional: attach a GUI log to display events
-     */
     public void setGuiLog(ListView<String> guiLog) {
         this.guiLog = guiLog;
     }
@@ -31,48 +25,57 @@ public class PlayerEventService {
     }
 
     /**
-     * Används efter varje turn
+     * skapar 0–2 events, uppdaterar traveler.money och returnerar event-data
+     * (journeyservice persisterar dem kopplat till Journey)
      */
-    public void applyEndOfTurnEvents(Traveler traveler) {
+    public List<EventResult> applyEndOfTurnEvents(Traveler traveler) {
+        List<EventResult> events = new ArrayList<>();
 
-        // 1️⃣ slumpmässig penalty
+        // penalty 5%
         if (Math.random() < 0.05) {
-            int amount = randomPenalty(traveler);
-            traveler.addCredits(-amount);
-            log(traveler.getPlayerName() + " fick en penalty: -" + amount + " credits");
+            EventOutcome o = randomPenalty();
+            traveler.pay(BigDecimal.valueOf(o.amount()));
+            events.add(new EventResult(EventType.PENALTY, BigDecimal.valueOf(o.amount()), o.message()));
+            log("⚠ " + traveler.getPlayerName() + ": " + o.message() + " (-" + o.amount() + " credits)");
         }
 
-        // 2️⃣ slumpmässig bonus
+        // bonus 10%
         if (Math.random() < 0.10) {
-            int amount = randomBonus(traveler);
-            traveler.addCredits(amount);
-            log(traveler.getPlayerName() + " fick en bonus: +" + amount + " credits");
+            EventOutcome o = randomBonus();
+            traveler.addMoney(BigDecimal.valueOf(o.amount()));
+            events.add(new EventResult(EventType.BONUS, BigDecimal.valueOf(o.amount()), o.message()));
+            log("🎁 " + traveler.getPlayerName() + ": " + o.message() + " (+" + o.amount() + " credits)");
         }
+
+        return events;
     }
 
-    private int randomPenalty(Traveler traveler) {
+    public record EventResult(EventType type, BigDecimal amount, String message) {}
+    private record EventOutcome(int amount, String message) {}
+
+    private EventOutcome randomPenalty() {
         int n = (int) (6 * Math.random()) + 1;
         return switch (n) {
-            case 1 -> 50;
-            case 2 -> 100;
-            case 3 -> 150;
-            case 4 -> 200;
-            case 5 -> 250;
-            case 6 -> 500;
-            default -> 0;
+            case 1 -> new EventOutcome(50,  "you fell and bruised, pay some fees");
+            case 2 -> new EventOutcome(100, "you partied too hard last night, lost credits");
+            case 3 -> new EventOutcome(150, "you got scammed by a local, what a shame");
+            case 4 -> new EventOutcome(200, "your transport broke, need a mechanic");
+            case 5 -> new EventOutcome(250, "you have a big phone bill, don't call that much");
+            case 6 -> new EventOutcome(500, "really.. the ritz hotel");
+            default -> new EventOutcome(0, "no penalties");
         };
     }
 
-    private int randomBonus(Traveler traveler) {
+    private EventOutcome randomBonus() {
         int n = (int) (6 * Math.random()) + 1;
         return switch (n) {
-            case 1 -> 50;
-            case 2 -> 100;
-            case 3 -> 250;
-            case 4 -> 400;
-            case 5 -> 500;
-            case 6 -> 1000;
-            default -> 0;
+            case 1 -> new EventOutcome(50,   "found some spare change");
+            case 2 -> new EventOutcome(100,  "helped an old woman across the street");
+            case 3 -> new EventOutcome(250,  "got a day job");
+            case 4 -> new EventOutcome(400,  "your parents sent you some money");
+            case 5 -> new EventOutcome(500,  "happy birthday!");
+            case 6 -> new EventOutcome(1000, "won the lottery!");
+            default -> new EventOutcome(0, "no bonus");
         };
     }
 }
