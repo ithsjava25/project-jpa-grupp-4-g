@@ -4,6 +4,7 @@ import jakarta.persistence.EntityManager;
 import org.example.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 public class JourneyService {
@@ -16,10 +17,11 @@ public class JourneyService {
 
     /**
      * listar alla möjliga drag från en given plats
+     * (en rutt + ett transportsätt = ett PossibleMoves)
      */
-    public List<LocationLink> listAvailableMoves(Location fromLocation) {
+    public List<PossibleMoves> findPossibleMoves(Location fromLocation) {
 
-        return em.createQuery("""
+        List<LocationLink> routes = em.createQuery("""
             select distinct ll
             from LocationLink ll
             join fetch ll.transportLinks tl
@@ -28,6 +30,21 @@ public class JourneyService {
         """, LocationLink.class)
             .setParameter("location", fromLocation)
             .getResultList();
+
+        List<PossibleMoves> result = new ArrayList<>();
+
+        for (LocationLink route : routes) {
+            for (TransportLink tl : route.getTransportLinks()) {
+                result.add(
+                    new PossibleMoves(
+                        route,
+                        tl.getTransport()
+                    )
+                );
+            }
+        }
+
+        return result;
     }
 
     /**
@@ -35,11 +52,12 @@ public class JourneyService {
      */
     public Journey performTurn(
         Traveler traveler,
-        LocationLink route,
-        Transport transport
+        PossibleMoves move
     ) {
+        LocationLink route = move.getRoute();
+        Transport transport = move.getTransport();
 
-        // 1. kontroll: är transport tillåten på rutten?
+        // 1️⃣ kontroll: är transport tillåten på rutten?
         boolean allowed = route.getTransportLinks()
             .stream()
             .anyMatch(tl -> tl.getTransport().equals(transport));
@@ -50,29 +68,29 @@ public class JourneyService {
             );
         }
 
-        // 2. kontroll: har resenären råd?
+        // 2️⃣ kontroll: har resenären råd?
         BigDecimal cost = transport.getCostPerMove();
         if (traveler.getMoney().compareTo(cost) < 0) {
             throw new IllegalStateException("traveler cannot afford this move");
         }
 
-        // 3. starta resa om det är en ny resa
+        // 3️⃣ starta resa om det är en ny resa
         if (!traveler.isTravelling()) {
             traveler.startJourney(
                 route.getToLocation()
             );
         }
 
-        // 4. slå tärning
+        // 4️⃣ slå tärning
         int rolledDistance = transport.rollDistance();
 
-        // 5. betala
+        // 5️⃣ betala
         traveler.pay(cost);
 
-        // 6. flytta
+        // 6️⃣ flytta
         traveler.advance(rolledDistance);
 
-        // 7. logga draget
+        // 7️⃣ logga draget
         Journey journey = new Journey(
             traveler,
             route,

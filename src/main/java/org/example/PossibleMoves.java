@@ -25,4 +25,8 @@ public class PossibleMoves {
         return transport;
     }
 
+    public LocationLink getRoute(){
+        return route;
+    }
+
 }

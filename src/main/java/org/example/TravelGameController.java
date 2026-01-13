@@ -14,6 +14,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
+import org.example.service.JourneyService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +36,7 @@ public class TravelGameController {
     @FXML private Label destinationLabel;
 
     private MapVisualizer visualizer;
+    private JourneyService journeyService;
 
     private static final int GRID_SIZE = 50;
 
@@ -75,6 +77,8 @@ public class TravelGameController {
 
         emf = Persistence.createEntityManagerFactory("jpa-hibernate-mysql");
         em = emf.createEntityManager();
+        journeyService = new JourneyService(em);
+
 
         transports = em.createQuery("select t from Transport t", Transport.class).getResultList();
 
@@ -114,62 +118,61 @@ public class TravelGameController {
 
         Traveler current = players.get(currentPlayerIndex);
 
-        // Välj rimlig diceCount för GUI:
-        // tar första transportens diceCount om den finns annars 1.
-        int guiDice = 1;
-        if (transports != null && !transports.isEmpty()) {
-            guiDice = transports.getFirst().getDiceCount();
-        }
-
         EntityTransaction tx = em.getTransaction();
         tx.begin();
+
         try {
             Traveler managed = em.find(Traveler.class, current.getId());
 
-
-
-            int rolled = managed.rollDice(guiDice);
-            managed.setAvailableMovement(rolled);
-
-            lastRollLabel.setText(String.valueOf(rolled));
-            logList.getItems().add("🎲 " + managed.playerName + " slog " + rolled);
-
-
-            try {
-                managed.getDestinationPosX();
-            } catch (NullPointerException npe) {
-                logList.getItems().add("📍 Välj destination genom att klicka på kartan!");
-                managed.setAvailableMovement(0);
-                tx.commit();
-                players.set(currentPlayerIndex, managed);
+            // 1️⃣ aktuell plats (Location)
+            Location currentLocation = managed.getCurrentLocation();
+            if (currentLocation == null) {
+                logList.getItems().add("❌ ingen aktuell plats");
+                tx.rollback();
                 rollButton.setDisable(false);
-                syncHudAndMap();
                 return;
             }
 
+            // 2️⃣ hämta alla möjliga drag från databasen
+            List<PossibleMoves> possibleMoves =
+                journeyService.findPossibleMoves(currentLocation);
 
-            managed.autoMove();
-
-            if (managed.checkIfPlayerIsAtDestination()) {
-                managed.increaseScore();
-
-                Location newDest = App.randomLocation(em);
-                managed.setDestinationPos(newDest.getX(), newDest.getY());
-                logList.getItems().add("🎯 Ny destination: " + newDest.getName() + " [" + newDest.getX() + "," + newDest.getY() + "]");
+            if (possibleMoves.isEmpty()) {
+                logList.getItems().add(
+                    "⛔ inga möjliga resor från " + currentLocation.getName()
+                );
+                tx.commit();
+                rollButton.setDisable(false);
+                return;
             }
 
-            managed.checkIfPlayerHasPenalties();
-            managed.checkIfPlayerHasBonus();
+            // 3️⃣ välj ett drag (tillfälligt: första)
+            PossibleMoves chosen = possibleMoves.get(0);
 
+            Location from = chosen.getFrom();
+            Location to   = chosen.getTo();
+            Transport transport = chosen.getTransport();
 
+            // 4️⃣ utför draget (all logik i service)
+            journeyService.performTurn(
+                managed,
+                chosen
+            );
+
+            // 5️⃣ logg
+            logList.getItems().add(
+                "🚀 " + managed.getPlayerName() +
+                    " reste från " + from.getName() +
+                    " till " + to.getName() +
+                    " med " + transport.getType()
+            );
 
             if (managed.checkScore()) {
-                logList.getItems().add("🏆 " + managed.playerName + " vinner!");
+                logList.getItems().add("🏆 " + managed.getPlayerName() + " vinner!");
                 wonGame = true;
             }
 
             tx.commit();
-
             players.set(currentPlayerIndex, managed);
 
         } catch (RuntimeException e) {
@@ -177,7 +180,6 @@ public class TravelGameController {
             throw e;
         } finally {
             if (!wonGame) rollButton.setDisable(false);
-            else rollButton.setDisable(true);
         }
 
         if (!wonGame) {
@@ -186,6 +188,8 @@ public class TravelGameController {
 
         syncHudAndMap();
     }
+
+
 
     @FXML
     private void onMapClicked(MouseEvent event) {
