@@ -19,11 +19,12 @@ public class App {
         Traveler p3;
         Traveler p4;
 
-        List<Transport> transportMethods = em.createQuery("select t from Transport t", Transport.class).getResultList();
+
 
 
         try {
             tx.begin();
+            List<Transport> transportMethods = em.createQuery("select t from Transport t", Transport.class).getResultList();
             int pAmount = 0;
             String input = IO.readln("Welcome, how many players??? 2 - 4  ");
             try {
@@ -45,12 +46,14 @@ public class App {
                 case 2 ->{
                     String p1Name = IO.readln("Input name for player 1: ");
                     Location newDestP1 = randomLocation(em);
-                    p1 = new Traveler(p1Name, randomLocation(em), newDestP1);
+                    p1 = new Traveler(p1Name, randomLocation(em));
                     p1.setDestinationPos(newDestP1.getX(), newDestP1.getY());
+                    p1.startJourney(newDestP1);
                     String p2Name = IO.readln("Input name for player 2: ");
                     Location newDestP2 = randomLocation(em);
-                    p2 = new Traveler(p2Name, randomLocation(em), newDestP2);
+                    p2 = new Traveler(p2Name, randomLocation(em));
                     p2.setDestinationPos(newDestP2.getX(), newDestP2.getY());
+                    p2.startJourney(newDestP2);
                     em.persist(p1);
                     em.persist(p2);
                     while(!wonGame){
@@ -79,16 +82,19 @@ public class App {
                 }case 3 ->{
                     String p1Name = IO.readln("Input name for player 1: ");
                     Location newDestP1 = randomLocation(em);
-                    p1 = new Traveler(p1Name, randomLocation(em), newDestP1);
+                    p1 = new Traveler(p1Name, randomLocation(em));
                     p1.setDestinationPos(newDestP1.getX(), newDestP1.getY());
+                    p1.startJourney(newDestP1);
                     String p2Name = IO.readln("Input name for player 2: ");
                     Location newDestP2 = randomLocation(em);
-                    p2 = new Traveler(p2Name, randomLocation(em), newDestP2);
+                    p2 = new Traveler(p2Name, randomLocation(em));
                     p2.setDestinationPos(newDestP2.getX(), newDestP2.getY());
+                    p2.startJourney(newDestP2);
                     String p3Name = IO.readln("Input name for player 2: ");
                     Location newDestP3 = randomLocation(em);
-                    p3 = new Traveler(p3Name, randomLocation(em), newDestP3);
+                    p3 = new Traveler(p3Name, randomLocation(em));
                     p3.setDestinationPos(newDestP3.getX(), newDestP3.getY());
+                    p3.startJourney(newDestP3);
                     em.persist(p1);
                     em.persist(p2);
                     em.persist(p3);
@@ -128,20 +134,24 @@ public class App {
                 }case 4 ->{
                     String p1Name = IO.readln("Input name for player 1: ");
                     Location newDestP1 = randomLocation(em);
-                    p1 = new Traveler(p1Name, randomLocation(em), newDestP1);
+                    p1 = new Traveler(p1Name, randomLocation(em));
                     p1.setDestinationPos(newDestP1.getX(), newDestP1.getY());
+                    p1.startJourney(newDestP1);
                     String p2Name = IO.readln("Input name for player 2: ");
                     Location newDestP2 = randomLocation(em);
-                    p2 = new Traveler(p2Name, randomLocation(em), newDestP2);
+                    p2 = new Traveler(p2Name, randomLocation(em));
                     p2.setDestinationPos(newDestP2.getX(), newDestP2.getY());
-                    String p3Name = IO.readln("Input name for player 3: ");
+                    p2.startJourney(newDestP2);
+                    String p3Name = IO.readln("Input name for player 2: ");
                     Location newDestP3 = randomLocation(em);
-                    p3 = new Traveler(p3Name, randomLocation(em), newDestP3);
+                    p3 = new Traveler(p3Name, randomLocation(em));
                     p3.setDestinationPos(newDestP3.getX(), newDestP3.getY());
+                    p3.startJourney(newDestP3);
                     String p4Name = IO.readln("Input name for player 4: ");
                     Location newDestP4 = randomLocation(em);
-                    p4 = new Traveler(p4Name, randomLocation(em), newDestP4);
+                    p4 = new Traveler(p4Name, randomLocation(em));
                     p4.setDestinationPos(newDestP4.getX(), newDestP4.getY());
+                    p4.startJourney(newDestP4);
                     em.persist(p1);
                     em.persist(p2);
                     em.persist(p3);

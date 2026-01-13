@@ -29,11 +29,10 @@ public class Traveler extends playerMovement{
 
     protected Traveler() {}
 
-    public Traveler(String name, Location startLocation,Location destination) {
+    public Traveler(String name, Location startLocation) {
         playerName = name;
         this.currentLocation = startLocation;
         setPosition();
-        startJourney(destination);
     }
 
     public void setPosition(){
