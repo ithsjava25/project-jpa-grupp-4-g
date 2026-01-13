@@ -61,7 +61,7 @@ public class Transport {
         return diceCount;
     }
 
-    public TransportType getType(){
-        return type;
+    public String getType() {
+        return type.toString();
     }
 }
