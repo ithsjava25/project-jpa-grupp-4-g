@@ -27,6 +27,9 @@ public class Traveler extends playerMovement{
     @Column(nullable = false)
     private BigDecimal money = BigDecimal.valueOf(credits);
 
+    @Column
+    private int score = 0;
+
     protected Traveler() {}
 
     public Traveler(String name, Location startLocation) {
@@ -112,5 +115,13 @@ public class Traveler extends playerMovement{
 
     public int getRemainingDistance() {
         return remainingDistance;
+    }
+
+
+    public void addMoney(BigDecimal amount) {
+        if (amount.signum() < 0) {
+            throw new IllegalArgumentException("amount must be positive");
+        }
+        this.money = this.money.add(amount);
     }
 }

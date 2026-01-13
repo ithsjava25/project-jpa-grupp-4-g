@@ -199,42 +199,6 @@ public class App {
                 }
             }
 
-//            /**
-//             * testtur
-//             */
-//            LocationLink route = locationLink;
-//            Transport plane = airplane;
-//            System.out.println("Bob starts in " + bob.getCurrentLocation().getName());
-//
-//            //startar resan
-//            bob.startJourney(berlin, route.getDistance());
-//
-//
-//
-//            bob.playerTurn(airplane.getDiceCount());
-//            int rolled = bob.getAvailableMovement();
-//
-//            Journey journey = new Journey(
-//                bob,
-//                route,
-//                plane,
-//                rolled,
-//                bob.getRemainingDistance(),
-//                bob.getTurnCount()
-//            );
-//
-//            em.persist(journey);
-//
-//            // resultat
-//            if (!bob.isTravelling()) {
-//                System.out.println("Bob arrived in Berlin in ONE turn!");
-//            } else {
-//                System.out.println(
-//                    "Bob did NOT arrive. Remaining distance: "
-//                        + bob.getRemainingDistance()
-//                );
-//            }
-
             tx.commit();
 
         } catch (Exception e) {

@@ -15,6 +15,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import org.example.service.JourneyService;
+import org.example.service.PlayerEventService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,7 +78,9 @@ public class TravelGameController {
 
         emf = Persistence.createEntityManagerFactory("jpa-hibernate-mysql");
         em = emf.createEntityManager();
-        journeyService = new JourneyService(em);
+        JourneyService journeyService = new JourneyService(em);
+        PlayerEventService eventService = new PlayerEventService(em);
+
 
 
         transports = em.createQuery("select t from Transport t", Transport.class).getResultList();
