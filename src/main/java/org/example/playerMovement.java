@@ -146,7 +146,7 @@ public class playerMovement extends Player{
             System.out.println(" ");
             System.out.println(playerName + " at position X: " + playerPosX + " Y: " + playerPosY );
             System.out.println("dest x: " + destination.destinationX + " dest y: " + destination.destinationY);
-            System.out.println("available movement left: " + availableMovement);
+            System.out.println("available movement left: " + getAvailableMovement());
             String input = IO.readln("choose movement! Available is up, down, left, right, auto");
             input = input.toLowerCase();
             switch (input) {
