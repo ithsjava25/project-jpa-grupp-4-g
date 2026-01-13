@@ -2,7 +2,6 @@ package org.example;
 
 import jakarta.persistence.*;
 
-import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.util.Random;
 
@@ -58,11 +57,7 @@ public class Transport {
         return costPerMove;
     }
 
-    public TransportType getType() {
-        return type;
-    }
-
-    public Long getId() {
-        return id;
+    public int getDiceCount(){
+        return diceCount;
     }
 }
