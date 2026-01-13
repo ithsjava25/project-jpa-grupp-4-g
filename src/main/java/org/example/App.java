@@ -174,7 +174,7 @@ public class App {
                             System.out.println(p3.playerName + " wins");
                             wonGame = true;
                         }else if(p4.checkScore()){
-                            System.out.println(p3.playerName + " wins");
+                            System.out.println(p4.playerName + " wins");
                             wonGame = true;
                         }
                         p1.updateJourney();
