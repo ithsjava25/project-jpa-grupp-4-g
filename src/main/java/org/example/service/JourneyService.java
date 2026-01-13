@@ -1,8 +1,10 @@
 package org.example.service;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityTransaction;
 import org.example.*;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 public class JourneyService {
 
@@ -13,99 +15,77 @@ public class JourneyService {
     }
 
     /**
-     * Spelar en hel tur:
-     * - validerar transport
-     * - drar pengar
-     * - slår tärningar
-     * - flyttar traveler
-     * - sparar Journey
+     * listar alla möjliga drag från en given plats
      */
-    public Journey playTurn(
-        Long travelerId,
-        Long locationLinkId,
-        Long transportId
-    ) {
+    public List<LocationLink> listAvailableMoves(Location fromLocation) {
 
-        EntityTransaction tx = em.getTransaction();
-
-        try {
-            tx.begin();
-
-            Traveler traveler = em.find(Traveler.class, travelerId);
-            LocationLink route = em.find(LocationLink.class, locationLinkId);
-            Transport transport = em.find(Transport.class, transportId);
-
-            if (traveler == null || route == null || transport == null) {
-                throw new IllegalArgumentException("entity not found");
-            }
-
-            // 1. validera att transport är tillåten
-            validateTransportAllowed(route, transport);
-
-            // 2. starta resa om behövs
-            if (!traveler.isTravelling()) {
-                traveler.startJourney(
-                    route.getToLocation(),
-                    route.getDistance()
-                );
-            }
-
-            // 3. betala
-            traveler.pay(transport.getCostPerMove());
-
-            // 4. slå tärningar
-            int rolled = transport.rollDistance();
-
-            int before = traveler.getRemainingDistance();
-            traveler.advance(rolled);
-            int after = traveler.getRemainingDistance();
-
-            int moved = before - after;
-            int turnNumber = traveler.getTurnCount();
-
-            // 5. spara journey (ALLTID, även om ej framme)
-            Journey journey = new Journey(
-                traveler,
-                route,
-                transport,
-                moved,
-                after,
-                turnNumber
-            );
-
-            em.persist(journey);
-
-            tx.commit();
-            return journey;
-
-        } catch (RuntimeException e) {
-            if (tx.isActive()) tx.rollback();
-            throw e;
-        }
+        return em.createQuery("""
+            select distinct ll
+            from LocationLink ll
+            join fetch ll.transportLinks tl
+            join fetch tl.transport
+            where ll.fromLocation = :location
+        """, LocationLink.class)
+            .setParameter("location", fromLocation)
+            .getResultList();
     }
-    private void validateTransportAllowed(
+
+    /**
+     * utför ett drag (en tur)
+     */
+    public Journey performTurn(
+        Traveler traveler,
         LocationLink route,
         Transport transport
     ) {
-        boolean allowed = em.createQuery(
-                """
-                select count(tl)
-                from TransportLink tl
-                where tl.locationLink = :route
-                  and tl.transport = :transport
-                """,
-                Long.class
-            )
-            .setParameter("route", route)
-            .setParameter("transport", transport)
-            .getSingleResult() > 0;
+
+        // 1. kontroll: är transport tillåten på rutten?
+        boolean allowed = route.getTransportLinks()
+            .stream()
+            .anyMatch(tl -> tl.getTransport().equals(transport));
 
         if (!allowed) {
             throw new IllegalStateException(
-                transport.getType()
-                    + " not allowed on this route"
+                transport.getType() + " is not allowed on this route"
             );
         }
+
+        // 2. kontroll: har resenären råd?
+        BigDecimal cost = transport.getCostPerMove();
+        if (traveler.getMoney().compareTo(cost) < 0) {
+            throw new IllegalStateException("traveler cannot afford this move");
+        }
+
+        // 3. starta resa om det är en ny resa
+        if (!traveler.isTravelling()) {
+            traveler.startJourney(
+                route.getToLocation(),
+                route.getDistance()
+            );
+        }
+
+        // 4. slå tärning
+        int rolledDistance = transport.rollDistance();
+
+        // 5. betala
+        traveler.pay(cost);
+
+        // 6. flytta
+        traveler.advance(rolledDistance);
+
+        // 7. logga draget
+        Journey journey = new Journey(
+            traveler,
+            route,
+            transport,
+            rolledDistance,
+            traveler.getRemainingDistance(),
+            traveler.getTurnCount()
+        );
+
+        em.persist(journey);
+        em.merge(traveler);
+
+        return journey;
     }
 }
-
