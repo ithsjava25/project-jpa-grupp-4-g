@@ -1,8 +1,10 @@
 package org.example.service;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityTransaction;
 import org.example.*;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 public class JourneyService {
 
@@ -11,70 +13,79 @@ public class JourneyService {
     public JourneyService(EntityManager em) {
         this.em = em;
     }
-    public Journey playTurn(
-        Long travelerId,
-        Location targetLocation,
-        Transport transport
-    ) {
-        EntityTransaction tx = em.getTransaction();
 
-        try {
-            tx.begin();
+    /**
+     * listar alla möjliga drag från en given plats
+     */
+    public List<LocationLink> listAvailableMoves(Location fromLocation) {
 
-            Traveler traveler = em.find(Traveler.class, travelerId);
-            if (traveler == null) {
-                throw new IllegalArgumentException("traveler not found");
-            }
-
-            Location from = traveler.getCurrentLocation();
-
-            // hämta rutt
-            LocationLink locationLink = em.createQuery("""
-            select ll
+        return em.createQuery("""
+            select distinct ll
             from LocationLink ll
-            where ll.fromLocation = :from
-              and ll.toLocation = :to
+            join fetch ll.transportLinks tl
+            join fetch tl.transport
+            where ll.fromLocation = :location
         """, LocationLink.class)
-                .setParameter("from", from)
-                .setParameter("to", targetLocation)
-                .getResultStream()
-                .findFirst()
-                .orElseThrow(() ->
-                    new IllegalArgumentException("no valid route between locations")
-                );
-
-            // slå tärningar
-            int rolled = transport.rollDistance();
-
-            int before = traveler.getRemainingDistance();
-            traveler.advance(rolled);
-            int after = traveler.getRemainingDistance();
-
-            int moved = before - after;
-
-            int turnNumber = traveler.getTurnCount() + 1;
-            traveler.setTurnCount(turnNumber);
-
-            Journey journey = new Journey(
-                traveler,
-                locationLink,
-                transport,
-                moved,
-                after,
-                turnNumber
-            );
-
-            em.persist(journey);
-
-            tx.commit();
-            return journey;
-
-        } catch (RuntimeException e) {
-            if (tx.isActive()) tx.rollback();
-            throw e;
-        }
+            .setParameter("location", fromLocation)
+            .getResultList();
     }
 
+    /**
+     * utför ett drag (en tur)
+     */
+    public Journey performTurn(
+        Traveler traveler,
+        LocationLink route,
+        Transport transport
+    ) {
+
+        // 1. kontroll: är transport tillåten på rutten?
+        boolean allowed = route.getTransportLinks()
+            .stream()
+            .anyMatch(tl -> tl.getTransport().equals(transport));
+
+        if (!allowed) {
+            throw new IllegalStateException(
+                transport.getType() + " is not allowed on this route"
+            );
+        }
+
+        // 2. kontroll: har resenären råd?
+        BigDecimal cost = transport.getCostPerMove();
+        if (traveler.getMoney().compareTo(cost) < 0) {
+            throw new IllegalStateException("traveler cannot afford this move");
+        }
+
+        // 3. starta resa om det är en ny resa
+        if (!traveler.isTravelling()) {
+            traveler.startJourney(
+                route.getToLocation(),
+                route.getDistance()
+            );
+        }
+
+        // 4. slå tärning
+        int rolledDistance = transport.rollDistance();
+
+        // 5. betala
+        traveler.pay(cost);
+
+        // 6. flytta
+        traveler.advance(rolledDistance);
+
+        // 7. logga draget
+        Journey journey = new Journey(
+            traveler,
+            route,
+            transport,
+            rolledDistance,
+            traveler.getRemainingDistance(),
+            traveler.getTurnCount()
+        );
+
+        em.persist(journey);
+        em.merge(traveler);
+
+        return journey;
+    }
 }
-
-
