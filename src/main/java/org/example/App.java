@@ -37,14 +37,23 @@ public class App {
             }
 
             switch (pAmount){
+//                Test case for debuging and testing
+//                case 1 ->{
+//                    while(true){
+//                    Location current = randomLocation(em);
+//                    Location dest = randomLocation(em);
+//
+//                    System.out.println(current.getName());
+//                    System.out.println(dest.getName());}
+//                }
                 case 2 ->{
                     String p1Name = IO.readln("Input name for player 1: ");
-                    Location newDestP1 = randLoc(em);
-                    p1 = new Traveler(p1Name, randLoc(em), newDestP1);
+                    Location newDestP1 = randomLocation(em);
+                    p1 = new Traveler(p1Name, randomLocation(em), newDestP1);
                     p1.setDestinationPos(newDestP1.getX(), newDestP1.getY());
                     String p2Name = IO.readln("Input name for player 2: ");
-                    Location newDestP2 = randLoc(em);
-                    p2 = new Traveler(p2Name, randLoc(em), newDestP2);
+                    Location newDestP2 = randomLocation(em);
+                    p2 = new Traveler(p2Name, randomLocation(em), newDestP2);
                     p2.setDestinationPos(newDestP2.getX(), newDestP2.getY());
                     em.persist(p1);
                     em.persist(p2);
@@ -52,10 +61,10 @@ public class App {
                         p1.playerTurn(transportMethods);
                         p2.playerTurn(transportMethods);
                         if (p1.checkIfPlayerIsAtDestination()){
-                            Location newDest = randLoc(em);
+                            Location newDest = randomLocation(em);
                             p1.setDestinationPos(newDest.getX(), newDest.getY());
                         }else if(p2.checkIfPlayerIsAtDestination()){
-                            Location newDest = randLoc(em);
+                            Location newDest = randomLocation(em);
                             p2.setDestinationPos(newDest.getX(), newDest.getY());
                         }
                         if(p1.checkScore()){
@@ -73,16 +82,16 @@ public class App {
 
                 }case 3 ->{
                     String p1Name = IO.readln("Input name for player 1: ");
-                    Location newDestP1 = randLoc(em);
-                    p1 = new Traveler(p1Name, randLoc(em), newDestP1);
+                    Location newDestP1 = randomLocation(em);
+                    p1 = new Traveler(p1Name, randomLocation(em), newDestP1);
                     p1.setDestinationPos(newDestP1.getX(), newDestP1.getY());
                     String p2Name = IO.readln("Input name for player 2: ");
-                    Location newDestP2 = randLoc(em);
-                    p2 = new Traveler(p2Name, randLoc(em), newDestP2);
+                    Location newDestP2 = randomLocation(em);
+                    p2 = new Traveler(p2Name, randomLocation(em), newDestP2);
                     p2.setDestinationPos(newDestP2.getX(), newDestP2.getY());
                     String p3Name = IO.readln("Input name for player 2: ");
-                    Location newDestP3 = randLoc(em);
-                    p3 = new Traveler(p3Name, randLoc(em), newDestP3);
+                    Location newDestP3 = randomLocation(em);
+                    p3 = new Traveler(p3Name, randomLocation(em), newDestP3);
                     p3.setDestinationPos(newDestP3.getX(), newDestP3.getY());
                     em.persist(p1);
                     em.persist(p2);
@@ -93,13 +102,13 @@ public class App {
                         p2.playerTurn(transportMethods);
                         p3.playerTurn(transportMethods);
                         if (p1.checkIfPlayerIsAtDestination()){
-                            Location newDest = randLoc(em);
+                            Location newDest = randomLocation(em);
                             p1.setDestinationPos(newDest.getX(), newDest.getY());
                         }else if(p2.checkIfPlayerIsAtDestination()){
-                            Location newDest = randLoc(em);
+                            Location newDest = randomLocation(em);
                             p2.setDestinationPos(newDest.getX(), newDest.getY());
                         }else if(p3.checkIfPlayerIsAtDestination()){
-                            Location newDest = randLoc(em);
+                            Location newDest = randomLocation(em);
                             p3.setDestinationPos(newDest.getX(), newDest.getY());
                         }
                         if(p1.checkScore()){
@@ -122,20 +131,20 @@ public class App {
 
                 }case 4 ->{
                     String p1Name = IO.readln("Input name for player 1: ");
-                    Location newDestP1 = randLoc(em);
-                    p1 = new Traveler(p1Name, randLoc(em), newDestP1);
+                    Location newDestP1 = randomLocation(em);
+                    p1 = new Traveler(p1Name, randomLocation(em), newDestP1);
                     p1.setDestinationPos(newDestP1.getX(), newDestP1.getY());
                     String p2Name = IO.readln("Input name for player 2: ");
-                    Location newDestP2 = randLoc(em);
-                    p2 = new Traveler(p2Name, randLoc(em), newDestP2);
+                    Location newDestP2 = randomLocation(em);
+                    p2 = new Traveler(p2Name, randomLocation(em), newDestP2);
                     p2.setDestinationPos(newDestP2.getX(), newDestP2.getY());
                     String p3Name = IO.readln("Input name for player 3: ");
-                    Location newDestP3 = randLoc(em);
-                    p3 = new Traveler(p3Name, randLoc(em), newDestP3);
+                    Location newDestP3 = randomLocation(em);
+                    p3 = new Traveler(p3Name, randomLocation(em), newDestP3);
                     p3.setDestinationPos(newDestP3.getX(), newDestP3.getY());
                     String p4Name = IO.readln("Input name for player 4: ");
-                    Location newDestP4 = randLoc(em);
-                    p4 = new Traveler(p4Name, randLoc(em), newDestP4);
+                    Location newDestP4 = randomLocation(em);
+                    p4 = new Traveler(p4Name, randomLocation(em), newDestP4);
                     p4.setDestinationPos(newDestP4.getX(), newDestP4.getY());
                     em.persist(p1);
                     em.persist(p2);
@@ -147,16 +156,16 @@ public class App {
                         p3.playerTurn(transportMethods);
                         p4.playerTurn(transportMethods);
                         if (p1.checkIfPlayerIsAtDestination()){
-                            Location newDest = randLoc(em);
+                            Location newDest = randomLocation(em);
                             p1.setDestinationPos(newDest.getX(), newDest.getY());
                         }else if(p2.checkIfPlayerIsAtDestination()){
-                            Location newDest = randLoc(em);
+                            Location newDest = randomLocation(em);
                             p2.setDestinationPos(newDest.getX(), newDest.getY());
                         }else if(p3.checkIfPlayerIsAtDestination()){
-                            Location newDest = randLoc(em);
+                            Location newDest = randomLocation(em);
                             p3.setDestinationPos(newDest.getX(), newDest.getY());
                         }else if(p4.checkIfPlayerIsAtDestination()){
-                            Location newDest = randLoc(em);
+                            Location newDest = randomLocation(em);
                             p4.setDestinationPos(newDest.getX(), newDest.getY());
                         }
                         if(p1.checkScore()){
@@ -242,6 +251,10 @@ public class App {
 
         Continent randCont = em.createQuery("select c from Continent c", Continent.class).setFirstResult(randomIndex(contCount)).setMaxResults(1).getSingleResult();
 
+        while(randCont.getId() == 2){
+            randCont = em.createQuery("select c from Continent c", Continent.class).setFirstResult(randomIndex(contCount)).setMaxResults(1).getSingleResult();
+        }
+
         Long countryCount = em.createQuery("Select count(c) from Country c where c.continent = :continent", Long.class)
             .setParameter("continent", randCont)
             .getSingleResult();
@@ -255,8 +268,19 @@ public class App {
             .setParameter("country", randCountry)
             .getSingleResult();
 
+       while(locCount == 0){
+            randCountry = em.createQuery("select c from Country c where continent = :continent", Country.class)
+                .setParameter("continent", randCont)
+                .setFirstResult(randomIndex(countryCount))
+                .setMaxResults(1).getSingleResult();
+
+            locCount = em.createQuery("select count(o) from Location o where o.country = :country", Long.class)
+                .setParameter("country", randCountry)
+                .getSingleResult();
+        }
+
         Location randLocation = em.createQuery("select l from Location l where l.country = :country", Location.class)
-            .setParameter("country", randCountry).setFirstResult(randomIndex(locCount)).getSingleResult();
+            .setParameter("country", randCountry).setFirstResult(randomIndex(locCount)).setMaxResults(1).getSingleResult();
 
         System.out.println(randLocation.getName() + " " + randLocation.getX() + " " + randLocation.getY());
 
@@ -264,7 +288,10 @@ public class App {
     }
 
     static public int randomIndex(long indexes){
-        return (int) (Math.random()*indexes);
+        if (indexes <= 0) {
+            throw new IllegalArgumentException("indexes must be > 0");
+        }
+        return (int) (Math.random() * indexes);
     }
 }
 
