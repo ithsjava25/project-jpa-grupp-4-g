@@ -44,6 +44,7 @@ public class Traveler extends playerMovement{
     public void updateJourney(){
         turnCount = getTurns();
         setPosition();
+        calculateDistance();
     }
 
     public Long getId() {
@@ -73,6 +74,10 @@ public class Traveler extends playerMovement{
 
     public void startJourney(Location target) {
         this.targetLocation = target;
+        calculateDistance();
+    }
+
+    private void calculateDistance() {
         int xPos = 0;
         int yPos = 0;
         if (currentLocation.getX() > getDestinationPosX()){
