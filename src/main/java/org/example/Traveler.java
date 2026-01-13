@@ -29,15 +29,21 @@ public class Traveler extends playerMovement{
 
     protected Traveler() {}
 
-    public Traveler(String name, Location startLocation) {
+    public Traveler(String name, Location startLocation,Location destination) {
         playerName = name;
         this.currentLocation = startLocation;
         setPosition();
+        startJourney(destination);
     }
 
     public void setPosition(){
         setPlayerPosX(currentLocation.getX());
         setPlayerPosY(currentLocation.getY());
+    }
+
+    public void updateJourney(){
+        turnCount = getTurns();
+        setPosition();
     }
 
     public Long getId() {
@@ -65,9 +71,21 @@ public class Traveler extends playerMovement{
     }
 
 
-    public void startJourney(Location target, int distance) {
+    public void startJourney(Location target) {
         this.targetLocation = target;
-        this.remainingDistance = distance;
+        int xPos = 0;
+        int yPos = 0;
+        if (currentLocation.getX() > getDestinationPosX()){
+            xPos = currentLocation.getX() - getDestinationPosX();
+        } else {
+            xPos = getDestinationPosX() - currentLocation.getX();
+        }
+        if (currentLocation.getY() > getDestinationPosY()){
+            yPos = currentLocation.getY() - getDestinationPosY();
+        } else {
+            yPos = getDestinationPosY() - currentLocation.getY();
+        }
+        this.remainingDistance = xPos + yPos;
     }
 
     public void advance(int distanceThisTurn) {

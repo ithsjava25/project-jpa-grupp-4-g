@@ -15,11 +15,16 @@ public class playerMovement extends Player{
     private int playerPosY;
     record destinationPos(int destinationX, int destinationY) {}
     private destinationPos destination;
+    private int playerTurnCount = 0;
 
     private List<TransportTest> transMethods = new ArrayList<>();
 
     public int getTransDiceCount(){
         return selectedTransportDice;
+    }
+
+    public int getTurns(){
+        return playerTurnCount;
     }
     public void setPlayerPosX(int playerPosX) {
         if (playerPosX >= 0) {
@@ -174,6 +179,7 @@ public class playerMovement extends Player{
         System.out.println("End of "+ playerName + " turn");
         System.out.println("- - - - - - - - - -");
         checkIfPlayerHasPenalties();
+        playerTurnCount++;
     }
 
     public void chooseTransportation(List<Transport> transport) throws IOException {
