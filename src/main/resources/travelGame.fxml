@@ -14,10 +14,12 @@
                        preserveRatio="false"
                        fitWidth="900"
                        fitHeight="700"
-                       pickOnBounds="true" />
+                       pickOnBounds="true"
+                       onMouseClicked="#onMapClicked"/>
             <StackPane fx:id="drawingPane" pickOnBounds="false">
                 <Pane fx:id="gridLayer" mouseTransparent="true"/>
                 <Pane fx:id="markerLayer" mouseTransparent="true"/>
+                <Pane fx:id="pathLayer" mouseTransparent="true"/>
                 <Pane fx:id="playerLayer" mouseTransparent="true"/>
             </StackPane>
 
@@ -36,10 +38,8 @@
         </VBox>
     </right>
 
-
     <bottom>
         <VBox spacing="10" style="-fx-padding: 12;" styleClass="bottom-bar">
-
 
             <HBox alignment="CENTER_LEFT" spacing="12">
                 <Label text="Current:" style="-fx-text-fill: white; -fx-font-weight: bold;"/>
@@ -56,9 +56,7 @@
                 <Label fx:id="nextPlayerLabel" text="-" style="-fx-text-fill: white;"/>
             </HBox>
 
-
             <HBox alignment="CENTER" spacing="20">
-
 
                 <VBox spacing="4" prefWidth="520" alignment="CENTER_LEFT">
                     <HBox spacing="10">
@@ -81,16 +79,11 @@
 
                 <Region HBox.hgrow="ALWAYS"/>
 
-
                 <Button text="ROLL"
                         fx:id="rollButton"
                         onAction="#onRoll"
                         styleClass="roll-button"/>
 
-
-                <Button text="DEMO PATH"
-                        onAction="#startMockJourney"
-                        styleClass="journey-button"/>
 
             </HBox>
         </VBox>
