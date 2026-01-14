@@ -62,9 +62,6 @@ public class TravelGameController {
     private int currentPlayerIndex = 0;
     private boolean wonGame = false;
 
-
-    private List<Transport> transports = new ArrayList<>();
-
     @FXML
     private void initialize() {
         visualizer = new MapVisualizer(gridLayer, markerLayer, playerLayer);
@@ -381,18 +378,6 @@ public class TravelGameController {
 
     }
 
-
-    private List<Location> distinctLocationsById(List<Location> locations) {
-        java.util.Map<Long, Location> byId = new java.util.LinkedHashMap<>();
-        for (Location l : locations) {
-            if (l != null && l.getId() != null) {
-                byId.putIfAbsent(l.getId(), l);
-            }
-        }
-        return new java.util.ArrayList<>(byId.values());
-    }
-
-
     private void highlightSelectedMoveButton(Button selected) {
         for (var node : movesBox.getChildren()) {
             if (node instanceof Button b) b.setStyle("");
@@ -404,14 +389,6 @@ public class TravelGameController {
         return em.createQuery("select l from Location l where l.name = :n", Location.class)
             .setParameter("n", name)
             .getSingleResult();
-    }
-
-    private String managedMoneyAsInt(Traveler t) {
-        try {
-            return t.getMoney().toBigInteger().toString(); // eller t.getMoney().toPlainString()
-        } catch (Exception e) {
-            return "-";
-        }
     }
 
     private void doContinueJourney(Long travelerId) {
