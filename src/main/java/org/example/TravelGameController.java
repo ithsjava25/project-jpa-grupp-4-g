@@ -55,6 +55,9 @@ public class TravelGameController {
     private List<PossibleMoves> shownMoves = List.of();
     private final Map<PossibleMoves, Button> moveButtons = new HashMap<>();
 
+    private Location lastClickedDestination = null;
+    private int cycleIndex = 0;
+
     private static final int GRID_SIZE = 50;
 
     private EntityManagerFactory emf;
@@ -149,6 +152,8 @@ public class TravelGameController {
             movesBox.getChildren().clear();
             shownMoves = List.of();
             moveButtons.clear();
+            lastClickedDestination = null;
+            cycleIndex = 0;
 
             doContinueJourney(current.getId());
             return;
@@ -158,6 +163,8 @@ public class TravelGameController {
             selectedMove = null;
             movesBox.getChildren().clear();
             moveButtons.clear();
+            lastClickedDestination = null;
+            cycleIndex = 0;
 
             Location currentLocation = current.getCurrentLocation();
             if (currentLocation == null) {
@@ -188,6 +195,12 @@ public class TravelGameController {
 
                     selectedMove = m;
                     highlightSelectedMoveButton(b);
+
+                    Location dest = m.getTo();
+                    if (dest != null) {
+                        lastClickedDestination = dest;
+                        cycleIndex = 0;
+                    }
 
                     logList.getItems().add(
                         "✅ valt: " + m.getFrom().getName() + " -> " + m.getTo().getName()
@@ -220,6 +233,8 @@ public class TravelGameController {
         movesBox.getChildren().clear();
         shownMoves = List.of();
         moveButtons.clear();
+        lastClickedDestination = null;
+        cycleIndex = 0;
     }
 
     @FXML
@@ -238,7 +253,7 @@ public class TravelGameController {
         int gx = screenToGridX(event.getX(), w);
         int gy = screenToGridY(event.getY(), h);
 
-        PossibleMoves nearest = null;
+        Location nearestDest = null;
         double best = Double.MAX_VALUE;
 
         for (PossibleMoves m : shownMoves) {
@@ -252,21 +267,49 @@ public class TravelGameController {
 
             if (d2 < best) {
                 best = d2;
-                nearest = m;
+                nearestDest = to;
             }
         }
 
-        if (nearest == null) return;
+        if (nearestDest == null) return;
 
-        selectedMove = nearest;
+        List<PossibleMoves> options = movesTo(nearestDest);
+        if (options.isEmpty()) return;
 
-        Button b = moveButtons.get(nearest);
+        if (lastClickedDestination != null
+            && lastClickedDestination.getId() != null
+            && nearestDest.getId() != null
+            && lastClickedDestination.getId().equals(nearestDest.getId())) {
+            cycleIndex = (cycleIndex + 1) % options.size();
+        } else {
+            lastClickedDestination = nearestDest;
+            cycleIndex = 0;
+        }
+
+        PossibleMoves chosen = options.get(cycleIndex);
+        selectedMove = chosen;
+
+        Button b = moveButtons.get(chosen);
         if (b != null) highlightSelectedMoveButton(b);
 
         logList.getItems().add(
-            "🗺️ valt via karta: " + nearest.getFrom().getName() + " -> " + nearest.getTo().getName()
-                + " (" + nearest.getTransport().getType() + ")"
+            "🗺️ valt via karta: " + chosen.getFrom().getName() + " -> " + chosen.getTo().getName()
+                + " (" + chosen.getTransport().getType() + ")"
         );
+    }
+
+    private List<PossibleMoves> movesTo(Location dest) {
+        if (dest == null || shownMoves == null || shownMoves.isEmpty()) return List.of();
+        if (dest.getId() == null) {
+            return shownMoves.stream()
+                .filter(m -> m.getTo() != null
+                    && m.getTo().getX() == dest.getX()
+                    && m.getTo().getY() == dest.getY())
+                .toList();
+        }
+        return shownMoves.stream()
+            .filter(m -> m.getTo() != null && m.getTo().getId() != null && m.getTo().getId().equals(dest.getId()))
+            .toList();
     }
 
     private int screenToGridX(double x, double totalWidth) {
