@@ -444,6 +444,8 @@ public class TravelGameController {
                 );
             } else {
                 logList.getItems().add("✅ " + safeName(managed) + " kom fram till " + targetName + "!");
+                managed.increaseScore();
+                doesPlayerWin();
             }
 
             tx.commit();
