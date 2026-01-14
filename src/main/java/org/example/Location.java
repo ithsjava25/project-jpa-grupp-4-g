@@ -34,10 +34,6 @@ public class Location {
         this.name = name;
     }
 
-    public void setType(LocationType type) {
-        this.type = type;
-    }
-
     public int getX() {
         return x;
     }

@@ -40,10 +40,6 @@ public class TransportLink {
         return id;
     }
 
-    public LocationLink getLocationLink() {
-        return locationLink;
-    }
-
     public Transport getTransport() {
         return transport;
     }
