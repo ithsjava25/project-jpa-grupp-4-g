@@ -18,9 +18,6 @@ public class App {
         Traveler p3;
         Traveler p4;
 
-
-
-
         try {
             tx.begin();
             List<Transport> transportMethods = em.createQuery("select t from Transport t", Transport.class).getResultList();
@@ -33,15 +30,6 @@ public class App {
             }
 
             switch (pAmount){
-//                Test case for debuging and testing
-//                case 1 ->{
-//                    while(true){
-//                    Location current = randomLocation(em);
-//                    Location dest = randomLocation(em);
-//
-//                    System.out.println(current.getName());
-//                    System.out.println(dest.getName());}
-//                }
                 case 2 ->{
                     String p1Name = IO.readln("Input name for player 1: ");
                     Location newDestP1 = randomLocation(em);
@@ -207,14 +195,8 @@ public class App {
             em.close();
         }
     }
-//    random locations
-//    public static Location randLoc(EntityManager em){
-//        Long locSize = em.createQuery("select count(l) from Location l", Long.class).getSingleResult();
-//        Location randLoc = em.createQuery("select l from Location l", Location.class).setFirstResult(randomIndex(locSize)).setMaxResults(1).getSingleResult();
-//        return randLoc;
-//    }
 
-    //Randomise through all points for continent, country and locations.
+    //Randomize through all points for continent, country and locations to get a random location. If the country has no locations, loop again until it finds a location.
     static public Location randomLocation(EntityManager em){
 
         Long contCount = em.createQuery("Select count(c) from Continent c", Long.class).getSingleResult();
