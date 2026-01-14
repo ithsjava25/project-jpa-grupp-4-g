@@ -214,8 +214,13 @@ public class JourneyServiceTest {
         Location from = new Location("Stockholm", LocationType.CAPITAL, null, 0, 0);
         Location to = new Location("Berlin", LocationType.CAPITAL, null, 1, 1);
 
-        Transport bus = new Transport(TransportType.BUSS, "10");
-        Transport train = new Transport(TransportType.TRAIN, "20");
+        Transport bus = mock(Transport.class);
+        when(bus.getType()).thenReturn("BUSS");
+        when(bus.getCostPerMove()).thenReturn(BigDecimal.valueOf(10));
+
+        Transport train = mock(Transport.class);
+        when(train.getType()).thenReturn("TRAIN");
+        when(train.getCostPerMove()).thenReturn(BigDecimal.valueOf(20));
 
         LocationLink route = new LocationLink(from, to, 5);
         route.getTransportLinks().add(new TransportLink(route, bus));

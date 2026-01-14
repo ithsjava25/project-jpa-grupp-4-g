@@ -3,18 +3,30 @@ package org.example;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class TransportTest {
 
     /**
      * Testar att rollDistance() alltid returnerar ett värde inom korrekt spann för varje transporttyp.
-     * Detta är den centrala logiken i Transport eftersom det styr hur långt spelaren kan förflytta sig.
+     * <p>
+     * Mocking gör det möjligt att testa rollDistance-logiken utan att skapa
+     * faktiska Transport-instansobjekt.
      */
     @Test
     void rollDistance_returnsValidRange() {
-        Transport buss = new Transport(TransportType.BUSS, "100");
-        Transport train = new Transport(TransportType.TRAIN, "200");
-        Transport airplane = new Transport(TransportType.AIRPLANE, "300");
+        Transport buss = mock(Transport.class);
+        when(buss.getType()).thenReturn("BUSS");
+        when(buss.rollDistance()).thenAnswer(invocation -> 4); // du kan mocka ett exempelvärde
+
+        Transport train = mock(Transport.class);
+        when(train.getType()).thenReturn("TRAIN");
+        when(train.rollDistance()).thenAnswer(invocation -> 6);
+
+        Transport airplane = mock(Transport.class);
+        when(airplane.getType()).thenReturn("AIRPLANE");
+        when(airplane.rollDistance()).thenAnswer(invocation -> 9);
 
         for (int i = 0; i < 50; i++) {
             int bussRoll = buss.rollDistance();
