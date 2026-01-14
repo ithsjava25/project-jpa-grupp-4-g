@@ -86,4 +86,5 @@ public class PlayerEventService {
             default -> new EventOutcome(0, "no bonus");
         };
     }
+
 }

@@ -142,16 +142,29 @@ public class TravelGameController {
     public void onRoll(ActionEvent actionEvent) {
         if (wonGame || players.isEmpty()) return;
 
-        Traveler current = players.get(currentPlayerIndex);
+        // alltid börja med "fräsch" spelare från db
+        Traveler currentRef = players.get(currentPlayerIndex);
+        Traveler current = em.find(Traveler.class, currentRef.getId());
+        if (current == null) return;
 
-        // steg 1: vi väntar på att spelaren ska välja en move -> bara lista knappar
+        // om spelaren är mitt i en resa: fortsätt direkt (ingen move-lista)
+        if (current.isTravelling()) {
+            // ✅ reset UI-state så du inte fastnar i "confirm move" / gammalt val
+            awaitingMoveChoice = false;
+            selectedMove = null;
+            rollButton.setText("ROLL");
+            movesBox.getChildren().clear();
+
+            doContinueJourney(current.getId());
+            return;
+        }
+
+        // om vi INTE väntar på val -> visa listan
         if (!awaitingMoveChoice) {
             selectedMove = null;
             movesBox.getChildren().clear();
 
-            Traveler managed = em.find(Traveler.class, current.getId());
-            Location currentLocation = managed.getCurrentLocation();
-
+            Location currentLocation = current.getCurrentLocation();
             if (currentLocation == null) {
                 logList.getItems().add("❌ ingen aktuell plats");
                 return;
@@ -175,24 +188,30 @@ public class TravelGameController {
                 b.setMaxWidth(Double.MAX_VALUE);
 
                 b.setOnAction(e -> {
+                    // ✅ logga bara om valet faktiskt ändras (stoppar spam)
+                    if (selectedMove == m) return;
+
                     selectedMove = m;
                     highlightSelectedMoveButton(b);
-                    logList.getItems().add("✅ valt: " + m.getFrom().getName() + " -> " + m.getTo().getName()
-                        + " (" + m.getTransport().getType() + ")");
+
+                    logList.getItems().add(
+                        "✅ valt: " + m.getFrom().getName() + " -> " + m.getTo().getName()
+                            + " (" + m.getTransport().getType() + ")"
+                    );
                 });
 
                 movesBox.getChildren().add(b);
             }
 
-            updateGraphicsWithMoves(managed, moves);
+            updateGraphicsWithMoves(current, moves);
 
             awaitingMoveChoice = true;
-            rollButton.setText("CONFIRM MOVE"); // återanvänd samma knapp
+            rollButton.setText("CONFIRM MOVE");
             logList.getItems().add("👉 välj en resa till höger och tryck confirm move");
             return;
         }
 
-        // steg 2: kör valt move
+        // vi väntar på confirm -> kör vald resa
         if (selectedMove == null) {
             logList.getItems().add("⚠️ välj en resa först");
             return;
@@ -200,7 +219,7 @@ public class TravelGameController {
 
         doMove(current.getId(), selectedMove);
 
-        // reset UI state för nästa spelare
+        // reset för nästa tur
         awaitingMoveChoice = false;
         selectedMove = null;
         rollButton.setText("ROLL");
@@ -209,33 +228,8 @@ public class TravelGameController {
 
     @FXML
     private void onMapClicked(MouseEvent event) {
-        if (wonGame || players.isEmpty()) return;
-
-        double cellWidth = drawingPane.getWidth() / GRID_SIZE;
-        double cellHeight = drawingPane.getHeight() / GRID_SIZE;
-
-        int clickedX = (int) (event.getX() / cellWidth);
-        int clickedY = (int) ((drawingPane.getHeight() - event.getY()) / cellHeight);
-
-        clickedX = clampToGrid(clickedX);
-        clickedY = clampToGrid(clickedY);
-
-        Traveler current = players.get(currentPlayerIndex);
-
-        EntityTransaction tx = em.getTransaction();
-        tx.begin();
-        try {
-            Traveler managed = em.find(Traveler.class, current.getId());
-            managed.setDestinationPos(clickedX, clickedY);
-            tx.commit();
-            players.set(currentPlayerIndex, managed);
-        } catch (RuntimeException e) {
-            if (tx.isActive()) tx.rollback();
-            throw e;
-        }
-
-        logList.getItems().add("📍 " + current.playerName + " destination = [" + clickedX + "," + clickedY + "]");
-        syncHudAndMap();
+        // ✅ stäng av fri destination för databas-logik
+        logList.getItems().add("ℹ️ destination väljs via möjliga resor (högerpanelen), inte kartklick.");
     }
 
     private void syncHudAndMap() {
@@ -246,38 +240,27 @@ public class TravelGameController {
     private void updateHud() {
         if (players.isEmpty()) return;
 
-        Traveler current = players.get(currentPlayerIndex);
+        // ✅ bygg hud från managed entities, inte från listans gamla instanser
+        Traveler currentRef = players.get(currentPlayerIndex);
+        Traveler current = em.find(Traveler.class, currentRef.getId());
+        if (current == null) return;
 
         currentPlayerLabel.setText(current.playerName);
 
-        int next = (currentPlayerIndex + 1) % players.size();
-        nextPlayerLabel.setText(players.get(next).playerName);
+        int nextIndex = (currentPlayerIndex + 1) % players.size();
+        Traveler nextRef = players.get(nextIndex);
+        Traveler next = em.find(Traveler.class, nextRef.getId());
+        nextPlayerLabel.setText(next != null ? next.playerName : nextRef.playerName);
 
-        // credits/turns
-        try {
-            currentCreditsLabel.setText(String.valueOf(current.getCredits()));
-        } catch (Exception e) {
-            currentCreditsLabel.setText("-");
-        }
-
-        // Om ni vill använda playerMovement.getTurns():
-        try {
-            currentTurnLabel.setText(String.valueOf(current.getTurns()));
-        } catch (Exception e) {
-            // fallback: om Traveler har getTurnCount()
-            try {
-                currentTurnLabel.setText(String.valueOf(current.getTurnCount()));
-            } catch (Exception ignored) {
-                currentTurnLabel.setText("-");
-            }
-        }
+        currentCreditsLabel.setText(current.getMoney() != null ? current.getMoney().toPlainString() : "-");
+        currentTurnLabel.setText(String.valueOf(current.getTurnCount()));
 
         currentLocationLabel.setText("[" + clampToGrid(current.getPlayerPosX()) + "," + clampToGrid(current.getPlayerPosY()) + "]");
 
-        // Destination
-        try {
-            destinationLabel.setText("[" + current.getDestinationPosX() + "," + current.getDestinationPosY() + "]");
-        } catch (Exception e) {
+        // ✅ visa destination som targetLocation om spelaren är mitt i en resa
+        if (current.isTravelling() && current.getTargetLocation() != null) {
+            destinationLabel.setText("[" + current.getTargetLocation().getX() + "," + current.getTargetLocation().getY() + "]");
+        } else {
             destinationLabel.setText("-");
         }
     }
@@ -290,13 +273,38 @@ public class TravelGameController {
         visualizer.drawGrid(w, h);
 
         List<int[]> positions = new ArrayList<>();
-        for (Traveler t : players) {
-            positions.add(new int[]{ clampToGrid(t.getPlayerPosX()), clampToGrid(t.getPlayerPosY()) });
-        }
+        for (Traveler tRef : players) {
+            Traveler t = em.find(Traveler.class, tRef.getId());
+            if (t == null) continue;
 
+            // säkerställ att gui-pos verkligen följer currentLocation
+            t.setPosition();
+
+            positions.add(new int[]{
+                clampToGrid(t.getPlayerPosX()),
+                clampToGrid(t.getPlayerPosY())
+            });
+        }
 
         visualizer.drawPlayers(positions, currentPlayerIndex, w, h);
     }
+
+
+    private void updateGraphicsWithMoves(Traveler managed, List<PossibleMoves> moves) {
+        updateGraphics(); // ritar grid + players
+
+        double w = drawingPane.getWidth();
+        double h = drawingPane.getHeight();
+
+        // ✅ distinct via location-id (inte equals/hashcode)
+        List<Location> destinations = distinctLocationsById(
+            moves.stream().map(PossibleMoves::getTo).toList()
+        );
+
+        visualizer.drawDestMarkers(destinations, w, h);
+    }
+
+
 
     private int clampToGrid(int v) {
         return Math.max(0, Math.min(GRID_SIZE - 1, v));
@@ -318,20 +326,6 @@ public class TravelGameController {
         visualizer.animateJourney(journeyPath, drawingPane.getWidth(), drawingPane.getHeight());
     }
 
-    private void updateGraphicsWithMoves(Traveler managed, List<PossibleMoves> moves) {
-        updateGraphics(); // ritar grid + players
-
-        double w = drawingPane.getWidth();
-        double h = drawingPane.getHeight();
-
-        List<Location> destinations = moves.stream()
-            .map(PossibleMoves::getTo)
-            .distinct()
-            .toList();
-
-        visualizer.highlightPossibleDestinations(destinations, w, h);
-    }
-
     private void doMove(Long travelerId, PossibleMoves chosen) {
         if (wonGame) return;
 
@@ -342,31 +336,35 @@ public class TravelGameController {
         try {
             Traveler managed = em.find(Traveler.class, travelerId);
 
-            Journey journey = journeyService.performTurn(managed, chosen);
+            // ✅ mål från valet (det här är stabilt och alltid rätt)
+            String targetName = chosen.getTo().getName();
 
-            logList.getItems().add(
-                "🚀 " + managed.getPlayerName()
-                    + " reste " + chosen.getFrom().getName()
-                    + " -> " + chosen.getTo().getName()
-                    + " med " + chosen.getTransport().getType()
-                    + " (rolled=" + journey.getDistanceMoved()
-                    + ", remaining=" + journey.getRemainingDistance()
-                    + ")"
-            );
+            Journey journey = journeyService.startNewJourneyTurn(managed, chosen);
+            lastRollLabel.setText(String.valueOf(journey.getDistanceMoved()));
 
-            if (managed.checkScore()) {
-                logList.getItems().add("🏆 " + managed.getPlayerName() + " vinner!");
-                wonGame = true;
+            if (managed.isTravelling()) {
+                logList.getItems().add(
+                    "🚀 " + safeName(managed)
+                        + " reser " + chosen.getFrom().getName()
+                        + " -> " + targetName
+                        + " med " + chosen.getTransport().getType()
+                        + " (rolled=" + journey.getDistanceMoved()
+                        + ", remaining=" + journey.getRemainingDistance() + ")"
+                );
+            } else {
+                logList.getItems().add(
+                    "✅ " + safeName(managed)
+                        + " kom fram till " + targetName
+                        + " (rolled=" + journey.getDistanceMoved() + ")"
+                );
             }
 
             tx.commit();
-
             players.set(currentPlayerIndex, managed);
 
             if (!wonGame) {
                 currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
             }
-
             syncHudAndMap();
 
         } catch (RuntimeException e) {
@@ -378,11 +376,20 @@ public class TravelGameController {
     }
 
 
+    private List<Location> distinctLocationsById(List<Location> locations) {
+        java.util.Map<Long, Location> byId = new java.util.LinkedHashMap<>();
+        for (Location l : locations) {
+            if (l != null && l.getId() != null) {
+                byId.putIfAbsent(l.getId(), l);
+            }
+        }
+        return new java.util.ArrayList<>(byId.values());
+    }
+
+
     private void highlightSelectedMoveButton(Button selected) {
         for (var node : movesBox.getChildren()) {
-            if (node instanceof Button b) {
-                b.setStyle(""); // reset
-            }
+            if (node instanceof Button b) b.setStyle("");
         }
         selected.setStyle("-fx-border-color: white; -fx-border-width: 2; -fx-font-weight: bold;");
     }
@@ -392,6 +399,68 @@ public class TravelGameController {
             .setParameter("n", name)
             .getSingleResult();
     }
+
+    private String managedMoneyAsInt(Traveler t) {
+        try {
+            return t.getMoney().toBigInteger().toString(); // eller t.getMoney().toPlainString()
+        } catch (Exception e) {
+            return "-";
+        }
+    }
+
+    private void doContinueJourney(Long travelerId) {
+        if (wonGame) return;
+
+        rollButton.setDisable(true);
+
+        EntityTransaction tx = em.getTransaction();
+        tx.begin();
+        try {
+            Traveler managed = em.find(Traveler.class, travelerId);
+
+            // ✅ spara innan turnen (innan advance kan nolla targetLocation)
+            Location targetBefore = managed.getTargetLocation();
+            String targetName = (targetBefore != null) ? targetBefore.getName() : "?";
+
+            Journey journey = journeyService.continueCurrentJourneyTurn(managed);
+            lastRollLabel.setText(String.valueOf(journey.getDistanceMoved()));
+
+            if (managed.isTravelling()) {
+                logList.getItems().add(
+                    "➡ " + safeName(managed)
+                        + " fortsätter mot " + targetName
+                        + " (rolled=" + journey.getDistanceMoved()
+                        + ", remaining=" + journey.getRemainingDistance() + ")"
+                );
+            } else {
+                logList.getItems().add("✅ " + safeName(managed) + " kom fram till " + targetName + "!");
+            }
+
+            tx.commit();
+            players.set(currentPlayerIndex, managed);
+
+            if (!managed.isTravelling() && !wonGame) {
+                currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
+            }
+
+            syncHudAndMap();
+        } catch (RuntimeException e) {
+            if (tx.isActive()) tx.rollback();
+            throw e;
+        } finally {
+            rollButton.setDisable(false);
+        }
+    }
+
+
+    private String safeName(Traveler t) {
+        if (t == null) return "?";
+        if (t.getPlayerName() != null) return t.getPlayerName();
+        if (t.playerName != null) return t.playerName;
+        return "?";
+    }
+
+
 
     public void shutdown() {
         try {

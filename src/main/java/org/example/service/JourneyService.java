@@ -18,7 +18,6 @@ public class JourneyService {
     }
 
     public List<PossibleMoves> findPossibleMoves(Location fromLocation) {
-
         List<LocationLink> routes = em.createQuery("""
             select distinct ll
             from LocationLink ll
@@ -38,26 +37,63 @@ public class JourneyService {
         return result;
     }
 
-    public Journey performTurn(Traveler traveler, PossibleMoves move) {
+    /**
+     * startar en ny resa på en vald route+transport (bara om du INTE redan reser)
+     */
+    public Journey startNewJourneyTurn(Traveler traveler, PossibleMoves move) {
+        if (traveler.isTravelling()) {
+            throw new IllegalStateException("already travelling – cannot start a new journey");
+        }
 
         LocationLink route = move.getRoute();
         Transport transport = move.getTransport();
 
-        boolean allowed = route.getTransportLinks()
-            .stream()
+        // kontroll: transport tillåten?
+        boolean allowed = route.getTransportLinks().stream()
             .anyMatch(tl -> tl.getTransport().equals(transport));
-
         if (!allowed) {
             throw new IllegalStateException(transport.getType() + " is not allowed on this route");
         }
 
+        // starta resa med routeDistance
+        traveler.startJourney(route.getToLocation(), route.getDistance());
+
+        // genomför första “del-turen” på resan
+        return doTravelStep(traveler, route, transport);
+    }
+
+    /**
+     * fortsätter pågående resa (samma route+transport som senaste journey)
+     */
+    public Journey continueCurrentJourneyTurn(Traveler traveler) {
+        if (!traveler.isTravelling()) {
+            throw new IllegalStateException("not travelling – choose a move first");
+        }
+
+        Journey last = em.createQuery("""
+            select j
+            from Journey j
+            where j.traveler = :t
+            order by j.turnNumber desc
+        """, Journey.class)
+            .setParameter("t", traveler)
+            .setMaxResults(1)
+            .getSingleResult();
+
+        LocationLink route = last.getLocationLink();
+        Transport transport = last.getTransport();
+
+        return doTravelStep(traveler, route, transport);
+    }
+
+    /**
+     * gemensam logik för ett “steg” på en resa (slå, betala, advance, logga, events)
+     */
+    private Journey doTravelStep(Traveler traveler, LocationLink route, Transport transport) {
+
         BigDecimal cost = transport.getCostPerMove();
         if (traveler.getMoney().compareTo(cost) < 0) {
             throw new IllegalStateException("traveler cannot afford this move");
-        }
-
-        if (!traveler.isTravelling()) {
-            traveler.startJourney(route.getToLocation(), route.getDistance());
         }
 
         int rolledDistance = transport.rollDistance();
@@ -75,22 +111,11 @@ public class JourneyService {
         );
 
         em.persist(journey);
-
-        // ✅ events: skapa + persistera kopplat till journey
-        var events = eventService.applyEndOfTurnEvents(traveler);
-        for (var e : events) {
-            em.persist(new TurnEvent(
-                traveler,
-                journey,
-                e.type(),
-                e.amount(),
-                e.message()
-            ));
-        }
-
         em.merge(traveler);
+
+        // events kopplas till denna turn (om ni persisterar TurnEvent senare görs det här)
+        eventService.applyEndOfTurnEvents(traveler);
 
         return journey;
     }
-
 }

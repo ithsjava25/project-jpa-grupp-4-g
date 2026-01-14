@@ -131,4 +131,44 @@ public class MapVisualizer {
         }
     }
 
+    public void drawDestMarkers(List<Location> destinations, double w, double h) {
+        if (destinations == null || destinations.isEmpty()) return;
+
+        double cW = w / gridSize;
+        double cH = h / gridSize;
+        double r  = Math.min(cW, cH) * 0.22;
+
+        for (Location loc : destinations) {
+            if (loc == null) continue;
+
+            int x = clamp(loc.getX());
+            int y = clamp(loc.getY());
+
+            double centerX = (x * cW) + (cW / 2);
+            double centerY = h - (y * cH) - (cH / 2);
+
+            // ring
+            Circle ring = new Circle(centerX, centerY, r);
+            ring.setFill(Color.TRANSPARENT);
+            ring.setStroke(Color.web("#00FF00", 0.9));
+            ring.setStrokeWidth(Math.max(2, r * 0.25));
+            ring.setMouseTransparent(true);
+
+            // liten punkt i mitten (svag) -> hjälper ögat
+            Circle dot = new Circle(centerX, centerY, r * 0.25);
+            dot.setFill(Color.web("#00FF00", 0.35));
+            dot.setMouseTransparent(true);
+
+            mapPane.getChildren().addAll(ring, dot);
+        }
+    }
+
+    private int clamp(int v) {
+        if (v < 0) return 0;
+        if (v > gridSize - 1) return gridSize - 1;
+        return v;
+    }
+
+
+
 }
