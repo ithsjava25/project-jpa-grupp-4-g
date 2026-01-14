@@ -9,24 +9,33 @@
             stylesheets="/app.css">
 
     <center>
-        <StackPane fx:id="mapContainer" alignment="CENTER">
+        <StackPane fx:id="mapContainer" alignment="CENTER" prefWidth="900" prefHeight="700">
             <ImageView fx:id="mapView"
                        preserveRatio="false"
                        fitWidth="900"
                        fitHeight="700"
                        pickOnBounds="true" />
+            <StackPane fx:id="drawingPane" pickOnBounds="false">
+                <Pane fx:id="gridLayer" mouseTransparent="true"/>
+                <Pane fx:id="markerLayer" mouseTransparent="true"/>
+                <Pane fx:id="playerLayer" mouseTransparent="true"/>
+            </StackPane>
 
-            <Pane fx:id="drawingPane" onMouseClicked="#onMapClicked" />
         </StackPane>
     </center>
 
     <right>
         <VBox spacing="10" prefWidth="320" style="-fx-padding: 30 20 20 20;">
+            <Label text="Possible moves"
+                   style="-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: white;"/>
+            <VBox fx:id="movesBox" spacing="8"/>
+
             <Label text="Log"
                    style="-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: white;"/>
             <ListView fx:id="logList" VBox.vgrow="ALWAYS"/>
         </VBox>
     </right>
+
 
     <bottom>
         <VBox spacing="10" style="-fx-padding: 12;" styleClass="bottom-bar">

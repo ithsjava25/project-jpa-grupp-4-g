@@ -25,8 +25,12 @@ public class BootstrapService {
     }
 
     private boolean dataBaseAlreadySeeded() {
-        Long count = em.createQuery("select count(c) from Continent c", Long.class).getSingleResult();
-        return count > 0;
+        try {
+            Long count = em.createQuery("select count(c) from Continent c", Long.class).getSingleResult();
+            return count > 0;
+        } catch (Exception e) {
+            return false; // tabeller saknas -> inte seedad
+        }
     }
 
     private void runSqlFile() {

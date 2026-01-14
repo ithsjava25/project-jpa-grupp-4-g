@@ -4,22 +4,21 @@ import jakarta.persistence.EntityManager;
 import org.example.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 public class JourneyService {
 
     private final EntityManager em;
+    private final PlayerEventService eventService;
 
-    public JourneyService(EntityManager em) {
+    public JourneyService(EntityManager em, PlayerEventService eventService) {
         this.em = em;
+        this.eventService = eventService;
     }
 
-    /**
-     * listar alla möjliga drag från en given plats
-     */
-    public List<LocationLink> listAvailableMoves(Location fromLocation) {
-
-        return em.createQuery("""
+    public List<PossibleMoves> findPossibleMoves(Location fromLocation) {
+        List<LocationLink> routes = em.createQuery("""
             select distinct ll
             from LocationLink ll
             join fetch ll.transportLinks tl
@@ -28,51 +27,68 @@ public class JourneyService {
         """, LocationLink.class)
             .setParameter("location", fromLocation)
             .getResultList();
+
+        List<PossibleMoves> result = new ArrayList<>();
+        for (LocationLink route : routes) {
+            for (TransportLink tl : route.getTransportLinks()) {
+                result.add(new PossibleMoves(route, tl.getTransport()));
+            }
+        }
+        return result;
     }
 
-    /**
-     * utför ett drag (en tur)
-     */
-    public Journey performTurn(
-        Traveler traveler,
-        LocationLink route,
-        Transport transport
-    ) {
-
-        // 1. kontroll: är transport tillåten på rutten?
-        boolean allowed = route.getTransportLinks()
-            .stream()
-            .anyMatch(tl -> tl.getTransport().equals(transport));
-
-        if (!allowed) {
-            throw new IllegalStateException(
-                transport.getType() + " is not allowed on this route"
-            );
+    public Journey startNewJourneyTurn(Traveler traveler, PossibleMoves move) {
+        if (traveler.isTravelling()) {
+            throw new IllegalStateException("already travelling – cannot start a new journey");
         }
 
-        // 2. kontroll: har resenären råd?
+        LocationLink route = move.getRoute();
+        Transport transport = move.getTransport();
+
+        boolean allowed = route.getTransportLinks().stream()
+            .anyMatch(tl -> tl.getTransport().equals(transport));
+        if (!allowed) {
+            throw new IllegalStateException(transport.getType() + " is not allowed on this route");
+        }
+
+        traveler.startJourney(route.getToLocation(), route.getDistance());
+
+        return doTravelStep(traveler, route, transport);
+    }
+
+    public Journey continueCurrentJourneyTurn(Traveler traveler) {
+        if (!traveler.isTravelling()) {
+            throw new IllegalStateException("not travelling – choose a move first");
+        }
+
+        Journey last = em.createQuery("""
+            select j
+            from Journey j
+            where j.traveler = :t
+            order by j.turnNumber desc
+        """, Journey.class)
+            .setParameter("t", traveler)
+            .setMaxResults(1)
+            .getSingleResult();
+
+        LocationLink route = last.getLocationLink();
+        Transport transport = last.getTransport();
+
+        return doTravelStep(traveler, route, transport);
+    }
+
+    private Journey doTravelStep(Traveler traveler, LocationLink route, Transport transport) {
+
         BigDecimal cost = transport.getCostPerMove();
         if (traveler.getMoney().compareTo(cost) < 0) {
             throw new IllegalStateException("traveler cannot afford this move");
         }
 
-        // 3. starta resa om det är en ny resa
-        if (!traveler.isTravelling()) {
-            traveler.startJourney(
-                route.getToLocation()
-            );
-        }
-
-        // 4. slå tärning
         int rolledDistance = transport.rollDistance();
 
-        // 5. betala
         traveler.pay(cost);
-
-        // 6. flytta
         traveler.advance(rolledDistance);
 
-        // 7. logga draget
         Journey journey = new Journey(
             traveler,
             route,
@@ -84,6 +100,24 @@ public class JourneyService {
 
         em.persist(journey);
         em.merge(traveler);
+
+        // hämta events och persista TurnEvent kopplat till denna Journey
+        List<PlayerEventService.EventResult> events =
+            eventService.applyEndOfTurnEvents(traveler);
+
+        for (PlayerEventService.EventResult er : events) {
+            TurnEvent te = new TurnEvent(
+                traveler,
+                journey,
+                er.type(),
+                er.amount(),
+                er.message()
+            );
+            em.persist(te);
+        }
+
+        // (valfritt) om du vill vara extra säker att de skrivs direkt i samma tx:
+        em.flush();
 
         return journey;
     }
