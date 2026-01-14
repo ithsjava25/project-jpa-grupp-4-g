@@ -245,12 +245,12 @@ public class TravelGameController {
         Traveler current = em.find(Traveler.class, currentRef.getId());
         if (current == null) return;
 
-        currentPlayerLabel.setText(current.playerName);
+        currentPlayerLabel.setText(current.getPlayerName());
 
         int nextIndex = (currentPlayerIndex + 1) % players.size();
         Traveler nextRef = players.get(nextIndex);
         Traveler next = em.find(Traveler.class, nextRef.getId());
-        nextPlayerLabel.setText(next != null ? next.playerName : nextRef.playerName);
+        nextPlayerLabel.setText(next != null ? next.getPlayerName() : nextRef.getPlayerName());
 
         currentCreditsLabel.setText(current.getMoney() != null ? current.getMoney().toPlainString() : "-");
         currentTurnLabel.setText(String.valueOf(current.getTurnCount()));
@@ -452,15 +452,11 @@ public class TravelGameController {
         }
     }
 
-
     private String safeName(Traveler t) {
         if (t == null) return "?";
         if (t.getPlayerName() != null) return t.getPlayerName();
-        if (t.playerName != null) return t.playerName;
         return "?";
     }
-
-
 
     public void shutdown() {
         try {

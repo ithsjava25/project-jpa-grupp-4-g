@@ -11,6 +11,9 @@ public class Traveler extends playerMovement {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "player_name", nullable = false, length = 60)
+    private String playerName;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "current_location_id")
     private Location currentLocation;
@@ -34,12 +37,21 @@ public class Traveler extends playerMovement {
     protected Traveler() {}
 
     public Traveler(String name, Location startLocation) {
-        playerName = name;
+        this.playerName = name;          // ✅ jpa-kolumn
         this.currentLocation = startLocation;
 
-        // håller gui-position i sync med location
         setPosition();
-        // destinationPos kan vara null tills spelaren väljer, så vi sätter ingen destination här
+    }
+
+    public String getPlayerName() {
+        return playerName;
+    }
+
+    public void setPlayerName(String playerName) {
+        if (playerName == null || playerName.isBlank()) {
+            throw new IllegalArgumentException("playerName cannot be blank");
+        }
+        this.playerName = playerName;
     }
 
     public Long getId() {

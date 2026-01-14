@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import org.example.service.BootstrapService;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class App {
@@ -67,10 +66,10 @@ public class App {
                             p2.setDestinationPos(newDest.getX(), newDest.getY());
                         }
                         if(p1.checkScore()){
-                            System.out.println(p1.playerName + " wins");
+                            System.out.println(p1.getPlayerName() + " wins");
                             wonGame = true;
                         } else if(p2.checkScore()){
-                            System.out.println(p2.playerName + " wins");
+                            System.out.println(p2.getPlayerName() + " wins");
                             wonGame = true;
                         }
                         p1.updateJourney();
@@ -114,13 +113,13 @@ public class App {
                             p3.setDestinationPos(newDest.getX(), newDest.getY());
                         }
                         if(p1.checkScore()){
-                            System.out.println(p1.playerName + " wins");
+                            System.out.println(p1.getPlayerName() + " wins");
                             wonGame = true;
                         } else if(p2.checkScore()){
-                            System.out.println(p2.playerName + " wins");
+                            System.out.println(p2.getPlayerName() + " wins");
                             wonGame = true;
                         } else if(p3.checkScore()){
-                            System.out.println(p3.playerName + " wins");
+                            System.out.println(p3.getPlayerName() + " wins");
                             wonGame = true;
                         }
                         p1.updateJourney();
@@ -175,16 +174,16 @@ public class App {
                             p4.setDestinationPos(newDest.getX(), newDest.getY());
                         }
                         if(p1.checkScore()){
-                            System.out.println(p1.playerName + " wins");
+                            System.out.println(p1.getPlayerName() + " wins");
                             wonGame = true;
                         } else if(p2.checkScore()){
-                            System.out.println(p2.playerName + " wins");
+                            System.out.println(p2.getPlayerName() + " wins");
                             wonGame = true;
                         } else if(p3.checkScore()){
-                            System.out.println(p3.playerName + " wins");
+                            System.out.println(p3.getPlayerName() + " wins");
                             wonGame = true;
                         }else if(p4.checkScore()){
-                            System.out.println(p4.playerName + " wins");
+                            System.out.println(p4.getPlayerName() + " wins");
                             wonGame = true;
                         }
                         p1.updateJourney();
