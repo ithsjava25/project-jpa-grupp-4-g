@@ -92,6 +92,16 @@ public class Traveler extends playerMovement {
         }
     }
 
+    public void addScore(int delta) {
+        if (delta < 0) throw new IllegalArgumentException("delta must be >= 0");
+        this.score += delta;
+    }
+
+    public int getScore() {
+        return score;
+    }
+
+
     /**
      * (behåll) används för "fri" gui-rörelse när destination kommer från klick på karta
      * OBS: den här räknar manhattan via destinationPosX/Y
