@@ -89,7 +89,12 @@ public class JourneyService {
         int rolledDistance = transport.rollDistance();
 
         traveler.pay(cost);
-        traveler.advance(rolledDistance);
+
+        boolean arrived = traveler.advance(rolledDistance); // gör advance return boolean
+        if (arrived) {
+            traveler.addScore(1);
+        }
+
 
         Journey journey = new Journey(
             traveler,

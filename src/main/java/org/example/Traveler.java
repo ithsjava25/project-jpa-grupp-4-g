@@ -5,7 +5,10 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 
 @Entity
-public class Traveler extends playerMovement {
+@Table(name = "Traveler", indexes = {
+    @Index(name = "idx_traveler_score", columnList = "score")
+})
+public class Traveler {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,24 +31,30 @@ public class Traveler extends playerMovement {
     @Column(name = "turn_count", nullable = false)
     private int turnCount = 0;
 
-    @Column(nullable = false)
-    private BigDecimal money = BigDecimal.valueOf(credits);
+    @Column(nullable = false, precision = 12, scale = 2)
+    private BigDecimal money = BigDecimal.valueOf(10000);
 
-    @Column
+    @Column(nullable = false)
     private int score = 0;
+
+    // ✅ gui-position i db (så du slipper legacy-klasser)
+    @Column(name = "pos_x", nullable = false)
+    private int posX;
+
+    @Column(name = "pos_y", nullable = false)
+    private int posY;
 
     protected Traveler() {}
 
     public Traveler(String name, Location startLocation) {
-        this.playerName = name;          // ✅ jpa-kolumn
+        setPlayerName(name);
         this.currentLocation = startLocation;
-
-        setPosition();
+        syncPositionFromCurrentLocation();
     }
 
-    public String getPlayerName() {
-        return playerName;
-    }
+    // getters/setters
+    public Long getId() { return id; }
+    public String getPlayerName() { return playerName; }
 
     public void setPlayerName(String playerName) {
         if (playerName == null || playerName.isBlank()) {
@@ -54,95 +63,56 @@ public class Traveler extends playerMovement {
         this.playerName = playerName;
     }
 
-    public Long getId() {
-        return id;
-    }
+    public Location getCurrentLocation() { return currentLocation; }
+    public Location getTargetLocation() { return targetLocation; }
+    public int getRemainingDistance() { return remainingDistance; }
+    public int getTurnCount() { return turnCount; }
+    public BigDecimal getMoney() { return money; }
+    public int getScore() { return score; }
 
-    public Location getCurrentLocation() {
-        return currentLocation;
-    }
+    public int getPosX() { return posX; }
+    public int getPosY() { return posY; }
 
-    public Location getTargetLocation() {
-        return targetLocation;
-    }
-
-    public int getTurnCount() {
-        return turnCount;
-    }
-
-    public BigDecimal getMoney() {
-        return money;
-    }
-
-    public int getRemainingDistance() {
-        return remainingDistance;
-    }
-
-    public boolean isTravelling() {
-        return targetLocation != null;
-    }
-
-    /**
-     * håller playerPosX/Y i sync med currentLocation (för gui)
-     */
-    public void setPosition() {
-        if (currentLocation != null) {
-            setPlayerPosX(currentLocation.getX());
-            setPlayerPosY(currentLocation.getY());
-        }
-    }
+    public boolean isTravelling() { return targetLocation != null; }
 
     public void addScore(int delta) {
         if (delta < 0) throw new IllegalArgumentException("delta must be >= 0");
         this.score += delta;
     }
 
-    public int getScore() {
-        return score;
+    public void pay(BigDecimal amount) {
+        if (amount == null) throw new IllegalArgumentException("amount cannot be null");
+        if (amount.signum() < 0) throw new IllegalArgumentException("amount must be >= 0");
+        if (money.compareTo(amount) < 0) throw new IllegalStateException("not enough money");
+        money = money.subtract(amount);
     }
 
-
-    /**
-     * (behåll) används för "fri" gui-rörelse när destination kommer från klick på karta
-     * OBS: den här räknar manhattan via destinationPosX/Y
-     */
-    public void startJourney(Location target) {
-        this.targetLocation = target;
-
-        // ✅ viktigt: synca destinationPos så att calculateDistance funkar
-        setDestinationPos(target.getX(), target.getY());
-
-        calculateDistanceFromDestinationPos();
+    public void addMoney(BigDecimal amount) {
+        if (amount == null) throw new IllegalArgumentException("amount cannot be null");
+        if (amount.signum() < 0) throw new IllegalArgumentException("amount must be positive");
+        money = money.add(amount);
     }
 
-    /**
-     * ✅ NY: används av JourneyService när du reser via LocationLink.distance
-     * då ska remainingDistance baseras på routeDistance (inte koordinater)
-     */
+    public void deductMoney(BigDecimal amount) {
+        if (amount.signum() < 0) throw new IllegalArgumentException("amount must be positive");
+        BigDecimal next = this.money.subtract(amount);
+        this.money = next.signum() < 0 ? BigDecimal.ZERO : next;
+    }
+
+    public void syncPositionFromCurrentLocation() {
+        if (currentLocation != null) {
+            this.posX = currentLocation.getX();
+            this.posY = currentLocation.getY();
+        }
+    }
+
     public void startJourney(Location target, int routeDistance) {
         if (routeDistance < 0) throw new IllegalArgumentException("routeDistance must be >= 0");
-
         this.targetLocation = target;
         this.remainingDistance = routeDistance;
-
-        // ändå bra för gui att visa destination
-        setDestinationPos(target.getX(), target.getY());
     }
 
-    /**
-     * gamla logiken, men tydligare namn
-     */
-    private void calculateDistanceFromDestinationPos() {
-        // använder destinationPos som sätts via setDestinationPos(...)
-        int xPos = Math.abs(currentLocation.getX() - getDestinationPosX());
-        int yPos = Math.abs(currentLocation.getY() - getDestinationPosY());
-        this.remainingDistance = xPos + yPos;
-    }
-
-    /**
-     * när vi avancerar på en länk-baserad resa använder vi remainingDistance direkt
-     */
-    public void advance(int distanceThisTurn) {
+    public boolean advance(int distanceThisTurn) {
         remainingDistance -= distanceThisTurn;
         turnCount++;
 
@@ -151,77 +121,15 @@ public class Traveler extends playerMovement {
             targetLocation = null;
             remainingDistance = 0;
 
-            // ✅ synca gui-position när du "kommer fram"
-            setPosition();
+            syncPositionFromCurrentLocation();
+            return true; // ✅ arrived this turn
         }
-    }
-
-    public void pay(BigDecimal amount) {
-        if (amount == null) throw new IllegalArgumentException("amount cannot be null");
-        if (amount.signum() < 0) throw new IllegalArgumentException("amount must be >= 0");
-
-        if (money.compareTo(amount) < 0) {
-            throw new IllegalStateException("not enough money");
-        }
-
-        money = money.subtract(amount);
-
-        // ✅ håll gamla credits i sync så gui/cli fortfarande visar rätt
-        this.credits = money.intValue();
-    }
-
-    public void addMoney(BigDecimal amount) {
-        if (amount == null) throw new IllegalArgumentException("amount cannot be null");
-        if (amount.signum() < 0) {
-            throw new IllegalArgumentException("amount must be positive");
-        }
-
-        money = money.add(amount);
-
-        // ✅ sync credits
-        this.credits = money.intValue();
-    }
-
-    /**
-     * om du fortfarande använder gamla "updateJourney()" i någon kod:
-     * den bör i princip inte användas i nya link-baserade flödet.
-     * men om du vill behålla den utan att den sabbar:
-     */
-    public void updateJourney() {
-        turnCount = getTurns();
-        setPosition();
-
-        // ⚠️ bara meningsfullt om destinationPos är satt (fri gui-rörelse)
-        if (isTravelling()) {
-            calculateDistanceFromDestinationPos();
-        }
-    }
-    public void subtractMoneyClamped(BigDecimal amount) {
-        if (amount.signum() < 0) {
-            throw new IllegalArgumentException("amount must be positive");
-        }
-        BigDecimal newValue = this.money.subtract(amount);
-        if (newValue.signum() < 0) {
-            this.money = BigDecimal.ZERO;
-        } else {
-            this.money = newValue;
-        }
-    }
-
-    public void deductMoney(BigDecimal amount) {
-        if (amount.signum() < 0) {
-            throw new IllegalArgumentException("amount must be positive");
-        }
-        BigDecimal next = this.money.subtract(amount);
-        this.money = next.signum() < 0 ? BigDecimal.ZERO : next;
+        return false;
     }
 
     public void cancelJourney() {
         this.targetLocation = null;
         this.remainingDistance = 0;
-        // destinationPos kan du låta vara, eller synca till current:
-        // setDestinationPos(currentLocation.getX(), currentLocation.getY());
     }
-
-
 }
+
