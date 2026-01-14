@@ -26,7 +26,7 @@ public class Traveler extends playerMovement {
     private int remainingDistance;
 
     @Column(name = "turn_count", nullable = false)
-    private int turnCount = 1;
+    private int turnCount = 0;
 
     @Column(nullable = false)
     private BigDecimal money = BigDecimal.valueOf(credits);

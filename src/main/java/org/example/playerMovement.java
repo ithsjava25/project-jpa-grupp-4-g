@@ -6,8 +6,8 @@ import java.io.InputStreamReader;
 import java.util.List;
 
 public class playerMovement extends Player{
-    private int dice = 6;
-    private int walkingDice = 4;
+    private final int dice = 6;
+    private final int walkingDice = 4;
     private int selectedTransportDice;
     private int availableMovement;
     private int playerPosX;
