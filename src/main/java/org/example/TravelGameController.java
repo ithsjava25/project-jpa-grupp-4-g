@@ -45,6 +45,7 @@ public class TravelGameController {
     @FXML private Label currentTurnLabel;
     @FXML private Label currentLocationLabel;
     @FXML private Label destinationLabel;
+    @FXML private Label currentPointLabel;
 
     private MapVisualizer visualizer;
     private JourneyService journeyService;
@@ -260,6 +261,7 @@ public class TravelGameController {
 
         currentCreditsLabel.setText(current.getMoney() != null ? current.getMoney().toPlainString() : "-");
         currentTurnLabel.setText(String.valueOf(current.getTurnCount()));
+        currentPointLabel.setText(String.valueOf(current.getPlayerScore()));
 
         currentLocationLabel.setText("[" + clampToGrid(current.getPlayerPosX()) + "," + clampToGrid(current.getPlayerPosY()) + "]");
 

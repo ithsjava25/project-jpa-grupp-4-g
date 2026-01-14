@@ -66,6 +66,8 @@
                         <Label fx:id="currentCreditsLabel" text="0" style="-fx-text-fill: white;"/>
                         <Label text="Turn:" style="-fx-text-fill: white; -fx-font-weight: bold;"/>
                         <Label fx:id="currentTurnLabel" text="0" style="-fx-text-fill: white;"/>
+                        <Label text="Points:" style="-fx-text-fill: white; -fx-font-weight: bold;"/>
+                        <Label fx:id="currentPointLabel" text="0" style="-fx-text-fill: white;"/>
                     </HBox>
 
                     <HBox spacing="10">
