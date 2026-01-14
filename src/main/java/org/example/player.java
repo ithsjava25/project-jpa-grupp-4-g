@@ -5,22 +5,8 @@ abstract class Player {
     private int playerScore = 0;
     int credits = 10000;
 
-    //set the player name
-    public void setPlayerName(String playerName) {
-        this.playerName = playerName;
-    }
-
     public String getPlayerName() {
         return playerName;
-    }
-
-    public void setPlayerCredits(int credits) {
-        if (credits < 0){
-            System.out.println("Invalid, credits cannot be under zero!");
-            this.credits = 0;
-        } else {
-            this.credits = credits;
-        }
     }
 
     public int getCredits() {

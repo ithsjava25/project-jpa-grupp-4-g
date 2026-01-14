@@ -26,15 +26,6 @@ public class LocationLink {
     @OneToMany(mappedBy = "locationLink")
     private Set<TransportLink> transportLinks = new HashSet<>();
 
-
-    public LocationLink() {}
-
-    public LocationLink(Location fromLocation, Location toLocation, int distance) {
-        this.fromLocation = fromLocation;
-        this.toLocation = toLocation;
-        this.distance = distance;
-    }
-
     public Long getId() {
         return id;
     }
