@@ -14,7 +14,8 @@
                        preserveRatio="false"
                        fitWidth="900"
                        fitHeight="700"
-                       pickOnBounds="true" />
+                       pickOnBounds="true"
+                       onMouseClicked="#onMapClicked"/>
             <StackPane fx:id="drawingPane" pickOnBounds="false">
                 <Pane fx:id="gridLayer" mouseTransparent="true"/>
                 <Pane fx:id="markerLayer" mouseTransparent="true"/>
@@ -83,9 +84,6 @@
                         onAction="#onRoll"
                         styleClass="roll-button"/>
 
-                <Button text="DEMO PATH"
-                        onAction="#startMockJourney"
-                        styleClass="journey-button"/>
 
             </HBox>
         </VBox>

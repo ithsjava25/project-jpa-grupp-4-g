@@ -20,7 +20,9 @@ import org.example.service.JourneyService;
 import org.example.service.PlayerEventService;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TravelGameController {
 
@@ -49,6 +51,9 @@ public class TravelGameController {
 
     private PossibleMoves selectedMove = null;
     private boolean awaitingMoveChoice = false;
+
+    private List<PossibleMoves> shownMoves = List.of();
+    private final Map<PossibleMoves, Button> moveButtons = new HashMap<>();
 
     private static final int GRID_SIZE = 50;
 
@@ -142,6 +147,8 @@ public class TravelGameController {
             selectedMove = null;
             rollButton.setText("ROLL");
             movesBox.getChildren().clear();
+            shownMoves = List.of();
+            moveButtons.clear();
 
             doContinueJourney(current.getId());
             return;
@@ -150,6 +157,7 @@ public class TravelGameController {
         if (!awaitingMoveChoice) {
             selectedMove = null;
             movesBox.getChildren().clear();
+            moveButtons.clear();
 
             Location currentLocation = current.getCurrentLocation();
             if (currentLocation == null) {
@@ -162,6 +170,8 @@ public class TravelGameController {
                 logList.getItems().add("⛔ inga möjliga resor från " + currentLocation.getName());
                 return;
             }
+
+            shownMoves = moves;
 
             for (PossibleMoves m : moves) {
                 String text =
@@ -186,13 +196,14 @@ public class TravelGameController {
                 });
 
                 movesBox.getChildren().add(b);
+                moveButtons.put(m, b);
             }
 
             updateGraphicsWithMoves(current, moves);
 
             awaitingMoveChoice = true;
             rollButton.setText("CONFIRM MOVE");
-            logList.getItems().add("👉 välj en resa till höger och tryck confirm move");
+            logList.getItems().add("👉 välj en resa till höger eller klicka på kartan och tryck confirm move");
             return;
         }
 
@@ -207,11 +218,68 @@ public class TravelGameController {
         selectedMove = null;
         rollButton.setText("ROLL");
         movesBox.getChildren().clear();
+        shownMoves = List.of();
+        moveButtons.clear();
     }
 
     @FXML
     private void onMapClicked(MouseEvent event) {
-        logList.getItems().add("ℹ️ destination väljs via möjliga resor (högerpanelen), inte kartklick.");
+        if (wonGame || players.isEmpty()) return;
+
+        if (!awaitingMoveChoice || shownMoves == null || shownMoves.isEmpty()) {
+            logList.getItems().add("ℹ️ tryck roll först för att visa möjliga resor.");
+            return;
+        }
+
+        double w = mapView.getBoundsInLocal().getWidth();
+        double h = mapView.getBoundsInLocal().getHeight();
+        if (w <= 0 || h <= 0) return;
+
+        int gx = screenToGridX(event.getX(), w);
+        int gy = screenToGridY(event.getY(), h);
+
+        PossibleMoves nearest = null;
+        double best = Double.MAX_VALUE;
+
+        for (PossibleMoves m : shownMoves) {
+            Location to = m.getTo();
+            int tx = clampToGrid(to.getX());
+            int ty = clampToGrid(to.getY());
+
+            double dx = tx - gx;
+            double dy = ty - gy;
+            double d2 = dx * dx + dy * dy;
+
+            if (d2 < best) {
+                best = d2;
+                nearest = m;
+            }
+        }
+
+        if (nearest == null) return;
+
+        selectedMove = nearest;
+
+        Button b = moveButtons.get(nearest);
+        if (b != null) highlightSelectedMoveButton(b);
+
+        logList.getItems().add(
+            "🗺️ valt via karta: " + nearest.getFrom().getName() + " -> " + nearest.getTo().getName()
+                + " (" + nearest.getTransport().getType() + ")"
+        );
+    }
+
+    private int screenToGridX(double x, double totalWidth) {
+        double cellWidth = totalWidth / GRID_SIZE;
+        int gx = (int) Math.floor(x / cellWidth);
+        return clampToGrid(gx);
+    }
+
+    private int screenToGridY(double y, double totalHeight) {
+        double cellHeight = totalHeight / GRID_SIZE;
+        int gyFromTop = (int) Math.floor(y / cellHeight);
+        int gy = (GRID_SIZE - 1) - gyFromTop;
+        return clampToGrid(gy);
     }
 
     private void syncHudAndMap() {
