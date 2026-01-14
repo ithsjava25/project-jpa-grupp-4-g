@@ -24,7 +24,6 @@ public class TravelGame extends Application {
         dialog.setContentText("Ange ditt spelarnamn:");
         dialog.setGraphic(null);
 
-        DialogPane dialogPane = dialog.getDialogPane(); // ok att ha kvar eller ta bort
         Optional<String> result = dialog.showAndWait();
 
         if (result.isPresent() && !result.get().trim().isEmpty()) {

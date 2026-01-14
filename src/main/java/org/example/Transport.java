@@ -25,25 +25,6 @@ public class Transport {
 
     public Transport(){}
 
-    public Transport(TransportType type, String costPerMove) {
-        this.type = type;
-        this.costPerMove = new BigDecimal(costPerMove);
-        switch (type){
-            case BUSS ->  {
-                this.diceCount = 1;
-                this.diceSides = 6;
-            }
-            case TRAIN ->   {
-                this.diceCount = 2;
-                this.diceSides = 6;
-            }
-            case AIRPLANE ->   {
-                this.diceCount = 3;
-                this.diceSides = 6;
-            }
-        }
-    }
-
     public int rollDistance() {
         Random r = new Random();
         int total = 0;
@@ -64,6 +45,5 @@ public class Transport {
     public String getType() {
         return type.toString();
     }
-
 
 }
