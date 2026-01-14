@@ -370,11 +370,56 @@ public class TravelGameController {
 
         redrawAllPathsFromDb(w, h);
 
-        List<int[]> positions = new ArrayList<>();
-        for (Traveler t : players) {
-            positions.add(new int[]{ clampToGrid(t.getPlayerPosX()), clampToGrid(t.getPlayerPosY()) });
+        List<double[]> positions = new ArrayList<>();
+        for (Traveler tRef : players) {
+            Traveler t = em != null && tRef.getId() != null ? em.find(Traveler.class, tRef.getId()) : tRef;
+            if (t == null) continue;
+            positions.add(computePlayerGridPos(t));
         }
-        visualizer.drawPlayers(positions, currentPlayerIndex, w, h);
+        visualizer.drawPlayersInterpolated(positions, currentPlayerIndex, w, h);
+    }
+
+    private double[] computePlayerGridPos(Traveler t) {
+        double baseX = clampToGrid(t.getPlayerPosX());
+        double baseY = clampToGrid(t.getPlayerPosY());
+
+        if (!t.isTravelling() || t.getId() == null || em == null) {
+            return new double[]{baseX, baseY};
+        }
+
+        List<Journey> list = em.createQuery(
+                "select j from Journey j " +
+                    "join fetch j.locationLink ll " +
+                    "join fetch ll.fromLocation " +
+                    "join fetch ll.toLocation " +
+                    "where j.traveler.id = :id " +
+                    "order by j.turnNumber desc, j.id desc",
+                Journey.class
+            )
+            .setParameter("id", t.getId())
+            .setMaxResults(1)
+            .getResultList();
+
+        if (list.isEmpty()) return new double[]{baseX, baseY};
+
+        Journey j = list.get(0);
+        LocationLink ll = j.getLocationLink();
+        int total = ll.getDistance();
+        if (total <= 0) return new double[]{baseX, baseY};
+
+        Location from = ll.getFromLocation();
+        Location to = ll.getToLocation();
+
+        int remainingAfter = j.getRemainingDistance();
+        double fracAfter = (double) (total - remainingAfter) / total;
+
+        double gx = from.getX() + (to.getX() - from.getX()) * fracAfter;
+        double gy = from.getY() + (to.getY() - from.getY()) * fracAfter;
+
+        gx = Math.max(0.0, Math.min(GRID_SIZE - 1, gx));
+        gy = Math.max(0.0, Math.min(GRID_SIZE - 1, gy));
+
+        return new double[]{gx, gy};
     }
 
     private void redrawAllPathsFromDb(double w, double h) {
@@ -441,21 +486,7 @@ public class TravelGameController {
         return Math.max(0, Math.min(GRID_SIZE - 1, v));
     }
 
-    public void startMockJourney() {
-        logList.getItems().add("📜 Demo path!");
-        if (players.isEmpty()) return;
 
-        Traveler current = players.get(currentPlayerIndex);
-        int px = clampToGrid(current.getPlayerPosX());
-        int py = clampToGrid(current.getPlayerPosY());
-
-        List<int[]> journeyPath = new ArrayList<>();
-        journeyPath.add(new int[]{px, py});
-        journeyPath.add(new int[]{10, 15});
-        journeyPath.add(new int[]{25, 20});
-        journeyPath.add(new int[]{40, 45});
-        visualizer.animateJourney(journeyPath, drawingPane.getWidth(), drawingPane.getHeight());
-    }
 
     private void doMove(Long travelerId, PossibleMoves chosen) {
         if (wonGame) return;
@@ -517,18 +548,6 @@ public class TravelGameController {
         }
     }
 
-
-    private List<Location> distinctLocationsById(List<Location> locations) {
-        java.util.Map<Long, Location> byId = new java.util.LinkedHashMap<>();
-        for (Location l : locations) {
-            if (l != null && l.getId() != null) {
-                byId.putIfAbsent(l.getId(), l);
-            }
-        }
-        return new java.util.ArrayList<>(byId.values());
-    }
-
-
     private void highlightSelectedMoveButton(Button selected) {
         for (var node : movesBox.getChildren()) {
             if (node instanceof Button b) b.setStyle("");
@@ -537,9 +556,12 @@ public class TravelGameController {
     }
 
     private Location getLocationByName(String name) {
-        return em.createQuery("select l from Location l where l.name = :n", Location.class)
+        List<Location> list = em.createQuery("select l from Location l where l.name = :n order by l.id", Location.class)
             .setParameter("n", name)
-            .getSingleResult();
+            .setMaxResults(1)
+            .getResultList();
+        if (list.isEmpty()) throw new IllegalStateException("No location found with name: " + name);
+        return list.get(0);
     }
 
     private void doContinueJourney(Long travelerId) {
