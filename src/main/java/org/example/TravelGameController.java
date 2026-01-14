@@ -8,6 +8,7 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.image.Image;
@@ -24,6 +25,7 @@ import java.util.List;
 
 public class TravelGameController {
 
+    @FXML private DialogPane winConLabel;
     @FXML private ImageView mapView;
     @FXML private StackPane drawingPane;
     @FXML private Pane gridLayer;
@@ -375,6 +377,7 @@ public class TravelGameController {
             if (player.checkScore()) {
                 wonGame = true;
                 System.out.println(player.getPlayerName() + " Wins the game. Congratulations");
+                winConLabel.setContentText(player.getPlayerName() + " Wins the game. Congratulations");
             }
         }
     }
