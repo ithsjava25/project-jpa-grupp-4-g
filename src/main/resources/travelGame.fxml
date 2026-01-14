@@ -15,7 +15,12 @@
                        fitWidth="900"
                        fitHeight="700"
                        pickOnBounds="true" />
-            <Pane fx:id="drawingPane"/>
+            <StackPane fx:id="drawingPane" pickOnBounds="false">
+                <Pane fx:id="gridLayer" mouseTransparent="true"/>
+                <Pane fx:id="markerLayer" mouseTransparent="true"/>
+                <Pane fx:id="playerLayer" mouseTransparent="true"/>
+            </StackPane>
+
         </StackPane>
     </center>
 

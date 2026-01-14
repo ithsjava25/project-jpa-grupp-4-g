@@ -25,7 +25,10 @@ import java.util.List;
 public class TravelGameController {
 
     @FXML private ImageView mapView;
-    @FXML private Pane drawingPane;
+    @FXML private StackPane drawingPane;
+    @FXML private Pane gridLayer;
+    @FXML private Pane markerLayer;
+    @FXML private Pane playerLayer;
     @FXML private ListView<String> logList;
     @FXML private Button rollButton;
     @FXML private VBox movesBox;
@@ -64,7 +67,8 @@ public class TravelGameController {
 
     @FXML
     private void initialize() {
-        visualizer = new MapVisualizer(drawingPane);
+        visualizer = new MapVisualizer(gridLayer, markerLayer, playerLayer);
+
 
         mapView.setImage(new Image(getClass().getResourceAsStream("/assets/map.png")));
 
@@ -271,38 +275,29 @@ public class TravelGameController {
         if (w <= 0 || h <= 0) return;
 
         visualizer.drawGrid(w, h);
+        visualizer.clearMarkers(); // <- viktig: rensa markers när vi “basritar”
 
         List<int[]> positions = new ArrayList<>();
-        for (Traveler tRef : players) {
-            Traveler t = em.find(Traveler.class, tRef.getId());
-            if (t == null) continue;
-
-            // säkerställ att gui-pos verkligen följer currentLocation
-            t.setPosition();
-
-            positions.add(new int[]{
-                clampToGrid(t.getPlayerPosX()),
-                clampToGrid(t.getPlayerPosY())
-            });
+        for (Traveler t : players) {
+            positions.add(new int[]{ clampToGrid(t.getPlayerPosX()), clampToGrid(t.getPlayerPosY()) });
         }
-
         visualizer.drawPlayers(positions, currentPlayerIndex, w, h);
     }
 
-
     private void updateGraphicsWithMoves(Traveler managed, List<PossibleMoves> moves) {
-        updateGraphics(); // ritar grid + players
+        updateGraphics(); // ritar grid + players + rensar markers
 
         double w = drawingPane.getWidth();
         double h = drawingPane.getHeight();
 
-        // ✅ distinct via location-id (inte equals/hashcode)
-        List<Location> destinations = distinctLocationsById(
-            moves.stream().map(PossibleMoves::getTo).toList()
-        );
+        List<Location> destinations = moves.stream()
+            .map(PossibleMoves::getTo)
+            .distinct()
+            .toList();
 
-        visualizer.drawDestMarkers(destinations, w, h);
+        visualizer.drawDestMarkers(destinations, w, h); // <- markers syns nu stabilt
     }
+
 
 
 
