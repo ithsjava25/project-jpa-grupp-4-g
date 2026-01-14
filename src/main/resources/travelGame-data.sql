@@ -1412,6 +1412,1149 @@ WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Berlin')
   AND t.type IN ('BUSS','TRAIN')
   AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=t.id);
 
+-- =========================================================
+-- EUROPE -> CAUCASUS -> BAKU CITY CIRCUIT (seed additions)
+-- matchar din stil: t.type IN (...) + NOT EXISTS
+-- =========================================================
+
+-- helper: skapa länkar A -> B med dist
+-- (alla är "safe": gör inget om location saknas eller om länken redan finns)
+
+-- Paris -> Vienna
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT from_loc.id, to_loc.id, 10
+FROM Location from_loc
+         JOIN Location to_loc
+WHERE from_loc.name = 'Paris'
+  AND to_loc.name   = 'Vienna'
+  AND NOT EXISTS (
+    SELECT 1 FROM LocationLink ll
+    WHERE ll.from_location_id = from_loc.id
+      AND ll.to_location_id   = to_loc.id
+);
+
+-- Vienna -> Paris
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT from_loc.id, to_loc.id, 10
+FROM Location from_loc
+         JOIN Location to_loc
+WHERE from_loc.name = 'Vienna'
+  AND to_loc.name   = 'Paris'
+  AND NOT EXISTS (
+    SELECT 1 FROM LocationLink ll
+    WHERE ll.from_location_id = from_loc.id
+      AND ll.to_location_id   = to_loc.id
+);
+
+-- transport Paris -> Vienna
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, t.id
+FROM LocationLink ll
+         JOIN Transport t
+WHERE ll.from_location_id = (SELECT id FROM Location WHERE name = 'Paris')
+  AND ll.to_location_id   = (SELECT id FROM Location WHERE name = 'Vienna')
+  AND t.type IN ('TRAIN', 'AIRPLANE', 'BUSS')
+  AND NOT EXISTS (
+    SELECT 1 FROM TransportLink tl
+    WHERE tl.location_link_id = ll.id
+      AND tl.transport_id     = t.id
+);
+
+-- transport Vienna -> Paris
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, t.id
+FROM LocationLink ll
+         JOIN Transport t
+WHERE ll.from_location_id = (SELECT id FROM Location WHERE name = 'Vienna')
+  AND ll.to_location_id   = (SELECT id FROM Location WHERE name = 'Paris')
+  AND t.type IN ('TRAIN', 'AIRPLANE', 'BUSS')
+  AND NOT EXISTS (
+    SELECT 1 FROM TransportLink tl
+    WHERE tl.location_link_id = ll.id
+      AND tl.transport_id     = t.id
+);
+
+-- Vienna -> Budapest
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT from_loc.id, to_loc.id, 6
+FROM Location from_loc
+         JOIN Location to_loc
+WHERE from_loc.name = 'Vienna'
+  AND to_loc.name   = 'Budapest'
+  AND NOT EXISTS (
+    SELECT 1 FROM LocationLink ll
+    WHERE ll.from_location_id = from_loc.id
+      AND ll.to_location_id   = to_loc.id
+);
+
+-- Budapest -> Vienna
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT from_loc.id, to_loc.id, 6
+FROM Location from_loc
+         JOIN Location to_loc
+WHERE from_loc.name = 'Budapest'
+  AND to_loc.name   = 'Vienna'
+  AND NOT EXISTS (
+    SELECT 1 FROM LocationLink ll
+    WHERE ll.from_location_id = from_loc.id
+      AND ll.to_location_id   = to_loc.id
+);
+
+-- transport Vienna <-> Budapest (regional: tåg/buss)
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, t.id
+FROM LocationLink ll
+         JOIN Transport t
+WHERE ll.from_location_id = (SELECT id FROM Location WHERE name = 'Vienna')
+  AND ll.to_location_id   = (SELECT id FROM Location WHERE name = 'Budapest')
+  AND t.type IN ('TRAIN', 'BUSS')
+  AND NOT EXISTS (
+    SELECT 1 FROM TransportLink tl
+    WHERE tl.location_link_id = ll.id
+      AND tl.transport_id     = t.id
+);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, t.id
+FROM LocationLink ll
+         JOIN Transport t
+WHERE ll.from_location_id = (SELECT id FROM Location WHERE name = 'Budapest')
+  AND ll.to_location_id   = (SELECT id FROM Location WHERE name = 'Vienna')
+  AND t.type IN ('TRAIN', 'BUSS')
+  AND NOT EXISTS (
+    SELECT 1 FROM TransportLink tl
+    WHERE tl.location_link_id = ll.id
+      AND tl.transport_id     = t.id
+);
+
+-- Budapest -> Bucharest
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT from_loc.id, to_loc.id, 12
+FROM Location from_loc
+         JOIN Location to_loc
+WHERE from_loc.name = 'Budapest'
+  AND to_loc.name   = 'Bucharest'
+  AND NOT EXISTS (
+    SELECT 1 FROM LocationLink ll
+    WHERE ll.from_location_id = from_loc.id
+      AND ll.to_location_id   = to_loc.id
+);
+
+-- Bucharest -> Budapest
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT from_loc.id, to_loc.id, 12
+FROM Location from_loc
+         JOIN Location to_loc
+WHERE from_loc.name = 'Bucharest'
+  AND to_loc.name   = 'Budapest'
+  AND NOT EXISTS (
+    SELECT 1 FROM LocationLink ll
+    WHERE ll.from_location_id = from_loc.id
+      AND ll.to_location_id   = to_loc.id
+);
+
+-- transport Budapest <-> Bucharest
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, t.id
+FROM LocationLink ll
+         JOIN Transport t
+WHERE ll.from_location_id = (SELECT id FROM Location WHERE name = 'Budapest')
+  AND ll.to_location_id   = (SELECT id FROM Location WHERE name = 'Bucharest')
+  AND t.type IN ('TRAIN', 'AIRPLANE', 'BUSS')
+  AND NOT EXISTS (
+    SELECT 1 FROM TransportLink tl
+    WHERE tl.location_link_id = ll.id
+      AND tl.transport_id     = t.id
+);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, t.id
+FROM LocationLink ll
+         JOIN Transport t
+WHERE ll.from_location_id = (SELECT id FROM Location WHERE name = 'Bucharest')
+  AND ll.to_location_id   = (SELECT id FROM Location WHERE name = 'Budapest')
+  AND t.type IN ('TRAIN', 'AIRPLANE', 'BUSS')
+  AND NOT EXISTS (
+    SELECT 1 FROM TransportLink tl
+    WHERE tl.location_link_id = ll.id
+      AND tl.transport_id     = t.id
+);
+
+-- Bucharest -> Istanbul
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT from_loc.id, to_loc.id, 14
+FROM Location from_loc
+         JOIN Location to_loc
+WHERE from_loc.name = 'Bucharest'
+  AND to_loc.name   = 'Istanbul'
+  AND NOT EXISTS (
+    SELECT 1 FROM LocationLink ll
+    WHERE ll.from_location_id = from_loc.id
+      AND ll.to_location_id   = to_loc.id
+);
+
+-- Istanbul -> Bucharest
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT from_loc.id, to_loc.id, 14
+FROM Location from_loc
+         JOIN Location to_loc
+WHERE from_loc.name = 'Istanbul'
+  AND to_loc.name   = 'Bucharest'
+  AND NOT EXISTS (
+    SELECT 1 FROM LocationLink ll
+    WHERE ll.from_location_id = from_loc.id
+      AND ll.to_location_id   = to_loc.id
+);
+
+-- transport Bucharest <-> Istanbul
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, t.id
+FROM LocationLink ll
+         JOIN Transport t
+WHERE ll.from_location_id = (SELECT id FROM Location WHERE name = 'Bucharest')
+  AND ll.to_location_id   = (SELECT id FROM Location WHERE name = 'Istanbul')
+  AND t.type IN ('TRAIN', 'AIRPLANE', 'BUSS')
+  AND NOT EXISTS (
+    SELECT 1 FROM TransportLink tl
+    WHERE tl.location_link_id = ll.id
+      AND tl.transport_id     = t.id
+);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, t.id
+FROM LocationLink ll
+         JOIN Transport t
+WHERE ll.from_location_id = (SELECT id FROM Location WHERE name = 'Istanbul')
+  AND ll.to_location_id   = (SELECT id FROM Location WHERE name = 'Bucharest')
+  AND t.type IN ('TRAIN', 'AIRPLANE', 'BUSS')
+  AND NOT EXISTS (
+    SELECT 1 FROM TransportLink tl
+    WHERE tl.location_link_id = ll.id
+      AND tl.transport_id     = t.id
+);
+
+-- Istanbul -> Ankara (lokalt i turkiet)
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT from_loc.id, to_loc.id, 8
+FROM Location from_loc
+         JOIN Location to_loc
+WHERE from_loc.name = 'Istanbul'
+  AND to_loc.name   = 'Ankara'
+  AND NOT EXISTS (
+    SELECT 1 FROM LocationLink ll
+    WHERE ll.from_location_id = from_loc.id
+      AND ll.to_location_id   = to_loc.id
+);
+
+-- Ankara -> Istanbul
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT from_loc.id, to_loc.id, 8
+FROM Location from_loc
+         JOIN Location to_loc
+WHERE from_loc.name = 'Ankara'
+  AND to_loc.name   = 'Istanbul'
+  AND NOT EXISTS (
+    SELECT 1 FROM LocationLink ll
+    WHERE ll.from_location_id = from_loc.id
+      AND ll.to_location_id   = to_loc.id
+);
+
+-- transport Istanbul <-> Ankara
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, t.id
+FROM LocationLink ll
+         JOIN Transport t
+WHERE ll.from_location_id = (SELECT id FROM Location WHERE name = 'Istanbul')
+  AND ll.to_location_id   = (SELECT id FROM Location WHERE name = 'Ankara')
+  AND t.type IN ('TRAIN', 'BUSS', 'AIRPLANE')
+  AND NOT EXISTS (
+    SELECT 1 FROM TransportLink tl
+    WHERE tl.location_link_id = ll.id
+      AND tl.transport_id     = t.id
+);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, t.id
+FROM LocationLink ll
+         JOIN Transport t
+WHERE ll.from_location_id = (SELECT id FROM Location WHERE name = 'Ankara')
+  AND ll.to_location_id   = (SELECT id FROM Location WHERE name = 'Istanbul')
+  AND t.type IN ('TRAIN', 'BUSS', 'AIRPLANE')
+  AND NOT EXISTS (
+    SELECT 1 FROM TransportLink tl
+    WHERE tl.location_link_id = ll.id
+      AND tl.transport_id     = t.id
+);
+
+-- Ankara -> Tbilisi
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT from_loc.id, to_loc.id, 18
+FROM Location from_loc
+         JOIN Location to_loc
+WHERE from_loc.name = 'Ankara'
+  AND to_loc.name   = 'Tbilisi'
+  AND NOT EXISTS (
+    SELECT 1 FROM LocationLink ll
+    WHERE ll.from_location_id = from_loc.id
+      AND ll.to_location_id   = to_loc.id
+);
+
+-- Tbilisi -> Ankara
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT from_loc.id, to_loc.id, 18
+FROM Location from_loc
+         JOIN Location to_loc
+WHERE from_loc.name = 'Tbilisi'
+  AND to_loc.name   = 'Ankara'
+  AND NOT EXISTS (
+    SELECT 1 FROM LocationLink ll
+    WHERE ll.from_location_id = from_loc.id
+      AND ll.to_location_id   = to_loc.id
+);
+
+-- transport Ankara <-> Tbilisi (flyg/tåg)
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, t.id
+FROM LocationLink ll
+         JOIN Transport t
+WHERE ll.from_location_id = (SELECT id FROM Location WHERE name = 'Ankara')
+  AND ll.to_location_id   = (SELECT id FROM Location WHERE name = 'Tbilisi')
+  AND t.type IN ('AIRPLANE', 'TRAIN')
+  AND NOT EXISTS (
+    SELECT 1 FROM TransportLink tl
+    WHERE tl.location_link_id = ll.id
+      AND tl.transport_id     = t.id
+);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, t.id
+FROM LocationLink ll
+         JOIN Transport t
+WHERE ll.from_location_id = (SELECT id FROM Location WHERE name = 'Tbilisi')
+  AND ll.to_location_id   = (SELECT id FROM Location WHERE name = 'Ankara')
+  AND t.type IN ('AIRPLANE', 'TRAIN')
+  AND NOT EXISTS (
+    SELECT 1 FROM TransportLink tl
+    WHERE tl.location_link_id = ll.id
+      AND tl.transport_id     = t.id
+);
+
+-- Tbilisi -> Baku
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT from_loc.id, to_loc.id, 14
+FROM Location from_loc
+         JOIN Location to_loc
+WHERE from_loc.name = 'Tbilisi'
+  AND to_loc.name   = 'Baku'
+  AND NOT EXISTS (
+    SELECT 1 FROM LocationLink ll
+    WHERE ll.from_location_id = from_loc.id
+      AND ll.to_location_id   = to_loc.id
+);
+
+-- Baku -> Tbilisi
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT from_loc.id, to_loc.id, 14
+FROM Location from_loc
+         JOIN Location to_loc
+WHERE from_loc.name = 'Baku'
+  AND to_loc.name   = 'Tbilisi'
+  AND NOT EXISTS (
+    SELECT 1 FROM LocationLink ll
+    WHERE ll.from_location_id = from_loc.id
+      AND ll.to_location_id   = to_loc.id
+);
+
+-- transport Tbilisi <-> Baku (tåg/flyg)
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, t.id
+FROM LocationLink ll
+         JOIN Transport t
+WHERE ll.from_location_id = (SELECT id FROM Location WHERE name = 'Tbilisi')
+  AND ll.to_location_id   = (SELECT id FROM Location WHERE name = 'Baku')
+  AND t.type IN ('TRAIN', 'AIRPLANE')
+  AND NOT EXISTS (
+    SELECT 1 FROM TransportLink tl
+    WHERE tl.location_link_id = ll.id
+      AND tl.transport_id     = t.id
+);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, t.id
+FROM LocationLink ll
+         JOIN Transport t
+WHERE ll.from_location_id = (SELECT id FROM Location WHERE name = 'Baku')
+  AND ll.to_location_id   = (SELECT id FROM Location WHERE name = 'Tbilisi')
+  AND t.type IN ('TRAIN', 'AIRPLANE')
+  AND NOT EXISTS (
+    SELECT 1 FROM TransportLink tl
+    WHERE tl.location_link_id = ll.id
+      AND tl.transport_id     = t.id
+);
+
+-- Baku -> Baku City Circuit (målet)
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT from_loc.id, to_loc.id, 4
+FROM Location from_loc
+         JOIN Location to_loc
+WHERE from_loc.name = 'Baku'
+  AND to_loc.name   = 'Baku City Circuit'
+  AND NOT EXISTS (
+    SELECT 1 FROM LocationLink ll
+    WHERE ll.from_location_id = from_loc.id
+      AND ll.to_location_id   = to_loc.id
+);
+
+-- Baku City Circuit -> Baku
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT from_loc.id, to_loc.id, 4
+FROM Location from_loc
+         JOIN Location to_loc
+WHERE from_loc.name = 'Baku City Circuit'
+  AND to_loc.name   = 'Baku'
+  AND NOT EXISTS (
+    SELECT 1 FROM LocationLink ll
+    WHERE ll.from_location_id = from_loc.id
+      AND ll.to_location_id   = to_loc.id
+);
+
+-- transport Baku <-> Baku City Circuit (buss/tåg)
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, t.id
+FROM LocationLink ll
+         JOIN Transport t
+WHERE ll.from_location_id = (SELECT id FROM Location WHERE name = 'Baku')
+  AND ll.to_location_id   = (SELECT id FROM Location WHERE name = 'Baku City Circuit')
+  AND t.type IN ('BUSS', 'TRAIN')
+  AND NOT EXISTS (
+    SELECT 1 FROM TransportLink tl
+    WHERE tl.location_link_id = ll.id
+      AND tl.transport_id     = t.id
+);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, t.id
+FROM LocationLink ll
+         JOIN Transport t
+WHERE ll.from_location_id = (SELECT id FROM Location WHERE name = 'Baku City Circuit')
+  AND ll.to_location_id   = (SELECT id FROM Location WHERE name = 'Baku')
+  AND t.type IN ('BUSS', 'TRAIN')
+  AND NOT EXISTS (
+    SELECT 1 FROM TransportLink tl
+    WHERE tl.location_link_id = ll.id
+      AND tl.transport_id     = t.id
+);
+
+
+-- =========================================================
+-- EXTRA "nearby" routes for variety around europe core
+-- (om platserna finns hos er)
+-- =========================================================
+
+-- Berlin -> Vienna
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT from_loc.id, to_loc.id, 10
+FROM Location from_loc
+         JOIN Location to_loc
+WHERE from_loc.name = 'Berlin'
+  AND to_loc.name   = 'Vienna'
+  AND NOT EXISTS (
+    SELECT 1 FROM LocationLink ll
+    WHERE ll.from_location_id = from_loc.id
+      AND ll.to_location_id   = to_loc.id
+);
+
+-- Vienna -> Berlin
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT from_loc.id, to_loc.id, 10
+FROM Location from_loc
+         JOIN Location to_loc
+WHERE from_loc.name = 'Vienna'
+  AND to_loc.name   = 'Berlin'
+  AND NOT EXISTS (
+    SELECT 1 FROM LocationLink ll
+    WHERE ll.from_location_id = from_loc.id
+      AND ll.to_location_id   = to_loc.id
+);
+
+-- transport Berlin <-> Vienna
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, t.id
+FROM LocationLink ll
+         JOIN Transport t
+WHERE ll.from_location_id = (SELECT id FROM Location WHERE name = 'Berlin')
+  AND ll.to_location_id   = (SELECT id FROM Location WHERE name = 'Vienna')
+  AND t.type IN ('TRAIN', 'AIRPLANE')
+  AND NOT EXISTS (
+    SELECT 1 FROM TransportLink tl
+    WHERE tl.location_link_id = ll.id
+      AND tl.transport_id     = t.id
+);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, t.id
+FROM LocationLink ll
+         JOIN Transport t
+WHERE ll.from_location_id = (SELECT id FROM Location WHERE name = 'Vienna')
+  AND ll.to_location_id   = (SELECT id FROM Location WHERE name = 'Berlin')
+  AND t.type IN ('TRAIN', 'AIRPLANE')
+  AND NOT EXISTS (
+    SELECT 1 FROM TransportLink tl
+    WHERE tl.location_link_id = ll.id
+      AND tl.transport_id     = t.id
+);
+
+-- Boston -> New York
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 6
+FROM Location f JOIN Location t
+WHERE f.name='Boston' AND t.name='New York'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+-- New York -> Boston
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 6
+FROM Location f JOIN Location t
+WHERE f.name='New York' AND t.name='Boston'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+-- transports Boston <-> New York
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id
+FROM LocationLink ll
+         JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Boston')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='New York')
+  AND tr.type IN ('BUSS','AIRPLANE')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id
+FROM LocationLink ll
+         JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='New York')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Boston')
+  AND tr.type IN ('BUSS','AIRPLANE')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+
+-- Boston -> London
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 18
+FROM Location f JOIN Location t
+WHERE f.name='Boston' AND t.name='London'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+-- London -> Boston
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 18
+FROM Location f JOIN Location t
+WHERE f.name='London' AND t.name='Boston'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+-- transports Boston <-> London
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id
+FROM LocationLink ll
+         JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Boston')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='London')
+  AND tr.type IN ('AIRPLANE')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id
+FROM LocationLink ll
+         JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='London')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Boston')
+  AND tr.type IN ('AIRPLANE')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+-- San Francisco -> Los Angeles
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 7
+FROM Location f JOIN Location t
+WHERE f.name='San Francisco' AND t.name='Los Angeles'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+-- Los Angeles -> San Francisco
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 7
+FROM Location f JOIN Location t
+WHERE f.name='Los Angeles' AND t.name='San Francisco'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+-- transports SF <-> LA
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id
+FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='San Francisco')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Los Angeles')
+  AND tr.type IN ('BUSS','AIRPLANE')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id
+FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Los Angeles')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='San Francisco')
+  AND tr.type IN ('BUSS','AIRPLANE')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+
+-- San Francisco -> New York
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 22
+FROM Location f JOIN Location t
+WHERE f.name='San Francisco' AND t.name='New York'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+-- New York -> San Francisco
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 22
+FROM Location f JOIN Location t
+WHERE f.name='New York' AND t.name='San Francisco'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+-- transports SF <-> NY
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id
+FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='San Francisco')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='New York')
+  AND tr.type IN ('AIRPLANE')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id
+FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='New York')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='San Francisco')
+  AND tr.type IN ('AIRPLANE')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+-- Lisbon <-> Madrid
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 6 FROM Location f JOIN Location t
+WHERE f.name='Lisbon' AND t.name='Madrid'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 6 FROM Location f JOIN Location t
+WHERE f.name='Madrid' AND t.name='Lisbon'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Lisbon')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Madrid')
+  AND tr.type IN ('TRAIN','BUSS')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Madrid')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Lisbon')
+  AND tr.type IN ('TRAIN','BUSS')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+
+-- Oslo <-> Stockholm
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 5 FROM Location f JOIN Location t
+WHERE f.name='Oslo' AND t.name='Stockholm'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 5 FROM Location f JOIN Location t
+WHERE f.name='Stockholm' AND t.name='Oslo'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Oslo')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Stockholm')
+  AND tr.type IN ('TRAIN','BUSS')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Stockholm')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Oslo')
+  AND tr.type IN ('TRAIN','BUSS')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+
+-- Helsinki <-> Stockholm
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 7 FROM Location f JOIN Location t
+WHERE f.name='Helsinki' AND t.name='Stockholm'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 7 FROM Location f JOIN Location t
+WHERE f.name='Stockholm' AND t.name='Helsinki'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Helsinki')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Stockholm')
+  AND tr.type IN ('AIRPLANE','TRAIN')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Stockholm')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Helsinki')
+  AND tr.type IN ('AIRPLANE','TRAIN')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+
+-- Warsaw <-> Vienna (nyckel för korridor österut)
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 8 FROM Location f JOIN Location t
+WHERE f.name='Warsaw' AND t.name='Vienna'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 8 FROM Location f JOIN Location t
+WHERE f.name='Vienna' AND t.name='Warsaw'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Warsaw')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Vienna')
+  AND tr.type IN ('TRAIN','AIRPLANE')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Vienna')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Warsaw')
+  AND tr.type IN ('TRAIN','AIRPLANE')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+-- Vienna -> Baku City Circuit
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 20
+FROM Location f JOIN Location t
+WHERE f.name='Vienna' AND t.name='Baku City Circuit'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+-- Baku City Circuit -> Vienna
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 20
+FROM Location f JOIN Location t
+WHERE f.name='Baku City Circuit' AND t.name='Vienna'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+-- transports Vienna <-> Baku City Circuit
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id
+FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Vienna')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Baku City Circuit')
+  AND tr.type IN ('AIRPLANE')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id
+FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Baku City Circuit')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Vienna')
+  AND tr.type IN ('AIRPLANE')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+
+-- Warsaw -> Baku City Circuit (extra ingång)
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 22
+FROM Location f JOIN Location t
+WHERE f.name='Warsaw' AND t.name='Baku City Circuit'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+-- Baku City Circuit -> Warsaw
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 22
+FROM Location f JOIN Location t
+WHERE f.name='Baku City Circuit' AND t.name='Warsaw'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+-- transports Warsaw <-> Baku City Circuit
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id
+FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Warsaw')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Baku City Circuit')
+  AND tr.type IN ('AIRPLANE')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id
+FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Baku City Circuit')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Warsaw')
+  AND tr.type IN ('AIRPLANE')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+-- Helsinki -> Copenhagen
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 10
+FROM Location f JOIN Location t
+WHERE f.name='Helsinki' AND t.name='Copenhagen'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+-- Copenhagen -> Helsinki
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 10
+FROM Location f JOIN Location t
+WHERE f.name='Copenhagen' AND t.name='Helsinki'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+-- transports Helsinki <-> Copenhagen
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id
+FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Helsinki')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Copenhagen')
+  AND tr.type IN ('AIRPLANE','TRAIN')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id
+FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Copenhagen')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Helsinki')
+  AND tr.type IN ('AIRPLANE','TRAIN')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+
+-- Helsinki -> Warsaw
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 12
+FROM Location f JOIN Location t
+WHERE f.name='Helsinki' AND t.name='Warsaw'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+-- Warsaw -> Helsinki
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 12
+FROM Location f JOIN Location t
+WHERE f.name='Warsaw' AND t.name='Helsinki'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+-- transports Helsinki <-> Warsaw
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id
+FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Helsinki')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Warsaw')
+  AND tr.type IN ('AIRPLANE')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id
+FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Warsaw')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Helsinki')
+  AND tr.type IN ('AIRPLANE')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+-- Oslo -> Copenhagen
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 6
+FROM Location f JOIN Location t
+WHERE f.name='Oslo' AND t.name='Copenhagen'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+-- Copenhagen -> Oslo
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 6
+FROM Location f JOIN Location t
+WHERE f.name='Copenhagen' AND t.name='Oslo'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+-- transports Oslo <-> Copenhagen
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id
+FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Oslo')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Copenhagen')
+  AND tr.type IN ('TRAIN','BUSS')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id
+FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Copenhagen')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Oslo')
+  AND tr.type IN ('TRAIN','BUSS')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+-- Lisbon -> London
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 16
+FROM Location f JOIN Location t
+WHERE f.name='Lisbon' AND t.name='London'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+-- London -> Lisbon
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 16
+FROM Location f JOIN Location t
+WHERE f.name='London' AND t.name='Lisbon'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+-- transports Lisbon <-> London
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id
+FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Lisbon')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='London')
+  AND tr.type IN ('AIRPLANE')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id
+FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='London')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Lisbon')
+  AND tr.type IN ('AIRPLANE')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+-- Madrid <-> Paris
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 12 FROM Location f JOIN Location t
+WHERE f.name='Madrid' AND t.name='Paris'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 12 FROM Location f JOIN Location t
+WHERE f.name='Paris' AND t.name='Madrid'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Madrid')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Paris')
+  AND tr.type IN ('TRAIN','AIRPLANE')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Paris')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Madrid')
+  AND tr.type IN ('TRAIN','AIRPLANE')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+
+-- Rome <-> Vienna
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 10 FROM Location f JOIN Location t
+WHERE f.name='Rome' AND t.name='Vienna'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 10 FROM Location f JOIN Location t
+WHERE f.name='Vienna' AND t.name='Rome'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Rome')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Vienna')
+  AND tr.type IN ('TRAIN','AIRPLANE')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Vienna')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Rome')
+  AND tr.type IN ('TRAIN','AIRPLANE')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+
+-- Amsterdam <-> Berlin
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 7 FROM Location f JOIN Location t
+WHERE f.name='Amsterdam' AND t.name='Berlin'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 7 FROM Location f JOIN Location t
+WHERE f.name='Berlin' AND t.name='Amsterdam'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Amsterdam')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Berlin')
+  AND tr.type IN ('TRAIN','BUSS')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Berlin')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Amsterdam')
+  AND tr.type IN ('TRAIN','BUSS')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+
+-- London <-> Amsterdam
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 6 FROM Location f JOIN Location t
+WHERE f.name='London' AND t.name='Amsterdam'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 6 FROM Location f JOIN Location t
+WHERE f.name='Amsterdam' AND t.name='London'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='London')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Amsterdam')
+  AND tr.type IN ('TRAIN','AIRPLANE')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Amsterdam')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='London')
+  AND tr.type IN ('TRAIN','AIRPLANE')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+-- Istanbul <-> Ankara
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 6 FROM Location f JOIN Location t
+WHERE f.name='Istanbul' AND t.name='Ankara'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 6 FROM Location f JOIN Location t
+WHERE f.name='Ankara' AND t.name='Istanbul'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Istanbul')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Ankara')
+  AND tr.type IN ('TRAIN','BUSS','AIRPLANE')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Ankara')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Istanbul')
+  AND tr.type IN ('TRAIN','BUSS','AIRPLANE')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+
+-- Ankara <-> Tbilisi
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 10 FROM Location f JOIN Location t
+WHERE f.name='Ankara' AND t.name='Tbilisi'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 10 FROM Location f JOIN Location t
+WHERE f.name='Tbilisi' AND t.name='Ankara'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Ankara')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Tbilisi')
+  AND tr.type IN ('AIRPLANE','BUSS')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Tbilisi')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Ankara')
+  AND tr.type IN ('AIRPLANE','BUSS')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+
+-- Tbilisi <-> Baku City Circuit
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 6 FROM Location f JOIN Location t
+WHERE f.name='Tbilisi' AND t.name='Baku City Circuit'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 6 FROM Location f JOIN Location t
+WHERE f.name='Baku City Circuit' AND t.name='Tbilisi'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Tbilisi')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Baku City Circuit')
+  AND tr.type IN ('BUSS','AIRPLANE')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Baku City Circuit')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Tbilisi')
+  AND tr.type IN ('BUSS','AIRPLANE')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+
+-- Istanbul <-> Warsaw (så turkiet kopplas in i europa utan att bara flyga via vienna)
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 14 FROM Location f JOIN Location t
+WHERE f.name='Istanbul' AND t.name='Warsaw'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 14 FROM Location f JOIN Location t
+WHERE f.name='Warsaw' AND t.name='Istanbul'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Istanbul')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Warsaw')
+  AND tr.type IN ('AIRPLANE')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Warsaw')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Istanbul')
+  AND tr.type IN ('AIRPLANE')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+-- Los Angeles <-> Boston
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 20 FROM Location f JOIN Location t
+WHERE f.name='Los Angeles' AND t.name='Boston'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+INSERT INTO LocationLink (from_location_id, to_location_id, distance)
+SELECT f.id, t.id, 20 FROM Location f JOIN Location t
+WHERE f.name='Boston' AND t.name='Los Angeles'
+  AND NOT EXISTS (SELECT 1 FROM LocationLink ll WHERE ll.from_location_id=f.id AND ll.to_location_id=t.id);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Los Angeles')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Boston')
+  AND tr.type IN ('AIRPLANE')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
+
+INSERT INTO TransportLink (location_link_id, transport_id)
+SELECT ll.id, tr.id FROM LocationLink ll JOIN Transport tr
+WHERE ll.from_location_id=(SELECT id FROM Location WHERE name='Boston')
+  AND ll.to_location_id=(SELECT id FROM Location WHERE name='Los Angeles')
+  AND tr.type IN ('AIRPLANE')
+  AND NOT EXISTS (SELECT 1 FROM TransportLink tl WHERE tl.location_link_id=ll.id AND tl.transport_id=tr.id);
 
 
 
