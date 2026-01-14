@@ -362,12 +362,23 @@ public class TravelGameController {
             }
             syncHudAndMap();
 
+        } catch (IllegalStateException e) {
+            // typiskt: "traveler cannot afford this move"
+            if (tx.isActive()) tx.rollback();
+
+            logList.getItems().add("💸 " + safeName(em.find(Traveler.class, travelerId))
+                + " kan inte genomföra den här resan: " + e.getMessage());
+            // viktigt: kasta inte vidare -> ui ska inte krascha
+            // låt spelaren stanna kvar och välja en annan move
+            return;
+
         } catch (RuntimeException e) {
             if (tx.isActive()) tx.rollback();
             throw e;
         } finally {
             rollButton.setDisable(false);
         }
+
     }
 
 
@@ -439,12 +450,50 @@ public class TravelGameController {
             }
 
             syncHudAndMap();
+        } catch (IllegalStateException e) {
+            if (tx.isActive()) tx.rollback();
+
+            Traveler managed = em.find(Traveler.class, travelerId);
+            String who = safeName(managed);
+
+            // om det är just pengar som är problemet: avbryt resan så spelaren inte soft-lockas
+            if (e.getMessage() != null && e.getMessage().toLowerCase().contains("afford")) {
+                EntityTransaction tx2 = em.getTransaction();
+                tx2.begin();
+                try {
+                    Traveler managed2 = em.find(Traveler.class, travelerId);
+                    Location targetBefore = managed2.getTargetLocation();
+                    String targetName = (targetBefore != null) ? targetBefore.getName() : "?";
+
+                    managed2.cancelJourney();
+                    em.merge(managed2);
+
+                    tx2.commit();
+
+                    logList.getItems().add("💸 " + who + " har inte råd att fortsätta mot " + targetName
+                        + " – resan avbröts.");
+                    players.set(currentPlayerIndex, managed2);
+                    syncHudAndMap();
+                    return;
+
+                } catch (RuntimeException ex) {
+                    if (tx2.isActive()) tx2.rollback();
+                    logList.getItems().add("⚠️ kunde inte avbryta resan: " + ex.getMessage());
+                    return;
+                }
+            }
+
+            // övriga illegal states
+            logList.getItems().add("⚠️ " + who + ": " + e.getMessage());
+            return;
+
         } catch (RuntimeException e) {
             if (tx.isActive()) tx.rollback();
             throw e;
         } finally {
             rollButton.setDisable(false);
         }
+
     }
 
     private String safeName(Traveler t) {
