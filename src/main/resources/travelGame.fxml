@@ -64,6 +64,8 @@
                         <Label fx:id="currentCreditsLabel" text="0" style="-fx-text-fill: white;"/>
                         <Label text="Turn:" style="-fx-text-fill: white; -fx-font-weight: bold;"/>
                         <Label fx:id="currentTurnLabel" text="0" style="-fx-text-fill: white;"/>
+                        <Label text="Points:" style="-fx-text-fill: white; -fx-font-weight: bold;"/>
+                        <Label fx:id="currentPointLabel" text="0" style="-fx-text-fill: white;"/>
                     </HBox>
 
                     <HBox spacing="10">
@@ -75,6 +77,7 @@
                         <Label text="Destination:" style="-fx-text-fill: white; -fx-font-weight: bold;"/>
                         <Label fx:id="destinationLabel" text="-" style="-fx-text-fill: white;"/>
                     </HBox>
+                    <DialogPane fx:id="winConLabel" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
                 </VBox>
 
                 <Region HBox.hgrow="ALWAYS"/>

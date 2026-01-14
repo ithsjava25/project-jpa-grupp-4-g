@@ -19,10 +19,6 @@ public class playerMovement extends Player{
     private destinationPos destination;
     private int playerTurnCount = 0;
 
-    public int getTransDiceCount(){
-        return selectedTransportDice;
-    }
-
     public int getTurns(){
         return playerTurnCount;
     }

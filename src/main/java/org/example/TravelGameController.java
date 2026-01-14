@@ -8,6 +8,7 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.image.Image;
@@ -26,6 +27,7 @@ import java.util.Map;
 
 public class TravelGameController {
 
+    @FXML private DialogPane winConLabel;
     @FXML private ImageView mapView;
     @FXML private StackPane drawingPane;
     @FXML private Pane gridLayer;
@@ -44,6 +46,7 @@ public class TravelGameController {
     @FXML private Label currentTurnLabel;
     @FXML private Label currentLocationLabel;
     @FXML private Label destinationLabel;
+    @FXML private Label currentPointLabel;
 
     private MapVisualizer visualizer;
     private JourneyService journeyService;
@@ -346,6 +349,7 @@ public class TravelGameController {
 
         currentCreditsLabel.setText(current.getMoney() != null ? current.getMoney().toPlainString() : "-");
         currentTurnLabel.setText(String.valueOf(current.getTurnCount()));
+        currentPointLabel.setText(String.valueOf(current.getPlayerScore()));
 
         currentLocationLabel.setText("[" + clampToGrid(current.getPlayerPosX()) + "," + clampToGrid(current.getPlayerPosY()) + "]");
 
@@ -483,10 +487,12 @@ public class TravelGameController {
                         + " kom fram till " + targetName
                         + " (rolled=" + journey.getDistanceMoved() + ")"
                 );
+                managed.increaseScore();
             }
 
             tx.commit();
             players.set(currentPlayerIndex, managed);
+            doesPlayerWin();
 
             if (!wonGame) {
                 currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
@@ -500,6 +506,28 @@ public class TravelGameController {
             rollButton.setDisable(false);
         }
     }
+
+    private void doesPlayerWin() {
+        for (Traveler player : players) {
+            if (player.checkScore()) {
+                wonGame = true;
+                System.out.println(player.getPlayerName() + " Wins the game. Congratulations");
+                winConLabel.setContentText(player.getPlayerName() + " Wins the game. Congratulations");
+            }
+        }
+    }
+
+
+    private List<Location> distinctLocationsById(List<Location> locations) {
+        java.util.Map<Long, Location> byId = new java.util.LinkedHashMap<>();
+        for (Location l : locations) {
+            if (l != null && l.getId() != null) {
+                byId.putIfAbsent(l.getId(), l);
+            }
+        }
+        return new java.util.ArrayList<>(byId.values());
+    }
+
 
     private void highlightSelectedMoveButton(Button selected) {
         for (var node : movesBox.getChildren()) {
@@ -539,6 +567,8 @@ public class TravelGameController {
                 );
             } else {
                 logList.getItems().add("✅ " + safeName(managed) + " kom fram till " + targetName + "!");
+                managed.increaseScore();
+                doesPlayerWin();
             }
 
             tx.commit();
