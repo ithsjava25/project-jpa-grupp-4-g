@@ -88,7 +88,6 @@ public class TravelGameController {
         logList.getItems().add("🌍 spelet startade. tryck roll.");
     }
 
-
     public void setupGame(String playerName) {
         GameConfig.MODE = GameMode.GUI;
 
