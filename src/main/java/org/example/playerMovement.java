@@ -4,9 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
-import org.example.GameConfig;
-import org.example.GameMode;
-
 
 public class playerMovement extends Player{
     private int dice = 6;
@@ -190,6 +187,7 @@ public class playerMovement extends Player{
         System.out.println("End of " + playerName + " GUI turn");
         checkIfPlayerHasPenalties();
     }
+
     public void playerTurnByMode(List<Transport> transports, int guiDiceAmount) throws IOException {
         if (GameConfig.MODE == GameMode.CLI) {
             playerTurn(transports);
@@ -203,7 +201,7 @@ public class playerMovement extends Player{
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
         while (true){
-            System.out.println("Player has " + getCredits() + " credits");
+            System.out.println("Player: "+playerName+" has " + getCredits() + " credits");
             for (int i = 0; i < transport.size(); i++){
                 System.out.println("Nr " + (i+1) + ": " + transport.get(i).getType() + ". Dice amount:  "+ transport.get(i).getDiceCount() + ". Costs: " + transport.get(i).getCostPerMove());
             }

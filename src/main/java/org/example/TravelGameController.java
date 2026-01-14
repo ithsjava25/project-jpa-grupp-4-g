@@ -577,7 +577,6 @@ public class TravelGameController {
             if (!managed.isTravelling() && !wonGame) {
                 currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
             }
-
             syncHudAndMap();
         } catch (RuntimeException e) {
             if (tx.isActive()) tx.rollback();
