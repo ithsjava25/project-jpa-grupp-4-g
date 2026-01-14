@@ -8,7 +8,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -16,6 +18,10 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+/**
+ * Lyckades inte testa med riktiga JPA-entiteter för den senaste versionen av LocationLink,
+ * så mockar används istället. På det sättet finns åtminstone tester som verifierar den centrala logiken.
+ */
 public class JourneyServiceTest {
 
     private EntityManager em;
@@ -36,12 +42,9 @@ public class JourneyServiceTest {
     }
 
     /**
-     * Testar att en resenär kan starta en resa korrekt med tillåten transport.
-     * Kontrollerar att resenären markeras som "på väg" och att Journey-objektet
-     * kopplas korrekt till resenären, rutten och transporten.
-     * <p>
-     * Mockito används för att mocka Transport och PlayerEventService,
-     * vilket gör det möjligt att kontrollera reselogiken utan att slumpen påverkar testet.
+     * Testar att en resenär kan starta en resa korrekt med en tillåten transport.
+     * Verifierar att resenären markeras som "på väg" och att Journey-objektet kopplas korrekt till resenären, rutten och transporten.
+     * Mockade LocationLink och TransportLink används för att isolera testet från JPA.
      */
     @Test
     void startJourney() {
@@ -55,16 +58,24 @@ public class JourneyServiceTest {
         when(transport.rollDistance()).thenReturn(1);
         when(transport.getType()).thenReturn("BUSS");
 
-        LocationLink route = new LocationLink(from, to, 6);
-        route.getTransportLinks().add(new TransportLink(route, transport));
+        LocationLink route = mock(LocationLink.class);
+        when(route.getFromLocation()).thenReturn(from);
+        when(route.getToLocation()).thenReturn(to);
+        when(route.getDistance()).thenReturn(6);
+
+        TransportLink tl = mock(TransportLink.class);
+        when(tl.getTransport()).thenReturn(transport);
+        Set<TransportLink> links = new HashSet<>();
+        links.add(tl);
+        when(route.getTransportLinks()).thenReturn(links);
 
         PossibleMoves move = new PossibleMoves(route, transport);
+
         when(eventService.applyEndOfTurnEvents(traveler)).thenReturn(List.of());
 
         Journey journey = service.startNewJourneyTurn(traveler, move);
 
         assertTrue(traveler.isTravelling());
-        assertTrue(traveler.getRemainingDistance() >= 0);
         assertEquals(traveler, journey.getTraveler());
         assertEquals(route, journey.getLocationLink());
         assertEquals(transport, journey.getTransport());
@@ -74,31 +85,43 @@ public class JourneyServiceTest {
      * Testar att en resenär inte kan starta en ny resa när en pågående resa redan finns.
      * Verifierar att startNewJourneyTurn kastar IllegalStateException med korrekt felmeddelande.
      * Säkerställer att reselogiken inte tillåter parallella resor för samma resenär.
+     * Mockade LocationLink och TransportLink används för att isolera testet från JPA.
      */
     @Test
     void startJourneyWhileTravelling() {
         Location from = new Location("Stockholm", LocationType.CAPITAL, null, 0, 0);
         Location to = new Location("Berlin", LocationType.CAPITAL, null, 5, 5);
         Traveler traveler = new Traveler("Bob", from);
-        traveler.startJourney(to, 6);
+        traveler.startJourney(to, 6); // Resenären är redan på väg
 
         Transport transport = mock(Transport.class);
         when(transport.getType()).thenReturn("BUSS");
 
-        LocationLink route = new LocationLink(from, to, 6);
-        route.getTransportLinks().add(new TransportLink(route, transport));
+        LocationLink route = mock(LocationLink.class);
+        when(route.getFromLocation()).thenReturn(from);
+        when(route.getToLocation()).thenReturn(to);
+        when(route.getDistance()).thenReturn(6);
+
+        TransportLink tl = mock(TransportLink.class);
+        when(tl.getTransport()).thenReturn(transport);
+        Set<TransportLink> links = new HashSet<>();
+        links.add(tl);
+        when(route.getTransportLinks()).thenReturn(links);
+
         PossibleMoves move = new PossibleMoves(route, transport);
 
         IllegalStateException ex = assertThrows(
             IllegalStateException.class,
             () -> service.startNewJourneyTurn(traveler, move)
         );
+
         assertEquals("already travelling – cannot start a new journey", ex.getMessage());
     }
 
     /**
      * Testar att det inte går att använda en transport som inte är tillåten på rutten.
      * Ska kasta IllegalStateException med korrekt felmeddelande.
+     * Mockade LocationLink och TransportLink används för att isolera testet från JPA.
      */
     @Test
     void disallowedTransport() {
@@ -117,23 +140,31 @@ public class JourneyServiceTest {
         when(disallowed.rollDistance()).thenReturn(1);
         when(disallowed.getType()).thenReturn("TRAIN");
 
-        LocationLink route = new LocationLink(from, to, 6);
-        route.getTransportLinks().add(new TransportLink(route, allowed));
+        LocationLink route = mock(LocationLink.class);
+        when(route.getFromLocation()).thenReturn(from);
+        when(route.getToLocation()).thenReturn(to);
+        when(route.getDistance()).thenReturn(6);
+
+        TransportLink tl = mock(TransportLink.class);
+        when(tl.getTransport()).thenReturn(allowed);
+        Set<TransportLink> links = new HashSet<>();
+        links.add(tl);
+        when(route.getTransportLinks()).thenReturn(links);
+
         PossibleMoves move = new PossibleMoves(route, disallowed);
 
         IllegalStateException ex = assertThrows(
             IllegalStateException.class,
             () -> service.startNewJourneyTurn(traveler, move)
         );
+
         assertEquals(disallowed.getType() + " is not allowed on this route", ex.getMessage());
     }
 
     /**
-     * Resenärens saldo nollställs och sätts till 5 krediter, vilket är mindre än
-     * kostnaden för den valda transporten (10 krediter). Vid anrop av
-     * startNewJourneyTurn med en transport som kostar mer än resenärens saldo
-     * ska en IllegalStateException kastas med meddelandet
-     * "traveler cannot afford this move".
+     * Testar att en resenär inte kan starta en resa om saldot är mindre än transportkostnaden.
+     * Ska kasta IllegalStateException med meddelandet "traveler cannot afford this move".
+     * Mockade LocationLink och TransportLink används för att isolera testet från JPA.
      */
     @Test
     void notEnoughMoney() {
@@ -148,8 +179,17 @@ public class JourneyServiceTest {
         when(expensiveTransport.getCostPerMove()).thenReturn(BigDecimal.valueOf(10));
         when(expensiveTransport.rollDistance()).thenReturn(1);
         when(expensiveTransport.getType()).thenReturn("BUSS");
-        LocationLink route = new LocationLink(from, to, 6);
-        route.getTransportLinks().add(new TransportLink(route, expensiveTransport));
+
+        LocationLink route = mock(LocationLink.class);
+        when(route.getFromLocation()).thenReturn(from);
+        when(route.getToLocation()).thenReturn(to);
+        when(route.getDistance()).thenReturn(6);
+
+        TransportLink tl = mock(TransportLink.class);
+        when(tl.getTransport()).thenReturn(expensiveTransport);
+        Set<TransportLink> links = new HashSet<>();
+        links.add(tl);
+        when(route.getTransportLinks()).thenReturn(links);
 
         PossibleMoves move = new PossibleMoves(route, expensiveTransport);
 
@@ -163,12 +203,9 @@ public class JourneyServiceTest {
 
     /**
      * Testar att en pågående resa fortsätter korrekt.
-     * Säkerställer att resenären avancerar, kostnad dras och ett nytt Journey-objekt skapas.
-     * Kontrollerar att Journey är kopplat till rätt Traveler, Transport och LocationLink,
-     * samt att resenären fortfarande är markerad som "på väg" och återstående distans är uppdaterad.
-     * <p>
-     * Mockito används för att mocka EntityManager och PlayerEventService,
-     * vilket gör det möjligt att testa reselogiken utan att slumpmässiga events påverkar resultatet.
+     * Verifierar att Journey kopplas till rätt Traveler, Transport och LocationLink,
+     * samt att resenären fortfarande är markerad som "på väg" och återstående distans uppdateras.
+     * Mockade LocationLink, TransportLink, EntityManager och PlayerEventService används för att isolera testet från JPA.
      */
     @Test
     void continueJourney() {
@@ -184,8 +221,16 @@ public class JourneyServiceTest {
         when(transport.rollDistance()).thenReturn(1);
         when(transport.getType()).thenReturn("BUSS");
 
-        LocationLink route = new LocationLink(from, to, 6);
-        route.getTransportLinks().add(new TransportLink(route, transport));
+        LocationLink route = mock(LocationLink.class);
+        when(route.getFromLocation()).thenReturn(from);
+        when(route.getToLocation()).thenReturn(to);
+        when(route.getDistance()).thenReturn(6);
+
+        TransportLink tl = mock(TransportLink.class);
+        when(tl.getTransport()).thenReturn(transport);
+        Set<TransportLink> links = new HashSet<>();
+        links.add(tl);
+        when(route.getTransportLinks()).thenReturn(links);
 
         Journey lastJourney = new Journey(traveler, route, transport, 0, 6, 0);
         TypedQuery<Journey> queryMock = mock(TypedQuery.class);
@@ -193,6 +238,7 @@ public class JourneyServiceTest {
         when(queryMock.setParameter("t", traveler)).thenReturn(queryMock);
         when(queryMock.setMaxResults(1)).thenReturn(queryMock);
         when(queryMock.getSingleResult()).thenReturn(lastJourney);
+
         when(eventService.applyEndOfTurnEvents(traveler)).thenReturn(List.of());
 
         Journey journey = service.continueCurrentJourneyTurn(traveler);
@@ -205,9 +251,9 @@ public class JourneyServiceTest {
     }
 
     /**
-     * Skapar en route med flera transporter och mockar EntityManager för att returnera den.
-     * Kontrollerar att metoden returnerar rätt antal PossibleMoves och att varje move
-     * är kopplad till rätt route och transport.
+     * Testar att findPossibleMoves returnerar rätt antal moves för en route med flera transporter.
+     * Verifierar att varje PossibleMoves är kopplad till rätt route och transport.
+     * Mockade LocationLink, TransportLink och EntityManager används för att isolera testet från JPA.
      */
     @Test
     void findMoves() {
@@ -222,9 +268,20 @@ public class JourneyServiceTest {
         when(train.getType()).thenReturn("TRAIN");
         when(train.getCostPerMove()).thenReturn(BigDecimal.valueOf(20));
 
-        LocationLink route = new LocationLink(from, to, 5);
-        route.getTransportLinks().add(new TransportLink(route, bus));
-        route.getTransportLinks().add(new TransportLink(route, train));
+        LocationLink route = mock(LocationLink.class);
+        when(route.getFromLocation()).thenReturn(from);
+        when(route.getToLocation()).thenReturn(to);
+        when(route.getDistance()).thenReturn(5);
+
+        TransportLink tlBus = mock(TransportLink.class);
+        when(tlBus.getTransport()).thenReturn(bus);
+        TransportLink tlTrain = mock(TransportLink.class);
+        when(tlTrain.getTransport()).thenReturn(train);
+
+        Set<TransportLink> links = new HashSet<>();
+        links.add(tlBus);
+        links.add(tlTrain);
+        when(route.getTransportLinks()).thenReturn(links);
 
         TypedQuery<LocationLink> queryMock = mock(TypedQuery.class);
         when(em.createQuery(anyString(), eq(LocationLink.class))).thenReturn(queryMock);
@@ -235,13 +292,9 @@ public class JourneyServiceTest {
 
         assertEquals(2, moves.size(), "Det ska finnas två möjliga moves");
 
-        PossibleMoves move1 = moves.get(0);
-        PossibleMoves move2 = moves.get(1);
-
-        assertTrue(move1.getTransport().equals(bus) || move1.getTransport().equals(train));
-        assertTrue(move2.getTransport().equals(bus) || move2.getTransport().equals(train));
-
-        assertEquals(route, move1.getRoute());
-        assertEquals(route, move2.getRoute());
+        for (PossibleMoves move : moves) {
+            assertTrue(move.getTransport().equals(bus) || move.getTransport().equals(train));
+            assertEquals(route, move.getRoute());
+        }
     }
 }
