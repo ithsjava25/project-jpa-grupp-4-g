@@ -148,7 +148,7 @@ abstract class Player {
     }
 
     public boolean checkScore() {
-        if (playerScore == 5) {
+        if (playerScore == 1) {
             return true;
         }
         return false;

@@ -356,6 +356,7 @@ public class TravelGameController {
                         + " kom fram till " + targetName
                         + " (rolled=" + journey.getDistanceMoved() + ")"
                 );
+                managed.increaseScore();
             }
 
             tx.commit();
