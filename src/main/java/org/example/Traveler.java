@@ -206,4 +206,12 @@ public class Traveler extends playerMovement {
         this.money = next.signum() < 0 ? BigDecimal.ZERO : next;
     }
 
+    public void cancelJourney() {
+        this.targetLocation = null;
+        this.remainingDistance = 0;
+        // destinationPos kan du låta vara, eller synca till current:
+        // setDestinationPos(currentLocation.getX(), currentLocation.getY());
+    }
+
+
 }
