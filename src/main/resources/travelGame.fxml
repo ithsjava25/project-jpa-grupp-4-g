@@ -79,7 +79,7 @@
                         <Label text="Destination:" style="-fx-text-fill: white; -fx-font-weight: bold;"/>
                         <Label fx:id="destinationLabel" text="-" style="-fx-text-fill: white;"/>
                     </HBox>
-                    <DialogPane fx:id="winConLabel" style="-fx-font-weight: bold;"/>
+                    <DialogPane fx:id="winConLabel" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
                 </VBox>
 
                 <Region HBox.hgrow="ALWAYS"/>
