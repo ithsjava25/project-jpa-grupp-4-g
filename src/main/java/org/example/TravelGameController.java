@@ -231,6 +231,9 @@ public class TravelGameController {
         }
 
         doMove(current.getId(), selectedMove);
+        // om spelaren blev eliminerad kan listan ha ändrats
+        if (players.isEmpty() || wonGame) return;
+        if (currentPlayerIndex >= players.size()) currentPlayerIndex = 0;
 
         awaitingMoveChoice = false;
         selectedMove = null;
@@ -517,12 +520,35 @@ public class TravelGameController {
             }
             syncHudAndMap();
 
+        } catch (IllegalStateException e) {
+            // typiskt: "traveler cannot afford this move"
+            if (tx.isActive()) tx.rollback();
+
+            String msg = e.getMessage() != null ? e.getMessage() : "okänt fel";
+            if (msg.toLowerCase().contains("cannot afford")) {
+                eliminatePlayer(em.find(Traveler.class, travelerId), "har inte råd att resa");
+                return; // viktigt så vi inte re-throwar och crashar
+            }
+
+            logList.getItems().add("⚠️ kunde inte genomföra drag: " + msg);
+            // resetta state så man kan försöka igen utan att fastna
+            awaitingMoveChoice = false;
+            selectedMove = null;
+            rollButton.setText("ROLL");
+            movesBox.getChildren().clear();
+            shownMoves = List.of();
+            moveButtons.clear();
+            lastClickedDestination = null;
+            cycleIndex = 0;
+            syncHudAndMap();
+
         } catch (RuntimeException e) {
             if (tx.isActive()) tx.rollback();
             throw e;
         } finally {
             rollButton.setDisable(false);
         }
+
     }
 
     private void doesPlayerWin() {
@@ -534,6 +560,45 @@ public class TravelGameController {
             }
         }
     }
+
+    private void eliminatePlayer(Traveler t, String reason) {
+        if (t == null) return;
+
+        String name = safeName(t);
+        logList.getItems().add("💀 " + name + " är ute ur spelet: " + reason);
+
+        int removedIndex = currentPlayerIndex;
+
+        // ta bort ur listan
+        players.removeIf(p -> p.getId() != null && p.getId().equals(t.getId()));
+
+        // om inga spelare kvar → stoppa
+        if (players.isEmpty()) {
+            wonGame = true;
+            logList.getItems().add("🏁 inga spelare kvar.");
+            return;
+        }
+
+        // justera index så att vi landar på en giltig spelare
+        if (removedIndex >= players.size()) {
+            currentPlayerIndex = 0;
+        } else {
+            currentPlayerIndex = removedIndex % players.size();
+        }
+
+        // reset UI-state så det inte blir kvar från den spelaren
+        awaitingMoveChoice = false;
+        selectedMove = null;
+        rollButton.setText("ROLL");
+        movesBox.getChildren().clear();
+        shownMoves = List.of();
+        moveButtons.clear();
+        lastClickedDestination = null;
+        cycleIndex = 0;
+
+        syncHudAndMap();
+    }
+
 
 
     private List<Location> distinctLocationsById(List<Location> locations) {
@@ -597,12 +662,25 @@ public class TravelGameController {
             }
 
             syncHudAndMap();
+        } catch (IllegalStateException e) {
+            if (tx.isActive()) tx.rollback();
+
+            String msg = e.getMessage() != null ? e.getMessage() : "okänt fel";
+            if (msg.toLowerCase().contains("cannot afford")) {
+                eliminatePlayer(em.find(Traveler.class, travelerId), "har inte råd att fortsätta resan");
+                return;
+            }
+
+            logList.getItems().add("⚠️ kunde inte fortsätta resa: " + msg);
+            syncHudAndMap();
+
         } catch (RuntimeException e) {
             if (tx.isActive()) tx.rollback();
             throw e;
         } finally {
             rollButton.setDisable(false);
         }
+
     }
 
     private String safeName(Traveler t) {
