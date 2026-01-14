@@ -82,7 +82,9 @@ public class JourneyServiceTest {
         Traveler traveler = new Traveler("Bob", from);
         traveler.startJourney(to, 6);
 
-        Transport transport = new Transport(TransportType.BUSS, "10");
+        Transport transport = mock(Transport.class);
+        when(transport.getType()).thenReturn("BUSS");
+
         LocationLink route = new LocationLink(from, to, 6);
         route.getTransportLinks().add(new TransportLink(route, transport));
         PossibleMoves move = new PossibleMoves(route, transport);
@@ -105,8 +107,15 @@ public class JourneyServiceTest {
         Traveler traveler = new Traveler("Bob", from);
         traveler.addMoney(BigDecimal.valueOf(1000));
 
-        Transport allowed = new Transport(TransportType.BUSS, "10");
-        Transport disallowed = new Transport(TransportType.TRAIN, "15");
+        Transport allowed = mock(Transport.class);
+        when(allowed.getCostPerMove()).thenReturn(BigDecimal.valueOf(10));
+        when(allowed.rollDistance()).thenReturn(1);
+        when(allowed.getType()).thenReturn("BUSS");
+
+        Transport disallowed = mock(Transport.class);
+        when(disallowed.getCostPerMove()).thenReturn(BigDecimal.valueOf(15));
+        when(disallowed.rollDistance()).thenReturn(1);
+        when(disallowed.getType()).thenReturn("TRAIN");
 
         LocationLink route = new LocationLink(from, to, 6);
         route.getTransportLinks().add(new TransportLink(route, allowed));
@@ -133,10 +142,12 @@ public class JourneyServiceTest {
         Traveler traveler = new Traveler("Bob", from);
 
         traveler.subtractMoneyClamped(traveler.getMoney());
-
         traveler.addMoney(BigDecimal.valueOf(5));
 
-        Transport expensiveTransport = new Transport(TransportType.BUSS, "10");
+        Transport expensiveTransport = mock(Transport.class);
+        when(expensiveTransport.getCostPerMove()).thenReturn(BigDecimal.valueOf(10));
+        when(expensiveTransport.rollDistance()).thenReturn(1);
+        when(expensiveTransport.getType()).thenReturn("BUSS");
         LocationLink route = new LocationLink(from, to, 6);
         route.getTransportLinks().add(new TransportLink(route, expensiveTransport));
 
