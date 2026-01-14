@@ -5,10 +5,12 @@ abstract class Player {
     private int playerScore = 0;
     int credits = 10000;
 
+    //Returns the name of the player.
     public String getPlayerName() {
         return playerName;
     }
 
+    //Use to get the players current credits.
     public int getCredits() {
         return credits;
     }
