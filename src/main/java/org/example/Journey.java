@@ -109,8 +109,4 @@ public class Journey {
         return remainingDistance;
     }
 
-    public int getTurnNumber() {
-        return turnNumber;
-    }
-
 }
