@@ -94,41 +94,36 @@ public class MapVisualizer {
         }
     }
 
-    /**
-     * gröna destination markers: större och tydligare (lite mindre än player-circles)
-     */
     public void drawDestMarkers(List<Location> destinations, double w, double h) {
         markerLayer.getChildren().clear();
 
         double cW = w / gridSize;
         double cH = h / gridSize;
 
-        double r = Math.min(cW, cH) * 0.30; // <-- större (var 0.18)
+        // större och tydligare än innan
+        double r = Math.min(cW, cH) * 0.40; // test: 0.35–0.45
 
         for (Location loc : destinations) {
-            // säkerhets-clamp ifall någon location råkar ligga utanför grid
             int gx = clamp(loc.getX());
             int gy = clamp(loc.getY());
 
             double centerX = (gx * cW) + (cW / 2);
             double centerY = h - (gy * cH) - (cH / 2);
 
-            // ring + inner dot (syns bättre än “bara en prick”)
-            Circle outer = new Circle(centerX, centerY, r);
-            outer.setFill(Color.web("#32CD32", 0.30));
-            outer.setStroke(Color.WHITE);
-            outer.setStrokeWidth(Math.max(2.0, r * 0.15));
-            outer.setMouseTransparent(true);
+            Circle marker = new Circle(centerX, centerY, r);
 
-            Circle inner = new Circle(centerX, centerY, r * 0.45);
-            inner.setFill(Color.web("#32CD32", 0.85));
-            inner.setStroke(Color.WHITE);
-            inner.setStrokeWidth(1.0);
-            inner.setMouseTransparent(true);
+            // röd "solid" prick
+            marker.setFill(Color.RED);
 
-            markerLayer.getChildren().addAll(outer, inner);
+            // tom vit kant
+            marker.setStroke(Color.WHITE);
+            marker.setStrokeWidth(Math.max(2.0, r * 0.20));
+
+            marker.setMouseTransparent(true);
+            markerLayer.getChildren().add(marker);
         }
     }
+
 
     public void animateJourney(List<int[]> coordinates, double totalWidth, double totalHeight) {
         // rita i markerLayer så det hamnar “under” players men “över” grid
