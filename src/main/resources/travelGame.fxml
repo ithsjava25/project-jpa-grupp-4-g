@@ -18,8 +18,10 @@
             <StackPane fx:id="drawingPane" pickOnBounds="false">
                 <Pane fx:id="gridLayer" mouseTransparent="true"/>
                 <Pane fx:id="markerLayer" mouseTransparent="true"/>
+                <Pane fx:id="pathLayer" mouseTransparent="true"/>
                 <Pane fx:id="playerLayer" mouseTransparent="true"/>
             </StackPane>
+
 
         </StackPane>
     </center>
@@ -88,9 +90,6 @@
                         styleClass="roll-button"/>
 
 
-                <Button text="DEMO PATH"
-                        onAction="#startMockJourney"
-                        styleClass="journey-button"/>
 
             </HBox>
         </VBox>

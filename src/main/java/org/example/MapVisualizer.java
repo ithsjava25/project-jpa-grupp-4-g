@@ -13,13 +13,52 @@ import java.util.List;
 public class MapVisualizer {
     private final Pane gridLayer;
     private final Pane markerLayer;
+    private final Pane pathLayer;
     private final Pane playerLayer;
     private final int gridSize = 50;
 
-    public MapVisualizer(Pane gridLayer, Pane markerLayer, Pane playerLayer) {
+    private final java.util.Map<Integer, javafx.scene.Group> pathGroups = new java.util.HashMap<>();
+
+    public MapVisualizer(Pane gridLayer, Pane markerLayer, Pane pathLayer, Pane playerLayer) {
         this.gridLayer = gridLayer;
         this.markerLayer = markerLayer;
+        this.pathLayer = pathLayer;
         this.playerLayer = playerLayer;
+    }
+
+    public void clearPaths() {
+        pathLayer.getChildren().clear();
+        pathGroups.clear();
+    }
+
+    public void addRouteSegment(int playerIndex,
+                                int fromGridX, int fromGridY,
+                                int toGridX, int toGridY,
+                                double totalWidth, double totalHeight) {
+
+        double cellWidth = totalWidth / gridSize;
+        double cellHeight = totalHeight / gridSize;
+
+        double x1 = (fromGridX * cellWidth) + (cellWidth / 2);
+        double y1 = totalHeight - (fromGridY * cellHeight) - (cellHeight / 2);
+
+        double x2 = (toGridX * cellWidth) + (cellWidth / 2);
+        double y2 = totalHeight - (toGridY * cellHeight) - (cellHeight / 2);
+
+        var group = pathGroups.get(playerIndex);
+        if (group == null) {
+            group = new javafx.scene.Group();
+            group.setMouseTransparent(true);
+            pathGroups.put(playerIndex, group);
+            pathLayer.getChildren().add(group);
+        }
+
+        Line seg = new Line(x1, y1, x2, y2);
+        seg.setStroke(Color.RED);
+        seg.setStrokeWidth(3);
+        seg.setMouseTransparent(true);
+
+        group.getChildren().add(seg);
     }
 
     public void drawGrid(double width, double height) {

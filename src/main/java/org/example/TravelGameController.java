@@ -27,6 +27,7 @@ public class TravelGameController {
     @FXML private ImageView mapView;
     @FXML private StackPane drawingPane;
     @FXML private Pane gridLayer;
+    @FXML private Pane pathLayer;
     @FXML private Pane markerLayer;
     @FXML private Pane playerLayer;
     @FXML private ListView<String> logList;
@@ -67,7 +68,7 @@ public class TravelGameController {
 
     @FXML
     private void initialize() {
-        visualizer = new MapVisualizer(gridLayer, markerLayer, playerLayer);
+        visualizer = new MapVisualizer(gridLayer, markerLayer, pathLayer, playerLayer);
 
 
         mapView.setImage(new Image(getClass().getResourceAsStream("/assets/map.png")));
@@ -275,7 +276,9 @@ public class TravelGameController {
         if (w <= 0 || h <= 0) return;
 
         visualizer.drawGrid(w, h);
-        visualizer.clearMarkers(); // <- viktig: rensa markers när vi “basritar”
+        visualizer.clearMarkers();
+
+        redrawAllPathsFromDb(w, h);
 
         List<int[]> positions = new ArrayList<>();
         for (Traveler t : players) {
@@ -283,6 +286,7 @@ public class TravelGameController {
         }
         visualizer.drawPlayers(positions, currentPlayerIndex, w, h);
     }
+
 
     private void updateGraphicsWithMoves(Traveler managed, List<PossibleMoves> moves) {
         updateGraphics(); // ritar grid + players + rensar markers
@@ -461,4 +465,38 @@ public class TravelGameController {
             if (emf != null && emf.isOpen()) emf.close();
         } catch (Exception ignored) {}
     }
+    private void redrawAllPathsFromDb(double w, double h) {
+        visualizer.clearPaths();
+
+        for (int i = 0; i < players.size(); i++) {
+            Traveler tRef = players.get(i);
+            Long id = tRef.getId();
+            if (id == null) continue;
+
+            List<Journey> js = em.createQuery(
+                    "select j from Journey j " +
+                        "join fetch j.locationLink ll " +
+                        "join fetch ll.fromLocation " +
+                        "join fetch ll.toLocation " +
+                        "where j.traveler.id = :id " +
+                        "order by j.turnNumber asc, j.id asc",
+                    Journey.class
+                )
+                .setParameter("id", id)
+                .getResultList();
+
+            for (Journey j : js) {
+                Location from = j.getLocationLink().getFromLocation();
+                Location to = j.getLocationLink().getToLocation();
+
+                visualizer.addRouteSegment(
+                    i,
+                    clampToGrid(from.getX()), clampToGrid(from.getY()),
+                    clampToGrid(to.getX()), clampToGrid(to.getY()),
+                    w, h
+                );
+            }
+        }
+    }
+
 }
