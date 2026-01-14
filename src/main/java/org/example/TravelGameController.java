@@ -356,7 +356,7 @@ public class TravelGameController {
 
             tx.commit();
             players.set(currentPlayerIndex, managed);
-
+            doesPLayerWin();
             if (!wonGame) {
                 currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
             }
@@ -367,6 +367,15 @@ public class TravelGameController {
             throw e;
         } finally {
             rollButton.setDisable(false);
+        }
+    }
+
+    private void doesPLayerWin() {
+        for (int i = 0; i < players.size(); i++){
+            if (players.get(i).checkScore()){
+                wonGame = true;
+                System.out.println(players.get(i).getPlayerName() + " Wins the game. Congratulations");
+            }
         }
     }
 
