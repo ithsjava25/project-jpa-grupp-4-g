@@ -22,7 +22,6 @@
                 <Pane fx:id="playerLayer" mouseTransparent="true"/>
             </StackPane>
 
-
         </StackPane>
     </center>
 
@@ -38,10 +37,8 @@
         </VBox>
     </right>
 
-
     <bottom>
         <VBox spacing="10" style="-fx-padding: 12;" styleClass="bottom-bar">
-
 
             <HBox alignment="CENTER_LEFT" spacing="12">
                 <Label text="Current:" style="-fx-text-fill: white; -fx-font-weight: bold;"/>
@@ -58,9 +55,7 @@
                 <Label fx:id="nextPlayerLabel" text="-" style="-fx-text-fill: white;"/>
             </HBox>
 
-
             <HBox alignment="CENTER" spacing="20">
-
 
                 <VBox spacing="4" prefWidth="520" alignment="CENTER_LEFT">
                     <HBox spacing="10">
@@ -83,13 +78,14 @@
 
                 <Region HBox.hgrow="ALWAYS"/>
 
-
                 <Button text="ROLL"
                         fx:id="rollButton"
                         onAction="#onRoll"
                         styleClass="roll-button"/>
 
-
+                <Button text="DEMO PATH"
+                        onAction="#startMockJourney"
+                        styleClass="journey-button"/>
 
             </HBox>
         </VBox>
