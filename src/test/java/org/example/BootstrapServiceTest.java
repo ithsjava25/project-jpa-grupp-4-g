@@ -86,7 +86,7 @@ class BootstrapServiceTest {
     void initialize_databaseNotSeeded_runsSql_throwsBecauseNoFile() {
         when(em.createQuery("select count(c) from Continent c", Long.class))
             .thenReturn(query);
-        when(query.getSingleResult()).thenReturn(0L); // ej seedad
+        when(query.getSingleResult()).thenReturn(0L);
 
         when(tx.isActive()).thenReturn(true);
 

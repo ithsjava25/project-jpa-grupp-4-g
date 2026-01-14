@@ -14,7 +14,6 @@ public class TravelerTest {
 
     /**
      * Testar att konstruktorn för Traveler sätter spelarens startposition korrekt.
-     * <p>
      * Skapar en resenär med en viss startposition och kontrollerar att
      * playerPosX och playerPosY matchar koordinaterna för startpositionen.
      */
@@ -29,7 +28,6 @@ public class TravelerTest {
 
     /**
      * Testar att en ny resenär inte är på väg när den skapas.
-     * <p>
      * Skapar en Traveler på en startposition och kontrollerar att
      * isTravelling() returnerar false innan någon resa har startats.
      */
@@ -41,7 +39,6 @@ public class TravelerTest {
 
     /**
      * Testar att resenären börjar en resa korrekt.
-     * <p>
      * Kontrollerar att målet och återstående avstånd sätts,
      * samt att resenären markeras som "på väg".
      */
@@ -59,7 +56,6 @@ public class TravelerTest {
 
     /**
      * Testar att resenären förflyttar sig korrekt under en tur.
-     * <p>
      * Kontrollerar att återstående avstånd minskar med rätt antal steg
      * och att tur-räknaren ökar med 1 när resan fortsätter.
      */
@@ -77,7 +73,6 @@ public class TravelerTest {
 
     /**
      * Testar att resan slutförs när resenären förflyttas längre än återstående avstånd.
-     * <p>
      * Kontrollerar att återstående avstånd blir 0, att resenären inte längre är "på väg",
      * och att resenären hamnar på målet.
      */
@@ -96,7 +91,6 @@ public class TravelerTest {
 
     /**
      * Testar att betalning minskar resenärens pengar korrekt.
-     * <p>
      * Skapar en resenär med ett visst saldo och drar av en summa.
      * Kontrollerar att spelarens pengar minskar med rätt belopp.
      */
@@ -113,7 +107,6 @@ public class TravelerTest {
 
     /**
      * Testar att betalning kastar ett fel om resenären inte har tillräckligt med pengar.
-     * <p>
      * Skapar en resenär och försöker ta ut mer pengar än vad som finns.
      * Kontrollerar att ett IllegalStateException kastas med rätt felmeddelande.
      */

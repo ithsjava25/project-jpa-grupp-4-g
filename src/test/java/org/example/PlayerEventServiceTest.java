@@ -58,7 +58,6 @@ public class PlayerEventServiceTest {
         PlayerEventService service = new PlayerEventService();
 
         service.applyEndOfTurnEvents(traveler);
-
         assertTrue(traveler.getMoney().compareTo(BigDecimal.ZERO) >= 0);
     }
 

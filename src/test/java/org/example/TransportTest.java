@@ -18,7 +18,7 @@ public class TransportTest {
     void rollDistance_returnsValidRange() {
         Transport buss = mock(Transport.class);
         when(buss.getType()).thenReturn("BUSS");
-        when(buss.rollDistance()).thenAnswer(invocation -> 4); // du kan mocka ett exempelvärde
+        when(buss.rollDistance()).thenAnswer(invocation -> 4);
 
         Transport train = mock(Transport.class);
         when(train.getType()).thenReturn("TRAIN");

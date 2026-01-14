@@ -92,7 +92,7 @@ public class JourneyServiceTest {
         Location from = new Location("Stockholm", LocationType.CAPITAL, null, 0, 0);
         Location to = new Location("Berlin", LocationType.CAPITAL, null, 5, 5);
         Traveler traveler = new Traveler("Bob", from);
-        traveler.startJourney(to, 6); // Resenären är redan på väg
+        traveler.startJourney(to, 6);
 
         Transport transport = mock(Transport.class);
         when(transport.getType()).thenReturn("BUSS");
