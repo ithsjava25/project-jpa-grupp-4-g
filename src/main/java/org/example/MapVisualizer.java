@@ -100,6 +100,46 @@ public class MapVisualizer {
         }
     }
 
+    public void drawPlayersInterpolated(List<double[]> players, int currentIndex, double totalWidth, double totalHeight) {
+        playerLayer.getChildren().clear();
+
+        double cellWidth = totalWidth / gridSize;
+        double cellHeight = totalHeight / gridSize;
+
+        for (int i = 0; i < players.size(); i++) {
+            double[] p = players.get(i);
+            double gridX = p[0];
+            double gridY = p[1];
+
+            double centerX = (gridX * cellWidth) + (cellWidth / 2);
+            double centerY = totalHeight - (gridY * cellHeight) - (cellHeight / 2);
+
+            double rPlayer = (cellWidth / 2) * 0.8;
+
+            if (i == currentIndex) {
+                Color c = colorForPlayer(i);
+                Circle halo = new Circle(centerX, centerY, rPlayer * 1.25);
+                halo.setFill(c.deriveColor(0, 1, 1, 0.25));
+                halo.setMouseTransparent(true);
+                playerLayer.getChildren().add(halo);
+            }
+
+            Circle token = new Circle(centerX, centerY, rPlayer);
+            token.setFill(colorForPlayer(i));
+
+            if (i == currentIndex) {
+                token.setStroke(Color.WHITE);
+                token.setStrokeWidth(3);
+            } else {
+                token.setStroke(Color.BLACK);
+                token.setStrokeWidth(1.5);
+            }
+
+            token.setMouseTransparent(true);
+            playerLayer.getChildren().add(token);
+        }
+    }
+
     public void drawDestMarkers(List<Location> destinations, double w, double h) {
         markerLayer.getChildren().clear();
 

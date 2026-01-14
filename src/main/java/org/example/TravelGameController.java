@@ -391,11 +391,56 @@ public class TravelGameController {
 
         redrawAllPathsFromDb(w, h);
 
-        List<int[]> positions = new ArrayList<>();
-        for (Traveler t : players) {
-            positions.add(new int[]{ clampToGrid(t.getPlayerPosX()), clampToGrid(t.getPlayerPosY()) });
+        List<double[]> positions = new ArrayList<>();
+        for (Traveler tRef : players) {
+            Traveler t = em != null && tRef.getId() != null ? em.find(Traveler.class, tRef.getId()) : tRef;
+            if (t == null) continue;
+            positions.add(computePlayerGridPos(t));
         }
-        visualizer.drawPlayers(positions, currentPlayerIndex, w, h);
+        visualizer.drawPlayersInterpolated(positions, currentPlayerIndex, w, h);
+    }
+
+    private double[] computePlayerGridPos(Traveler t) {
+        double baseX = clampToGrid(t.getPlayerPosX());
+        double baseY = clampToGrid(t.getPlayerPosY());
+
+        if (!t.isTravelling() || t.getId() == null || em == null) {
+            return new double[]{baseX, baseY};
+        }
+
+        List<Journey> list = em.createQuery(
+                "select j from Journey j " +
+                    "join fetch j.locationLink ll " +
+                    "join fetch ll.fromLocation " +
+                    "join fetch ll.toLocation " +
+                    "where j.traveler.id = :id " +
+                    "order by j.turnNumber desc, j.id desc",
+                Journey.class
+            )
+            .setParameter("id", t.getId())
+            .setMaxResults(1)
+            .getResultList();
+
+        if (list.isEmpty()) return new double[]{baseX, baseY};
+
+        Journey j = list.get(0);
+        LocationLink ll = j.getLocationLink();
+        int total = ll.getDistance();
+        if (total <= 0) return new double[]{baseX, baseY};
+
+        Location from = ll.getFromLocation();
+        Location to = ll.getToLocation();
+
+        int remainingAfter = j.getRemainingDistance();
+        double fracAfter = (double) (total - remainingAfter) / total;
+
+        double gx = from.getX() + (to.getX() - from.getX()) * fracAfter;
+        double gy = from.getY() + (to.getY() - from.getY()) * fracAfter;
+
+        gx = Math.max(0.0, Math.min(GRID_SIZE - 1, gx));
+        gy = Math.max(0.0, Math.min(GRID_SIZE - 1, gy));
+
+        return new double[]{gx, gy};
     }
 
     private void redrawAllPathsFromDb(double w, double h) {
@@ -620,9 +665,12 @@ public class TravelGameController {
     }
 
     private Location getLocationByName(String name) {
-        return em.createQuery("select l from Location l where l.name = :n", Location.class)
+        List<Location> list = em.createQuery("select l from Location l where l.name = :n order by l.id", Location.class)
             .setParameter("n", name)
-            .getSingleResult();
+            .setMaxResults(1)
+            .getResultList();
+        if (list.isEmpty()) throw new IllegalStateException("No location found with name: " + name);
+        return list.get(0);
     }
 
     private void doContinueJourney(Long travelerId) {
@@ -662,25 +710,12 @@ public class TravelGameController {
             }
 
             syncHudAndMap();
-        } catch (IllegalStateException e) {
-            if (tx.isActive()) tx.rollback();
-
-            String msg = e.getMessage() != null ? e.getMessage() : "okänt fel";
-            if (msg.toLowerCase().contains("cannot afford")) {
-                eliminatePlayer(em.find(Traveler.class, travelerId), "har inte råd att fortsätta resan");
-                return;
-            }
-
-            logList.getItems().add("⚠️ kunde inte fortsätta resa: " + msg);
-            syncHudAndMap();
-
         } catch (RuntimeException e) {
             if (tx.isActive()) tx.rollback();
             throw e;
         } finally {
             rollButton.setDisable(false);
         }
-
     }
 
     private String safeName(Traveler t) {
