@@ -58,6 +58,8 @@ public class TravelGameController {
     private List<PossibleMoves> shownMoves = List.of();
     private final Map<PossibleMoves, Button> moveButtons = new HashMap<>();
 
+    private Map<Long, Integer> lastTurnByTravelerId = new HashMap<>();
+
     private Location lastClickedDestination = null;
     private int cycleIndex = 0;
 
@@ -329,8 +331,22 @@ public class TravelGameController {
     }
 
     private void syncHudAndMap() {
+        refreshTurnCache();
         updateHud();
         updateGraphics();
+    }
+
+    private void refreshTurnCache() {
+        if (players.isEmpty()) {
+            lastTurnByTravelerId.clear();
+            return;
+        }
+
+        List<Long> ids = players.stream()
+            .map(Traveler::getId)
+            .toList();
+
+        lastTurnByTravelerId = journeyService.getLastTurnNumbersForPlayers(ids);
     }
 
     private void updateHud() {
@@ -348,7 +364,9 @@ public class TravelGameController {
         nextPlayerLabel.setText(next != null ? next.getPlayerName() : nextRef.getPlayerName());
 
         currentCreditsLabel.setText(current.getMoney() != null ? current.getMoney().toPlainString() : "-");
-        currentTurnLabel.setText(String.valueOf(current.getTurnCount()));
+
+        int lastTurn = lastTurnByTravelerId.getOrDefault(current.getId(), 0);
+        currentTurnLabel.setText(String.valueOf(lastTurn + 1));
         currentPointLabel.setText(String.valueOf(current.getPlayerScore()));
 
         currentLocationLabel.setText("[" + clampToGrid(current.getPlayerPosX()) + "," + clampToGrid(current.getPlayerPosY()) + "]");

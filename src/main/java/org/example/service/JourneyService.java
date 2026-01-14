@@ -5,7 +5,9 @@ import org.example.*;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class JourneyService {
 
@@ -121,4 +123,32 @@ public class JourneyService {
 
         return journey;
     }
+
+    public Map<Long, Integer> getLastTurnNumbersForPlayers(List<Long> travelerIds) {
+        if (travelerIds == null || travelerIds.isEmpty()) return Map.of();
+
+        List<Object[]> rows = em.createQuery("""
+        select j.traveler.id, max(j.turnNumber)
+        from Journey j
+        where j.traveler.id in :ids
+        group by j.traveler.id
+    """, Object[].class)
+            .setParameter("ids", travelerIds)
+            .getResultList();
+
+        Map<Long, Integer> out = new HashMap<>();
+        for (Object[] r : rows) {
+            Long id = (Long) r[0];
+            Integer maxTurn = (r[1] == null) ? 0 : ((Number) r[1]).intValue();
+            out.put(id, maxTurn);
+        }
+
+        // spelare utan journeys hamnar inte i rows → sätt 0 på dem
+        for (Long id : travelerIds) {
+            out.putIfAbsent(id, 0);
+        }
+
+        return out;
+    }
+
 }
