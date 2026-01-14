@@ -31,8 +31,8 @@ public class PlayerEventService {
     public List<EventResult> applyEndOfTurnEvents(Traveler traveler) {
         List<EventResult> events = new ArrayList<>();
 
-        // penalty 5%
-        if (Math.random() < 0.05) {
+        // penalty 15%
+        if (Math.random() < 0.15) {
             EventOutcome o = randomPenalty();
             BigDecimal amount = BigDecimal.valueOf(o.amount());
             traveler.deductMoney(amount);
@@ -43,8 +43,8 @@ public class PlayerEventService {
                 + " (-" + o.amount() + " credits)");
         }
 
-        // bonus 10%
-        if (Math.random() < 0.10) {
+        // bonus 15%
+        if (Math.random() < 0.15) {
             EventOutcome o = randomBonus();
             BigDecimal amount = BigDecimal.valueOf(o.amount());
             traveler.addMoney(amount);

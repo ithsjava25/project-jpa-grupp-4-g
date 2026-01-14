@@ -37,9 +37,6 @@ public class JourneyService {
         return result;
     }
 
-    /**
-     * startar en ny resa på en vald route+transport (bara om du INTE redan reser)
-     */
     public Journey startNewJourneyTurn(Traveler traveler, PossibleMoves move) {
         if (traveler.isTravelling()) {
             throw new IllegalStateException("already travelling – cannot start a new journey");
@@ -48,23 +45,17 @@ public class JourneyService {
         LocationLink route = move.getRoute();
         Transport transport = move.getTransport();
 
-        // kontroll: transport tillåten?
         boolean allowed = route.getTransportLinks().stream()
             .anyMatch(tl -> tl.getTransport().equals(transport));
         if (!allowed) {
             throw new IllegalStateException(transport.getType() + " is not allowed on this route");
         }
 
-        // starta resa med routeDistance
         traveler.startJourney(route.getToLocation(), route.getDistance());
 
-        // genomför första “del-turen” på resan
         return doTravelStep(traveler, route, transport);
     }
 
-    /**
-     * fortsätter pågående resa (samma route+transport som senaste journey)
-     */
     public Journey continueCurrentJourneyTurn(Traveler traveler) {
         if (!traveler.isTravelling()) {
             throw new IllegalStateException("not travelling – choose a move first");
@@ -86,9 +77,6 @@ public class JourneyService {
         return doTravelStep(traveler, route, transport);
     }
 
-    /**
-     * gemensam logik för ett “steg” på en resa (slå, betala, advance, logga, events)
-     */
     private Journey doTravelStep(Traveler traveler, LocationLink route, Transport transport) {
 
         BigDecimal cost = transport.getCostPerMove();
@@ -113,8 +101,23 @@ public class JourneyService {
         em.persist(journey);
         em.merge(traveler);
 
-        // events kopplas till denna turn (om ni persisterar TurnEvent senare görs det här)
-        eventService.applyEndOfTurnEvents(traveler);
+        // hämta events och persista TurnEvent kopplat till denna Journey
+        List<PlayerEventService.EventResult> events =
+            eventService.applyEndOfTurnEvents(traveler);
+
+        for (PlayerEventService.EventResult er : events) {
+            TurnEvent te = new TurnEvent(
+                traveler,
+                journey,
+                er.type(),
+                er.amount(),
+                er.message()
+            );
+            em.persist(te);
+        }
+
+        // (valfritt) om du vill vara extra säker att de skrivs direkt i samma tx:
+        em.flush();
 
         return journey;
     }
