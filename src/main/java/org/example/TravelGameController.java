@@ -51,6 +51,8 @@ public class TravelGameController {
     private MapVisualizer visualizer;
     private JourneyService journeyService;
     private PlayerEventService eventService;
+    private static final int WIN_SCORE = 5;
+
 
     private PossibleMoves selectedMove = null;
     private boolean awaitingMoveChoice = false;
@@ -119,9 +121,6 @@ public class TravelGameController {
 
             Traveler p1 = new Traveler(playerName, stockholm);
             Traveler p2 = new Traveler("Player 2", berlin);
-
-            p1.setDestinationPos(paris.getX(), paris.getY());
-            p2.setDestinationPos(stockholm.getX(), stockholm.getY());
 
             em.persist(p1);
             em.persist(p2);
@@ -370,9 +369,13 @@ public class TravelGameController {
 
         int lastTurn = lastTurnByTravelerId.getOrDefault(current.getId(), 0);
         currentTurnLabel.setText(String.valueOf(lastTurn + 1));
-        currentPointLabel.setText(String.valueOf(current.getPlayerScore()));
+        currentPointLabel.setText(String.valueOf(current.getScore()));
 
-        currentLocationLabel.setText("[" + clampToGrid(current.getPlayerPosX()) + "," + clampToGrid(current.getPlayerPosY()) + "]");
+
+        Location loc = current.getCurrentLocation();
+        currentLocationLabel.setText(loc != null
+            ? "[" + clampToGrid(loc.getX()) + "," + clampToGrid(loc.getY()) + "]"
+            : "-");
 
         if (current.isTravelling() && current.getTargetLocation() != null) {
             destinationLabel.setText("[" + current.getTargetLocation().getX() + "," + current.getTargetLocation().getY() + "]");
@@ -401,8 +404,8 @@ public class TravelGameController {
     }
 
     private double[] computePlayerGridPos(Traveler t) {
-        double baseX = clampToGrid(t.getPlayerPosX());
-        double baseY = clampToGrid(t.getPlayerPosY());
+        double baseX = clampToGrid(t.getPosX());
+        double baseY = clampToGrid(t.getPosY());
 
         if (!t.isTravelling() || t.getId() == null || em == null) {
             return new double[]{baseX, baseY};
@@ -507,22 +510,6 @@ public class TravelGameController {
         return Math.max(0, Math.min(GRID_SIZE - 1, v));
     }
 
-    public void startMockJourney() {
-        logList.getItems().add("📜 Demo path!");
-        if (players.isEmpty()) return;
-
-        Traveler current = players.get(currentPlayerIndex);
-        int px = clampToGrid(current.getPlayerPosX());
-        int py = clampToGrid(current.getPlayerPosY());
-
-        List<int[]> journeyPath = new ArrayList<>();
-        journeyPath.add(new int[]{px, py});
-        journeyPath.add(new int[]{10, 15});
-        journeyPath.add(new int[]{25, 20});
-        journeyPath.add(new int[]{40, 45});
-        visualizer.animateJourney(journeyPath, drawingPane.getWidth(), drawingPane.getHeight());
-    }
-
     private void doMove(Long travelerId, PossibleMoves chosen) {
         if (wonGame) return;
 
@@ -553,7 +540,6 @@ public class TravelGameController {
                         + " kom fram till " + targetName
                         + " (rolled=" + journey.getDistanceMoved() + ")"
                 );
-                managed.increaseScore();
             }
 
             tx.commit();
@@ -597,11 +583,21 @@ public class TravelGameController {
     }
 
     private void doesPlayerWin() {
-        for (Traveler player : players) {
-            if (player.checkScore()) {
+        if (players.isEmpty() || em == null) return;
+
+        for (Traveler ref : players) {
+            if (ref.getId() == null) continue;
+
+            Traveler t = em.find(Traveler.class, ref.getId()); // läs färskt från db
+            if (t != null && t.getScore() >= WIN_SCORE) {
                 wonGame = true;
-                System.out.println(player.getPlayerName() + " Wins the game. Congratulations");
-                winConLabel.setContentText(player.getPlayerName() + " Wins the game. Congratulations");
+
+                String msg = t.getPlayerName() + " wins the game. congratulations!";
+                System.out.println(msg);
+                winConLabel.setContentText(msg);
+                logList.getItems().add("🏆 " + msg);
+
+                return;
             }
         }
     }
@@ -680,8 +676,14 @@ public class TravelGameController {
 
         EntityTransaction tx = em.getTransaction();
         tx.begin();
+
         try {
             Traveler managed = em.find(Traveler.class, travelerId);
+            if (managed == null) {
+                logList.getItems().add("⚠️ kunde inte hitta spelare i db");
+                if (tx.isActive()) tx.rollback();
+                return;
+            }
 
             Location targetBefore = managed.getTargetLocation();
             String targetName = (targetBefore != null) ? targetBefore.getName() : "?";
@@ -698,11 +700,11 @@ public class TravelGameController {
                 );
             } else {
                 logList.getItems().add("✅ " + safeName(managed) + " kom fram till " + targetName + "!");
-                managed.increaseScore();
                 doesPlayerWin();
             }
 
             tx.commit();
+
             players.set(currentPlayerIndex, managed);
 
             if (!managed.isTravelling() && !wonGame) {
@@ -710,13 +712,30 @@ public class TravelGameController {
             }
 
             syncHudAndMap();
+
+        } catch (IllegalStateException e) {
+            if (tx.isActive()) tx.rollback();
+
+            String msg = e.getMessage() != null ? e.getMessage() : "okänt fel";
+            if (msg.toLowerCase().contains("cannot afford")) {
+                eliminatePlayer(em.find(Traveler.class, travelerId), "har inte råd att fortsätta resan");
+                return;
+            }
+
+            logList.getItems().add("⚠️ kunde inte fortsätta resa: " + msg);
+            syncHudAndMap();
+
         } catch (RuntimeException e) {
             if (tx.isActive()) tx.rollback();
-            throw e;
+            logList.getItems().add("❌ fel vid continue: " + (e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName()));
+            e.printStackTrace();
+            syncHudAndMap();
+
         } finally {
             rollButton.setDisable(false);
         }
     }
+
 
     private String safeName(Traveler t) {
         if (t == null) return "?";
