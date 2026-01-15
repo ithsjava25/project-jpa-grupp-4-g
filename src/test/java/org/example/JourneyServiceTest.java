@@ -172,7 +172,7 @@ public class JourneyServiceTest {
         Location to = new Location("Berlin", LocationType.CAPITAL, null, 5, 5);
         Traveler traveler = new Traveler("Bob", from);
 
-        traveler.subtractMoneyClamped(traveler.getMoney());
+        traveler.deductMoney(traveler.getMoney());
         traveler.addMoney(BigDecimal.valueOf(5));
 
         Transport expensiveTransport = mock(Transport.class);

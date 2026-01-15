@@ -22,8 +22,8 @@ public class TravelerTest {
         Location start = dummyLocation(3, 7);
         Traveler traveler = new Traveler("Bob", start);
 
-        assertEquals(3, traveler.getPlayerPosX());
-        assertEquals(7, traveler.getPlayerPosY());
+        assertEquals(3, traveler.getPosX());
+        assertEquals(7, traveler.getPosY());
     }
 
     /**
